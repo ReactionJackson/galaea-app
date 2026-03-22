@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { BlurView } from "expo-blur";
 import { Image as ExpoImage } from "expo-image";
+import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
@@ -28,7 +29,7 @@ const TopNav = styled.View`
 const Header = styled(BlurView)`
   z-index: 100;
   position: absolute;
-  top: ${({ insets }) => insets.top + 60}px;
+  top: ${({ topInset }) => topInset + 60}px;
   left: 0;
   right: 0;
   height: 70px;
@@ -100,6 +101,14 @@ const Text = styled(ThemedText)`
   font-size: 16px;
   line-height: 24px;
   color: rgba(0, 0, 0, 0.8);
+  ${Platform.select({
+    default: ``,
+    web: `
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    `,
+  })}
 `;
 
 const Track = styled(BlurView)`
@@ -114,14 +123,14 @@ const Track = styled(BlurView)`
 `;
 
 export default function HomeScreen() {
-  const insets = useSafeAreaInsets();
+  const { top } = useSafeAreaInsets();
   return (
     <Container>
       <TopNav>
         <Title type="title">Galaea</Title>
         <Title type="title">O</Title>
       </TopNav>
-      <Header blurType="light" intensity={30} insets={insets}>
+      <Header blurType="light" intensity={30} topInset={top}>
         <EntryDayContainer>
           <EntryDay>22</EntryDay>
         </EntryDayContainer>
@@ -150,7 +159,7 @@ export default function HomeScreen() {
         <Image
           style={{ width: "100%", height: 200 }}
           source={{
-            uri: "https://images.launchbox-app.com/4b488f82-83f5-4088-a870-9ebe8f5c6c7d.jpg",
+            uri: "https://images.launchbox-app.com//80df32ce-9800-404c-9786-fb0628ec4abc.jpg",
           }}
         />
         <Image
