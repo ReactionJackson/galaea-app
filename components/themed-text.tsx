@@ -2,38 +2,41 @@ import { Colors, Fonts } from "@/constants/theme";
 import { Platform, StyleSheet, Text, type TextProps } from "react-native";
 
 export type ThemedTextProps = TextProps & {
-  textColor?: keyof typeof Colors.tags;
-  type?:
-    | "default"
-    | "title"
-    | "entry-title"
-    | "entry-number"
-    | "entry-month"
-    | "entry-time"
-    | "tag";
+  color?: string;
+  type?: "title" | "text" | "subtitle" | "date-number" | "tag";
 };
+
+function resolveColor(color: string): string {
+  return (
+    Colors.tags[color as keyof typeof Colors.tags]?.border ??
+    Colors[color as keyof typeof Colors] ??
+    color
+  );
+}
 
 export function ThemedText({
   style,
-  type = "default",
-  textColor = "default",
+  type = "text",
+  color,
   ...rest
 }: ThemedTextProps) {
   return (
     <Text
       style={[
         type === "title" ? styles.title : undefined,
-        type === "default" ? styles.default : undefined,
-        type === "entry-title" ? styles.entryTitle : undefined,
-        type === "entry-number" ? styles.entryNumber : undefined,
-        type === "entry-month" ? styles.entryMonth : undefined,
-        type === "entry-time" ? styles.entryTime : undefined,
+        type === "text" ? styles.text : undefined,
+        type === "subtitle" ? styles.subtitle : undefined,
+        type === "date-number" ? styles.dateNumber : undefined,
+        type === "tag" ? styles.tag : undefined,
         type === "tag"
           ? {
-              ...styles.tag,
-              color: Colors.tags[textColor]?.border || Colors.text,
+              color:
+                Colors.tags[(color as keyof typeof Colors.tags) ?? "default"]
+                  ?.border ?? Colors.tags.default.border,
             }
-          : undefined,
+          : color
+            ? { color: resolveColor(color) }
+            : undefined,
         style,
       ]}
       {...rest}
@@ -54,47 +57,31 @@ const styles = StyleSheet.create({
     color: Colors.title,
     fontFamily: Fonts.medium,
     fontSize: 22,
-    lineHeight: 32,
-    ...webTextStyles,
-  },
-  default: {
-    color: Colors.text,
-    fontFamily: Fonts.regular,
-    fontSize: 16,
-    lineHeight: 24,
-    ...webTextStyles,
-  },
-  entryTitle: {
-    color: Colors.title,
-    fontFamily: Fonts.medium,
-    fontSize: 22,
     lineHeight: 28,
     height: 28,
     ...webTextStyles,
   },
-  entryNumber: {
-    color: Colors.white,
-    fontFamily: Fonts.semibold,
-    fontSize: 18,
-    letterSpacing: 1,
-    ...webTextStyles,
-  },
-  entryMonth: {
+  subtitle: {
     color: Colors.black,
-    fontFamily: Fonts.medium,
+    fontFamily: Fonts.semibold,
     fontSize: 9,
     textTransform: "uppercase",
     letterSpacing: 3,
     opacity: 0.6,
     ...webTextStyles,
   },
-  entryTime: {
-    color: Colors.black,
-    fontFamily: Fonts.medium,
-    fontSize: 9,
-    textTransform: "uppercase",
-    letterSpacing: 3,
-    opacity: 0.3,
+  text: {
+    color: Colors.text,
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    lineHeight: 24,
+    ...webTextStyles,
+  },
+  dateNumber: {
+    color: Colors.white,
+    fontFamily: Fonts.semibold,
+    fontSize: 18,
+    letterSpacing: 1,
     ...webTextStyles,
   },
   tag: {

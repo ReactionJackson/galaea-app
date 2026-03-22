@@ -3,6 +3,8 @@ export const Colors = {
   black: "#000",
   title: "#000",
   text: "#777",
+  border: "#e2e2e2",
+  faded: "rgba(0, 0, 0, 0.3)",
   accent: "#f96156",
   background: "#fff",
   tags: {

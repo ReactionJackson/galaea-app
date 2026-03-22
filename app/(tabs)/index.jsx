@@ -5,6 +5,8 @@ import { Image as ExpoImage } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
+import { GameEntry } from "@/components/game-entry";
+
 const Container = styled.SafeAreaView`
   flex: 1;
   justify-content: flex-start;
@@ -12,7 +14,7 @@ const Container = styled.SafeAreaView`
   background-color: ${Colors.background};
 `;
 
-const TopNav = styled.View`
+const TopBar = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -106,21 +108,23 @@ export default function HomeScreen() {
   const { top } = useSafeAreaInsets();
   return (
     <Container>
-      <TopNav>
+      <TopBar>
         <ThemedText type="title">Galaea</ThemedText>
         <ThemedText type="title">O</ThemedText>
-      </TopNav>
+      </TopBar>
 
       <Header tint="light" intensity={30} topInset={top}>
         <EntryNumber>
-          <ThemedText type="entry-number">22</ThemedText>
+          <ThemedText type="date-number">22</ThemedText>
         </EntryNumber>
         <EntryInfo>
           <EntryDate>
-            <ThemedText type="entry-month">March</ThemedText>
-            <ThemedText type="entry-time">02:16AM</ThemedText>
+            <ThemedText type="subtitle">March</ThemedText>
+            <ThemedText type="subtitle" color="faded">
+              02:16AM
+            </ThemedText>
           </EntryDate>
-          <ThemedText type="entry-title">Porting to React Native</ThemedText>
+          <ThemedText type="title">Porting to React Native</ThemedText>
         </EntryInfo>
       </Header>
 
@@ -139,41 +143,27 @@ export default function HomeScreen() {
           be saved to the home screen properly and opens without the Safari bar.
           Feels way more like a real app now. Small detail but it matters.
         </ThemedText>
+
         <Tags>
           <Tag color="green">
-            <ThemedText type="tag" textColor="green">
+            <ThemedText type="tag" color="green">
               React Native
             </ThemedText>
           </Tag>
           <Tag color="blue">
-            <ThemedText type="tag" textColor="blue">
+            <ThemedText type="tag" color="blue">
               Design
             </ThemedText>
           </Tag>
           <Tag color="green">
-            <ThemedText type="tag" textColor="green">
+            <ThemedText type="tag" color="green">
               React
             </ThemedText>
           </Tag>
         </Tags>
-        <Image
-          style={{ width: "100%", height: 200 }}
-          source={{
-            uri: "https://images.launchbox-app.com//80df32ce-9800-404c-9786-fb0628ec4abc.jpg",
-          }}
-        />
-        <Image
-          style={{ width: "100%", height: 200 }}
-          source={{
-            uri: "https://images.launchbox-app.com/b7a444fc-f6b3-415c-b270-55b9aab05756.jpg",
-          }}
-        />
-        <Image
-          style={{ width: "100%", height: 200 }}
-          source={{
-            uri: "https://images.launchbox-app.com/4b488f82-83f5-4088-a870-9ebe8f5c6c7d.jpg",
-          }}
-        />
+
+        <GameEntry gameId={1} />
+        <GameEntry gameId={2} />
       </Content>
 
       <Track tint="light" intensity={30}>
