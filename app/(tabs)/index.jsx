@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
+import { Colors } from "@/constants/theme";
 import { BlurView } from "expo-blur";
 import { Image as ExpoImage } from "expo-image";
-import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
@@ -9,7 +9,7 @@ const Container = styled.SafeAreaView`
   flex: 1;
   justify-content: flex-start;
   align-items: center;
-  background-color: #fff;
+  background-color: ${Colors.background};
 `;
 
 const TopNav = styled.View`
@@ -19,8 +19,8 @@ const TopNav = styled.View`
   width: 100%;
   height: 60px;
   padding: 0 20px;
-  background-color: #fff;
-  shadow-color: #000;
+  background-color: ${Colors.background};
+  shadow-color: ${Colors.black};
   shadow-offset: 0px 5px;
   shadow-opacity: 0.12;
   shadow-radius: 4px;
@@ -39,20 +39,13 @@ const Header = styled(BlurView)`
   gap: 10px;
 `;
 
-const EntryDayContainer = styled.View`
+const EntryNumber = styled.View`
   justify-content: center;
   align-items: center;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #f96156;
-`;
-
-const EntryDay = styled.Text`
-  color: #fff;
-  font-size: 18px;
-  letter-spacing: 1px;
-  font-family: Outfit600;
+  background-color: ${Colors.accent};
 `;
 
 const EntryInfo = styled.View`
@@ -61,24 +54,30 @@ const EntryInfo = styled.View`
   align-items: flex-start;
 `;
 
-const EntryTitle = styled.Text`
-  font-family: Outfit500;
-  font-size: 22px;
-  line-height: 28px;
-  height: 28px;
-`;
-
-const EntryMonth = styled.Text`
-  font-family: Outfit500;
-  font-size: 9px;
-  text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.6);
-  letter-spacing: 3px;
+const EntryDate = styled.View`
+  flex-direction: row;
+  gap: 5px;
   margin: 3px 0 -2px 0;
 `;
 
-const EntryTime = styled(EntryMonth)`
-  color: rgba(0, 0, 0, 0.3);
+const Tags = styled.View`
+  flex-direction: row;
+  gap: 10px;
+`;
+
+const Tag = styled.View`
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  border-radius: 13px;
+  padding: 0 10px;
+  border-width: 2px;
+  border-style: solid;
+  margin-top: -5px;
+  ${({ color = "default" }) => `
+    border-color: ${Colors.tags[color].border};
+    background-color: ${Colors.tags[color].background};
+  `}
 `;
 
 const Content = styled.ScrollView`
@@ -90,25 +89,6 @@ const Image = styled(ExpoImage)`
   width: 100%;
   height: 200px;
   border-radius: 10px;
-`;
-
-const Title = styled(ThemedText)`
-  font-size: 24px;
-`;
-
-const Text = styled(ThemedText)`
-  font-family: Outfit300;
-  font-size: 16px;
-  line-height: 24px;
-  color: rgba(0, 0, 0, 0.8);
-  ${Platform.select({
-    default: ``,
-    web: `
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    `,
-  })}
 `;
 
 const Track = styled(BlurView)`
@@ -127,20 +107,23 @@ export default function HomeScreen() {
   return (
     <Container>
       <TopNav>
-        <Title type="title">Galaea</Title>
-        <Title type="title">O</Title>
+        <ThemedText type="title">Galaea</ThemedText>
+        <ThemedText type="title">O</ThemedText>
       </TopNav>
-      <Header blurType="light" intensity={30} topInset={top}>
-        <EntryDayContainer>
-          <EntryDay>22</EntryDay>
-        </EntryDayContainer>
+
+      <Header tint="light" intensity={30} topInset={top}>
+        <EntryNumber>
+          <ThemedText type="entry-number">22</ThemedText>
+        </EntryNumber>
         <EntryInfo>
-          <EntryMonth>
-            March <EntryTime>02:16AM</EntryTime>
-          </EntryMonth>
-          <EntryTitle>Porting to React Native</EntryTitle>
+          <EntryDate>
+            <ThemedText type="entry-month">March</ThemedText>
+            <ThemedText type="entry-time">02:16AM</ThemedText>
+          </EntryDate>
+          <ThemedText type="entry-title">Porting to React Native</ThemedText>
         </EntryInfo>
       </Header>
+
       <Content
         contentContainerStyle={{
           gap: 20,
@@ -149,13 +132,30 @@ export default function HomeScreen() {
           paddingHorizontal: 20,
         }}
       >
-        <Text>
+        <ThemedText>
           Started the morning with some Xenoblade before doing anything else,
           which is always a good sign for the day. Spent the afternoon doing
           some work on the journal app — got the PWA manifest set up so it can
           be saved to the home screen properly and opens without the Safari bar.
           Feels way more like a real app now. Small detail but it matters.
-        </Text>
+        </ThemedText>
+        <Tags>
+          <Tag color="green">
+            <ThemedText type="tag" textColor="green">
+              React Native
+            </ThemedText>
+          </Tag>
+          <Tag color="blue">
+            <ThemedText type="tag" textColor="blue">
+              Design
+            </ThemedText>
+          </Tag>
+          <Tag color="green">
+            <ThemedText type="tag" textColor="green">
+              React
+            </ThemedText>
+          </Tag>
+        </Tags>
         <Image
           style={{ width: "100%", height: 200 }}
           source={{
@@ -175,8 +175,9 @@ export default function HomeScreen() {
           }}
         />
       </Content>
-      <Track blurType="light" intensity={30}>
-        <Title type="title">Track</Title>
+
+      <Track tint="light" intensity={30}>
+        <ThemedText type="title">Track</ThemedText>
       </Track>
     </Container>
   );

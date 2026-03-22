@@ -1,7 +1,8 @@
 import {
-  Outfit_300Light as Outfit300,
+  Outfit_400Regular as Outfit400,
   Outfit_500Medium as Outfit500,
   Outfit_600SemiBold as Outfit600,
+  Outfit_700Bold as Outfit700,
   useFonts,
 } from "@expo-google-fonts/outfit";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
@@ -18,9 +19,10 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Outfit300,
-    Outfit600,
+    Outfit400,
     Outfit500,
+    Outfit600,
+    Outfit700,
   });
 
   useEffect(() => {
