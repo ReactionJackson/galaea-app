@@ -87,7 +87,7 @@ export default function HomeScreen() {
         <ThemedText type="title">O</ThemedText>
       </TopBar>
 
-      <Header tint="light" intensity={30} topInset={top}>
+      <Header tint="light" topInset={top}>
         <EntryNumber>
           <ThemedText type="date-number">22</ThemedText>
         </EntryNumber>
@@ -124,7 +124,7 @@ export default function HomeScreen() {
         <GameEntry gameId={2} />
       </Content>
 
-      <Track tint="light" intensity={30}>
+      <Track tint="light">
         <ThemedText type="title">Track</ThemedText>
       </Track>
     </Container>

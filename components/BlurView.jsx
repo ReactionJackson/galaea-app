@@ -11,7 +11,13 @@ const WebBlur = styled.View`
   })}
 `;
 
-export function BlurView({ intensity, tint, style, children, ...props }) {
+export function BlurView({
+  intensity = 40,
+  tint = "light",
+  style,
+  children,
+  ...props
+}) {
   if (Platform.OS === "web") {
     return (
       <WebBlur style={style} {...props}>
