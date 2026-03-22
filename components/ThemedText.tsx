@@ -8,7 +8,7 @@ export type ThemedTextProps = TextProps & {
 
 function resolveColor(color: string): string {
   return (
-    Colors.tags[color as keyof typeof Colors.tags]?.border ??
+    Colors.tags[color as keyof typeof Colors.tags]?.primary ??
     Colors[color as keyof typeof Colors] ??
     color
   );
@@ -32,7 +32,7 @@ export function ThemedText({
           ? {
               color:
                 Colors.tags[(color as keyof typeof Colors.tags) ?? "default"]
-                  ?.border ?? Colors.tags.default.border,
+                  ?.primary,
             }
           : color
             ? { color: resolveColor(color) }

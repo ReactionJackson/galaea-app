@@ -1,8 +1,9 @@
 import { Colors } from "@/constants/theme";
-import { games } from "@/data/entries";
+import { gamesData } from "@/data/entries";
 import { Image as ExpoImage } from "expo-image";
 import styled from "styled-components/native";
-import { ThemedText } from "./themed-text";
+import { Tags } from "./Tags";
+import { ThemedText } from "./ThemedText";
 
 const Container = styled.View`
   width: 100%;
@@ -38,7 +39,7 @@ const HeaderBackground = styled(ExpoImage)`
 
 const Content = styled.View`
   padding: 20px;
-  gap: 10px;
+  gap: 20px;
   border: 1px solid ${Colors.border};
   border-top-width: 0px;
   border-bottom-left-radius: 15px;
@@ -46,9 +47,13 @@ const Content = styled.View`
   background-color: ${Colors.background};
 `;
 
-export function GameEntry({ gameId = 1 }) {
-  const { title, platform, genre, cover, entries } = games.find(
+export function GameEntry({ gameId = 1, entryId = 1 }) {
+  const { title, platform, genre, cover, entries } = gamesData.find(
     (game) => game.gameId === gameId,
+  );
+
+  const { text, tags, gallery } = entries.find(
+    (entry) => entry.entryId === entryId,
   );
 
   return (
@@ -69,14 +74,11 @@ export function GameEntry({ gameId = 1 }) {
       </Header>
 
       <Content>
-        {[...Array(entries[0])].map(({ text }, index) => (
-          <>
-            <ThemedText type="subtitle">
-              Entry {(index + 1).toString().padStart(2, "0")}
-            </ThemedText>
-            <ThemedText type="text">{text}</ThemedText>
-          </>
-        ))}
+        <ThemedText type="subtitle" color="text" style={{ marginBottom: -10 }}>
+          Entry {entryId.toString().padStart(2, "0")}
+        </ThemedText>
+        <ThemedText type="text">{text}</ThemedText>
+        <Tags tagIds={tags} />
       </Content>
     </Container>
   );

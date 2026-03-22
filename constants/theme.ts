@@ -7,18 +7,31 @@ export const Colors = {
   faded: "rgba(0, 0, 0, 0.3)",
   accent: "#f96156",
   background: "#fff",
+  backgroundBlurTint: "rgba(255, 255, 255, 0.6)",
   tags: {
     default: {
-      border: "#777",
-      background: "#eee",
+      primary: "#777",
+      secondary: "#eee",
     },
     green: {
-      border: "#56ba40",
-      background: "#ddf1d9",
+      primary: "#56ba40",
+      secondary: "#ddf1d9",
     },
     blue: {
-      border: "#3f88e6",
-      background: "#d9e8fd",
+      primary: "#3f88e6",
+      secondary: "#d9e8fd",
+    },
+    yellow: {
+      primary: "#c7a000",
+      secondary: "#fde9b9",
+    },
+    purple: {
+      primary: "#9b59b6",
+      secondary: "#e8d5f0",
+    },
+    red: {
+      primary: "#e74c3c",
+      secondary: "#f5d7d5",
     },
   },
 };

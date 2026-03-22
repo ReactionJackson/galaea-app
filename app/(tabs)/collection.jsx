@@ -1,4 +1,4 @@
-import { ThemedText } from "@/components/themed-text";
+import { ThemedText } from "@/components/ThemedText";
 import { StyleSheet, View } from "react-native";
 
 export default function CollectionScreen() {

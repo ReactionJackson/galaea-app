@@ -1,11 +1,11 @@
-import { ThemedText } from "@/components/themed-text";
+import { BlurView } from "@/components/BlurView";
+import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
-import { BlurView } from "expo-blur";
-import { Image as ExpoImage } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
-import { GameEntry } from "@/components/game-entry";
+import { GameEntry } from "@/components/GameEntry";
+import { Tags } from "@/components/Tags";
 
 const Container = styled.SafeAreaView`
   flex: 1;
@@ -34,11 +34,11 @@ const Header = styled(BlurView)`
   top: ${({ topInset }) => topInset + 60}px;
   left: 0;
   right: 0;
+  gap: 10px;
   height: 70px;
   padding: 20px 20px 10px 20px;
   flex-direction: row;
   justify-content: flex-start;
-  gap: 10px;
 `;
 
 const EntryNumber = styled.View`
@@ -62,35 +62,9 @@ const EntryDate = styled.View`
   margin: 3px 0 -2px 0;
 `;
 
-const Tags = styled.View`
-  flex-direction: row;
-  gap: 10px;
-`;
-
-const Tag = styled.View`
-  align-items: center;
-  justify-content: center;
-  height: 26px;
-  border-radius: 13px;
-  padding: 0 10px;
-  border-width: 2px;
-  border-style: solid;
-  margin-top: -5px;
-  ${({ color = "default" }) => `
-    border-color: ${Colors.tags[color].border};
-    background-color: ${Colors.tags[color].background};
-  `}
-`;
-
 const Content = styled.ScrollView`
   flex: 1;
   width: 100%;
-`;
-
-const Image = styled(ExpoImage)`
-  width: 100%;
-  height: 200px;
-  border-radius: 10px;
 `;
 
 const Track = styled(BlurView)`
@@ -144,23 +118,7 @@ export default function HomeScreen() {
           Feels way more like a real app now. Small detail but it matters.
         </ThemedText>
 
-        <Tags>
-          <Tag color="green">
-            <ThemedText type="tag" color="green">
-              React Native
-            </ThemedText>
-          </Tag>
-          <Tag color="blue">
-            <ThemedText type="tag" color="blue">
-              Design
-            </ThemedText>
-          </Tag>
-          <Tag color="green">
-            <ThemedText type="tag" color="green">
-              React
-            </ThemedText>
-          </Tag>
-        </Tags>
+        <Tags tagIds={[2, 1, 3, 4, 1]} />
 
         <GameEntry gameId={1} />
         <GameEntry gameId={2} />
