@@ -65,7 +65,7 @@ export function GameEntry({ gameId = 1, entryId = 1 }) {
             uri: cover,
           }}
         />
-        <ThemedText type="title" color="white">
+        <ThemedText type="title-small" color="white">
           {title}
         </ThemedText>
         <ThemedText type="subtitle" color="white" style={{ opacity: 1 }}>

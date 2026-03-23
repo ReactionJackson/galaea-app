@@ -5,7 +5,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
 import { GameEntry } from "@/components/GameEntry";
+import { JournalTrack } from "@/components/JournalTrack";
 import { Tags } from "@/components/Tags";
+import { daysData } from "@/data/entries";
 
 const Container = styled.SafeAreaView`
   flex: 1;
@@ -67,19 +69,12 @@ const Content = styled.ScrollView`
   width: 100%;
 `;
 
-const Track = styled(BlurView)`
-  z-index: 100;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 100px;
-  justify-content: center;
-  align-items: center;
-`;
-
 export default function HomeScreen() {
   const { top } = useSafeAreaInsets();
+  const { date, title, text, tags, games } = daysData.find(
+    (day) => day.dayId === 5,
+  );
+
   return (
     <Container>
       <TopBar>
@@ -98,7 +93,7 @@ export default function HomeScreen() {
               02:16AM
             </ThemedText>
           </EntryDate>
-          <ThemedText type="title">Porting to React Native</ThemedText>
+          <ThemedText type="title">{title || "Monday"}</ThemedText>
         </EntryInfo>
       </Header>
 
@@ -110,23 +105,18 @@ export default function HomeScreen() {
           paddingHorizontal: 20,
         }}
       >
-        <ThemedText>
-          Started the morning with some Xenoblade before doing anything else,
-          which is always a good sign for the day. Spent the afternoon doing
-          some work on the journal app — got the PWA manifest set up so it can
-          be saved to the home screen properly and opens without the Safari bar.
-          Feels way more like a real app now. Small detail but it matters.
-        </ThemedText>
-
-        <Tags tagIds={[2, 1, 3, 4, 1]} />
-
-        <GameEntry gameId={1} />
-        <GameEntry gameId={2} />
+        <ThemedText>{text}</ThemedText>
+        <Tags tagIds={tags} />
+        {games.map(({ gameId, entryId }, i) => (
+          <GameEntry
+            key={`${gameId}-${entryId}-${i}`}
+            gameId={gameId}
+            entryId={entryId}
+          />
+        ))}
       </Content>
 
-      <Track tint="light">
-        <ThemedText type="title">Track</ThemedText>
-      </Track>
+      <JournalTrack />
     </Container>
   );
 }

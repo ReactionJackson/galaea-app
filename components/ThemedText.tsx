@@ -3,7 +3,7 @@ import { Platform, StyleSheet, Text, type TextProps } from "react-native";
 
 export type ThemedTextProps = TextProps & {
   color?: string;
-  type?: "title" | "text" | "subtitle" | "date-number" | "tag";
+  type?: "title" | "title-small" | "text" | "subtitle" | "date-number" | "tag";
 };
 
 function resolveColor(color: string): string {
@@ -24,6 +24,7 @@ export function ThemedText({
     <Text
       style={[
         type === "title" ? styles.title : undefined,
+        type === "title-small" ? styles.titleSmall : undefined,
         type === "text" ? styles.text : undefined,
         type === "subtitle" ? styles.subtitle : undefined,
         type === "date-number" ? styles.dateNumber : undefined,
@@ -59,6 +60,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 28,
     height: 28,
+    ...webTextStyles,
+  },
+  titleSmall: {
+    color: Colors.text,
+    fontFamily: Fonts.medium,
+    fontSize: 18,
+    lineHeight: 26,
     ...webTextStyles,
   },
   subtitle: {

@@ -5,6 +5,7 @@ export const Colors = {
   text: "#777",
   border: "#e2e2e2",
   faded: "rgba(0, 0, 0, 0.3)",
+  dateBorder: "rgba(0, 0, 0, 0.1)",
   accent: "#f96156",
   background: "#fff",
   backgroundBlurTint: "rgba(255, 255, 255, 0.6)",
