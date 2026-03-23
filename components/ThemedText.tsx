@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semibold,
     fontSize: 9,
     textTransform: "uppercase",
-    letterSpacing: 3,
+    letterSpacing: 2,
     opacity: 0.6,
     ...webTextStyles,
   },
