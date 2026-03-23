@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semibold,
     fontSize: 18,
     letterSpacing: 1,
+    textAlign: "center",
     ...webTextStyles,
   },
   tag: {

@@ -49,7 +49,7 @@ export function StickyLabel({
       ),
     );
 
-    // Tween from 1.0 → 0.5 over one snap interval's worth of distance
+    // Tween from 1.0 → 0.3 over one snap interval's worth of distance
     const opacity = interpolate(
       distanceOutside,
       [0, SNAP_INTERVAL],

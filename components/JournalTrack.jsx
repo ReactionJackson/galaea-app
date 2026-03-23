@@ -3,6 +3,7 @@ import { StickyLabel } from "@/components/StickyLabel";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { daysData } from "@/data/entries";
+import * as Haptics from "expo-haptics";
 import { useEffect, useRef, useState } from "react";
 import Animated, {
   Easing,
@@ -122,6 +123,7 @@ const YEAR_GROUPS = getYearGroups();
 // Component:
 
 export function JournalTrack({ onChangeDay = () => {} }) {
+  const [editMode, setEditMode] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
   const [dayNumbers, setDayNumbers] = useState([]);
@@ -134,6 +136,17 @@ export function JournalTrack({ onChangeDay = () => {} }) {
   // Helpers:
 
   const scrollToIndex = (index) => {
+    if (index === activeIndex) {
+      setEditMode((prev) => !prev);
+      if (process.env.EXPO_OS === "ios") {
+        Haptics.impactAsync(
+          editMode
+            ? Haptics.ImpactFeedbackStyle.Light
+            : Haptics.ImpactFeedbackStyle.Heavy,
+        );
+      }
+      return;
+    }
     if (trackRef.current) {
       trackRef.current.scrollTo({
         x: index * SNAP_INTERVAL,
@@ -141,6 +154,9 @@ export function JournalTrack({ onChangeDay = () => {} }) {
       });
       animateIndicatorOut();
       setIsScrolling(true);
+      if (process.env.EXPO_OS === "ios") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
     }
   };
 
@@ -217,6 +233,9 @@ export function JournalTrack({ onChangeDay = () => {} }) {
   const handleScrollBeginDrag = () => {
     setIsScrolling(true);
     animateIndicatorOut();
+    if (process.env.EXPO_OS === "ios") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
   };
 
   // Effects:
@@ -267,6 +286,7 @@ export function JournalTrack({ onChangeDay = () => {} }) {
         onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={handleScrollEndDrag}
         onMomentumScrollEnd={handleMomentumScrollEnd}
+        scrollEnabled={!editMode}
         snapToInterval={SNAP_INTERVAL}
         decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
@@ -281,10 +301,18 @@ export function JournalTrack({ onChangeDay = () => {} }) {
           <DateCircle
             key={`day-${dayNumber}-${i}`}
             onPress={() => scrollToIndex(i)}
+            disabled={editMode && activeIndex !== i}
           >
             <ThemedText
               type="date-number"
-              color={!isScrolling && activeIndex === i ? "white" : "black"}
+              animateColor
+              color={
+                !isScrolling && activeIndex === i
+                  ? "white"
+                  : editMode
+                    ? "disabled"
+                    : "black"
+              }
             >
               {dayNumber}
             </ThemedText>
