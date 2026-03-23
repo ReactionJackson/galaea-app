@@ -1,13 +1,13 @@
 import { BlurView } from "@/components/BlurView";
-import { ThemedText } from "@/components/ThemedText";
-import { Colors } from "@/constants/theme";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import styled from "styled-components/native";
-
 import { GameEntry } from "@/components/GameEntry";
 import { JournalTrack } from "@/components/JournalTrack";
 import { Tags } from "@/components/Tags";
+import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/theme";
 import { daysData } from "@/data/entries";
+import { useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import styled from "styled-components/native";
 
 const Container = styled.SafeAreaView`
   flex: 1;
@@ -71,9 +71,31 @@ const Content = styled.ScrollView`
 
 export default function HomeScreen() {
   const { top } = useSafeAreaInsets();
-  const { date, title, text, tags, games } = daysData.find(
-    (day) => day.dayId === 5,
-  );
+  const [activeEntry, setActiveEntry] = useState(daysData[0]);
+
+  // Handlers:
+
+  const formatDate = (dateString, format) => {
+    const date = new Date(dateString);
+    switch (format) {
+      case "day":
+        return date.getDate().toString();
+      case "month":
+        return date.toLocaleString("default", { month: "long" });
+      case "time":
+        return date.toLocaleString("default", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+      case "weekday":
+        return date.toLocaleString("default", { weekday: "long" });
+    }
+  };
+
+  const handleChangeDay = (dayId) => {
+    setActiveEntry(daysData.find((day) => day.dayId === dayId));
+  };
 
   return (
     <Container>
@@ -84,16 +106,22 @@ export default function HomeScreen() {
 
       <Header tint="light" topInset={top}>
         <EntryNumber>
-          <ThemedText type="date-number">22</ThemedText>
+          <ThemedText type="date-number">
+            {formatDate(activeEntry.date, "day")}
+          </ThemedText>
         </EntryNumber>
         <EntryInfo>
           <EntryDate>
-            <ThemedText type="subtitle">March</ThemedText>
+            <ThemedText type="subtitle">
+              {formatDate(activeEntry.date, "month")}
+            </ThemedText>
             <ThemedText type="subtitle" color="faded">
-              02:16AM
+              {formatDate(activeEntry.date, "time")}
             </ThemedText>
           </EntryDate>
-          <ThemedText type="title">{title || "Monday"}</ThemedText>
+          <ThemedText type="title">
+            {activeEntry.title || formatDate(activeEntry.date, "weekday")}
+          </ThemedText>
         </EntryInfo>
       </Header>
 
@@ -105,9 +133,9 @@ export default function HomeScreen() {
           paddingHorizontal: 20,
         }}
       >
-        <ThemedText>{text}</ThemedText>
-        <Tags tagIds={tags} />
-        {games.map(({ gameId, entryId }, i) => (
+        <ThemedText>{activeEntry.text}</ThemedText>
+        <Tags tagIds={activeEntry.tags} />
+        {activeEntry.games.map(({ gameId, entryId }, i) => (
           <GameEntry
             key={`${gameId}-${entryId}-${i}`}
             gameId={gameId}
@@ -116,7 +144,7 @@ export default function HomeScreen() {
         ))}
       </Content>
 
-      <JournalTrack />
+      <JournalTrack onChangeDay={handleChangeDay} />
     </Container>
   );
 }

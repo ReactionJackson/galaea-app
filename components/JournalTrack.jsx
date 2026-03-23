@@ -1,7 +1,8 @@
 import { BlurView } from "@/components/BlurView";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
-import { useState } from "react";
+import { daysData } from "@/data/entries";
+import { useEffect, useState } from "react";
 import styled from "styled-components/native";
 
 // Constants:
@@ -49,12 +50,15 @@ const DateCircle = styled.View`
 
 // Component:
 
-export function JournalTrack() {
+export function JournalTrack({ onChangeDay = () => {} }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [dayNumbers, setDayNumbers] = useState([]);
   const [trackPadding, setTrackPadding] = useState({
     left: 0,
     right: 0,
   });
+
+  // Handlers:
 
   const handleTrackPadding = (event) => {
     const { width } = event.nativeEvent.layout;
@@ -65,11 +69,46 @@ export function JournalTrack() {
     });
   };
 
-  const handleScroll = (event) => {
+  const getIndexFromEvent = (event) => {
     const { contentOffset } = event.nativeEvent;
     const index = Math.round(contentOffset.x / SNAP_INTERVAL);
-    setActiveIndex(index);
+    return Math.max(0, Math.min(index, daysData.length - 1));
   };
+
+  const handleScrollEndDrag = (event) => {
+    const { velocity } = event.nativeEvent;
+    if (!velocity || Math.abs(velocity.x) < 0.1) {
+      setActiveIndex(getIndexFromEvent(event));
+    }
+  };
+
+  const handleMomentumScrollEnd = (event) => {
+    setActiveIndex(getIndexFromEvent(event));
+  };
+
+  // Helpers:
+
+  const parseDayNumbersFromDates = () => {
+    let numbers = daysData.map(({ date }) => {
+      const day = new Date(date).getDate();
+      return day;
+    });
+    setDayNumbers(numbers);
+  };
+
+  // Effects:
+
+  useEffect(() => {
+    parseDayNumbersFromDates();
+  }, []);
+
+  useEffect(() => {
+    if (daysData[activeIndex]) {
+      onChangeDay(daysData[activeIndex].dayId);
+    }
+  }, [activeIndex, onChangeDay]);
+
+  // Render:
 
   return (
     <Container>
@@ -77,8 +116,8 @@ export function JournalTrack() {
       <Track
         horizontal
         onLayout={handleTrackPadding}
-        onScrollEndDrag={handleScroll}
-        onMomentumScrollEnd={handleScroll}
+        onScrollEndDrag={handleScrollEndDrag}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
         snapToInterval={SNAP_INTERVAL}
         decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
@@ -89,13 +128,13 @@ export function JournalTrack() {
           alignItems: "center",
         }}
       >
-        {Array.from({ length: 20 }).map((_, index) => (
-          <DateCircle key={index}>
+        {dayNumbers.map((dayNumber, i) => (
+          <DateCircle key={`day-${dayNumber}-${i}`}>
             <ThemedText
               type="date-number"
-              color={activeIndex === index ? "white" : "black"}
+              color={activeIndex === i ? "white" : "black"}
             >
-              {index + 1}
+              {dayNumber}
             </ThemedText>
           </DateCircle>
         ))}
