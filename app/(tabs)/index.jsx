@@ -3,9 +3,10 @@ import { GameEntry } from "@/components/GameEntry";
 import { JournalTrack } from "@/components/JournalTrack";
 import { Tags } from "@/components/Tags";
 import { ThemedText } from "@/components/ThemedText";
-import { Colors } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import { daysData } from "@/data/entries";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Keyboard, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
@@ -30,17 +31,29 @@ const TopBar = styled.View`
   shadow-radius: 4px;
 `;
 
-const Header = styled(BlurView)`
+const Header = styled.View`
   z-index: 100;
   position: absolute;
   top: ${({ topInset }) => topInset + 60}px;
   left: 0;
   right: 0;
-  gap: 10px;
   height: 70px;
-  padding: 20px 20px 10px 20px;
+`;
+
+const HeaderBlur = styled(BlurView)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+`;
+
+const HeaderContent = styled.View`
   flex-direction: row;
   justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 20px 20px 10px 20px;
 `;
 
 const EntryNumber = styled.View`
@@ -69,11 +82,51 @@ const Content = styled.ScrollView`
   width: 100%;
 `;
 
+const Input = styled.TextInput`
+  font-family: ${Fonts.regular};
+  font-size: 16px;
+  line-height: 24px;
+  color: ${Colors.text};
+  padding: 0;
+`;
+
+const KeyboardToolbar = styled.View`
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: ${Colors.backgroundBlurTint};
+  border-top-width: 1px;
+  border-top-color: ${Colors.dateBorder};
+`;
+
+const DoneButton = styled.Pressable`
+  padding: 4px 0 4px 16px;
+`;
+
+const DoneText = styled.Text`
+  font-family: ${Fonts.medium};
+  font-size: 16px;
+  color: ${Colors.accent};
+`;
+
 export default function HomeScreen() {
   const [activeEntry, setActiveEntry] = useState(daysData[0]);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardVisible = keyboardHeight > 0;
   const { top } = useSafeAreaInsets();
 
-  // Handlers:
+  useEffect(() => {
+    const show = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
+    const hide = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => setKeyboardHeight(0)
+    );
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
   const formatDate = (format) => {
     const date = new Date(activeEntry.date);
@@ -104,41 +157,64 @@ export default function HomeScreen() {
         <ThemedText type="title">O</ThemedText>
       </TopBar>
 
-      <Header tint="light" topInset={top}>
-        <EntryNumber>
-          <ThemedText type="date-number">{formatDate("day")}</ThemedText>
-        </EntryNumber>
-        <EntryInfo>
-          <EntryDate>
-            <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
-            <ThemedText type="subtitle" color="faded">
-              {formatDate("time")}
-            </ThemedText>
-          </EntryDate>
-          <ThemedText type="title">
-            {activeEntry.title || formatDate("weekday")}
-          </ThemedText>
-        </EntryInfo>
+      <Header topInset={top}>
+        <HeaderBlur tint="light" />
+        <HeaderContent>
+          <EntryNumber>
+            <ThemedText type="date-number">{formatDate("day")}</ThemedText>
+          </EntryNumber>
+          <EntryInfo>
+            <EntryDate>
+              <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
+              <ThemedText type="subtitle" color="faded">
+                {formatDate("time")}
+              </ThemedText>
+            </EntryDate>
+            <Input
+              placeholder={activeEntry.title || formatDate("weekday")}
+              placeholderTextColor={Colors.faded}
+            />
+          </EntryInfo>
+        </HeaderContent>
       </Header>
 
-      <Content
-        contentContainerStyle={{
-          gap: 20,
-          paddingTop: 70,
-          paddingBottom: 110,
-          paddingHorizontal: 20,
-        }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1, width: "100%" }}
       >
-        <ThemedText>{activeEntry.text}</ThemedText>
-        <Tags tagIds={activeEntry.tags} />
-        {activeEntry.games.map(({ gameId, entryId }, i) => (
-          <GameEntry
-            key={`${gameId}-${entryId}-${i}`}
-            gameId={gameId}
-            entryId={entryId}
+        <Content
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            gap: 20,
+            paddingTop: 70,
+            paddingBottom: 110,
+            paddingHorizontal: 20,
+          }}
+        >
+          <Input
+            multiline
+            placeholder="What's on your mind today?"
+            placeholderTextColor={Colors.faded}
           />
-        ))}
-      </Content>
+          <ThemedText>{activeEntry.text}</ThemedText>
+          <Tags tagIds={activeEntry.tags} />
+          {activeEntry.games.map(({ gameId, entryId }, i) => (
+            <GameEntry
+              key={`${gameId}-${entryId}-${i}`}
+              gameId={gameId}
+              entryId={entryId}
+            />
+          ))}
+        </Content>
+
+        {Platform.OS === "ios" && keyboardVisible && (
+          <KeyboardToolbar>
+            <DoneButton onPress={() => Keyboard.dismiss()}>
+              <DoneText>Done</DoneText>
+            </DoneButton>
+          </KeyboardToolbar>
+        )}
+      </KeyboardAvoidingView>
 
       <JournalTrack onChangeDay={handleChangeDay} />
     </Container>
