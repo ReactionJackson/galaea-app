@@ -70,13 +70,13 @@ const Content = styled.ScrollView`
 `;
 
 export default function HomeScreen() {
-  const { top } = useSafeAreaInsets();
   const [activeEntry, setActiveEntry] = useState(daysData[0]);
+  const { top } = useSafeAreaInsets();
 
   // Handlers:
 
-  const formatDate = (dateString, format) => {
-    const date = new Date(dateString);
+  const formatDate = (format) => {
+    const date = new Date(activeEntry.date);
     switch (format) {
       case "day":
         return date.getDate().toString();
@@ -106,21 +106,17 @@ export default function HomeScreen() {
 
       <Header tint="light" topInset={top}>
         <EntryNumber>
-          <ThemedText type="date-number">
-            {formatDate(activeEntry.date, "day")}
-          </ThemedText>
+          <ThemedText type="date-number">{formatDate("day")}</ThemedText>
         </EntryNumber>
         <EntryInfo>
           <EntryDate>
-            <ThemedText type="subtitle">
-              {formatDate(activeEntry.date, "month")}
-            </ThemedText>
+            <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
             <ThemedText type="subtitle" color="faded">
-              {formatDate(activeEntry.date, "time")}
+              {formatDate("time")}
             </ThemedText>
           </EntryDate>
           <ThemedText type="title">
-            {activeEntry.title || formatDate(activeEntry.date, "weekday")}
+            {activeEntry.title || formatDate("weekday")}
           </ThemedText>
         </EntryInfo>
       </Header>

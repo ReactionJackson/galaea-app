@@ -3,6 +3,12 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { daysData } from "@/data/entries";
 import { useEffect, useState } from "react";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import styled from "styled-components/native";
 
 // Constants:
@@ -24,7 +30,7 @@ const Container = styled(BlurView)`
   align-items: center;
 `;
 
-const RedIndicator = styled.View`
+const RedIndicator = styled(Animated.View)`
   position: absolute;
   width: ${ITEM_WIDTH}px;
   height: ${ITEM_WIDTH}px;
@@ -52,11 +58,33 @@ const DateCircle = styled.View`
 
 export function JournalTrack({ onChangeDay = () => {} }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isScrolling, setIsScrolling] = useState(false);
   const [dayNumbers, setDayNumbers] = useState([]);
   const [trackPadding, setTrackPadding] = useState({
     left: 0,
     right: 0,
   });
+
+  // Animations:
+
+  const indicatorScale = useSharedValue(1);
+  const indicatorOpacity = useSharedValue(1);
+  const indicatorStyle = useAnimatedStyle(() => ({
+    opacity: indicatorOpacity.value,
+    transform: [{ scale: indicatorScale.value }],
+  }));
+
+  const animateIndicatorIn = () => {
+    const config = { duration: 200, easing: Easing.out(Easing.quad) };
+    indicatorScale.value = withTiming(1, config);
+    indicatorOpacity.value = withTiming(1, config);
+  };
+
+  const animateIndicatorOut = () => {
+    const config = { duration: 150, easing: Easing.in(Easing.quad) };
+    indicatorScale.value = withTiming(0.6, config);
+    indicatorOpacity.value = withTiming(0.2, config);
+  };
 
   // Handlers:
 
@@ -79,11 +107,20 @@ export function JournalTrack({ onChangeDay = () => {} }) {
     const { velocity } = event.nativeEvent;
     if (!velocity || Math.abs(velocity.x) < 0.1) {
       setActiveIndex(getIndexFromEvent(event));
+      setIsScrolling(false);
+      animateIndicatorIn();
     }
   };
 
   const handleMomentumScrollEnd = (event) => {
     setActiveIndex(getIndexFromEvent(event));
+    setIsScrolling(false);
+    animateIndicatorIn();
+  };
+
+  const handleScrollBeginDrag = () => {
+    setIsScrolling(true);
+    animateIndicatorOut();
   };
 
   // Helpers:
@@ -112,10 +149,11 @@ export function JournalTrack({ onChangeDay = () => {} }) {
 
   return (
     <Container>
-      <RedIndicator />
+      <RedIndicator style={indicatorStyle} />
       <Track
         horizontal
         onLayout={handleTrackPadding}
+        onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={handleScrollEndDrag}
         onMomentumScrollEnd={handleMomentumScrollEnd}
         snapToInterval={SNAP_INTERVAL}
@@ -132,7 +170,7 @@ export function JournalTrack({ onChangeDay = () => {} }) {
           <DateCircle key={`day-${dayNumber}-${i}`}>
             <ThemedText
               type="date-number"
-              color={activeIndex === i ? "white" : "black"}
+              color={!isScrolling && activeIndex === i ? "white" : "black"}
             >
               {dayNumber}
             </ThemedText>
