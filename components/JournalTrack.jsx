@@ -2,7 +2,7 @@ import { BlurView } from "@/components/BlurView";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { daysData } from "@/data/entries";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -45,7 +45,7 @@ const Track = styled.ScrollView`
   height: 100%;
 `;
 
-const DateCircle = styled.View`
+const DateCircle = styled.Pressable`
   width: ${ITEM_WIDTH}px;
   height: ${ITEM_WIDTH}px;
   border-radius: 50%;
@@ -64,6 +64,28 @@ export function JournalTrack({ onChangeDay = () => {} }) {
     left: 0,
     right: 0,
   });
+  const trackRef = useRef(null);
+
+  // Helpers:
+
+  const scrollToIndex = (index) => {
+    if (trackRef.current) {
+      trackRef.current.scrollTo({
+        x: index * SNAP_INTERVAL,
+        animated: true,
+      });
+      animateIndicatorOut();
+      setIsScrolling(true);
+    }
+  };
+
+  const parseDayNumbersFromDates = () => {
+    let numbers = daysData.map(({ date }) => {
+      const day = new Date(date).getDate();
+      return day;
+    });
+    setDayNumbers(numbers);
+  };
 
   // Animations:
 
@@ -123,16 +145,6 @@ export function JournalTrack({ onChangeDay = () => {} }) {
     animateIndicatorOut();
   };
 
-  // Helpers:
-
-  const parseDayNumbersFromDates = () => {
-    let numbers = daysData.map(({ date }) => {
-      const day = new Date(date).getDate();
-      return day;
-    });
-    setDayNumbers(numbers);
-  };
-
   // Effects:
 
   useEffect(() => {
@@ -152,6 +164,7 @@ export function JournalTrack({ onChangeDay = () => {} }) {
       <RedIndicator style={indicatorStyle} />
       <Track
         horizontal
+        ref={trackRef}
         onLayout={handleTrackPadding}
         onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={handleScrollEndDrag}
@@ -167,7 +180,10 @@ export function JournalTrack({ onChangeDay = () => {} }) {
         }}
       >
         {dayNumbers.map((dayNumber, i) => (
-          <DateCircle key={`day-${dayNumber}-${i}`}>
+          <DateCircle
+            key={`day-${dayNumber}-${i}`}
+            onPress={() => scrollToIndex(i)}
+          >
             <ThemedText
               type="date-number"
               color={!isScrolling && activeIndex === i ? "white" : "black"}
