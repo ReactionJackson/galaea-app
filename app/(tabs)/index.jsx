@@ -6,7 +6,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { daysData } from "@/data/entries";
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
@@ -71,9 +71,29 @@ const Content = styled.ScrollView`
 `;
 
 export default function HomeScreen() {
+  const [entries, setEntries] = useState(() => [...daysData]);
   const [activeEntry, setActiveEntry] = useState(daysData[0]);
   const { top } = useSafeAreaInsets();
   const scrollRef = useRef(null);
+
+  // Stable refs so callbacks don't go stale:
+  const entriesRef = useRef(entries);
+  const activeEntryRef = useRef(activeEntry);
+  entriesRef.current = entries;
+  activeEntryRef.current = activeEntry;
+
+  // Derived state:
+
+  const showAddButton = useMemo(() => {
+    if (entries.length === 0) return true;
+    const latestDate = new Date(entries[entries.length - 1].date);
+    const today = new Date();
+    return (
+      latestDate.getFullYear() !== today.getFullYear() ||
+      latestDate.getMonth() !== today.getMonth() ||
+      latestDate.getDate() !== today.getDate()
+    );
+  }, [entries]);
 
   // Handlers:
 
@@ -96,7 +116,7 @@ export default function HomeScreen() {
   };
 
   const handleChangeDay = useCallback((dayId) => {
-    setActiveEntry(daysData.find((day) => day.dayId === dayId));
+    setActiveEntry(entriesRef.current.find((day) => day.dayId === dayId));
   }, []);
 
   const handleAdd = useCallback(() => {
@@ -108,6 +128,12 @@ export default function HomeScreen() {
       tags: [],
       games: [],
     });
+  }, []);
+
+  const handleSave = useCallback(() => {
+    const entry = activeEntryRef.current;
+    if (!entry) return;
+    setEntries((prev) => [...prev, entry]);
   }, []);
 
   // Effects:
@@ -167,7 +193,13 @@ export default function HomeScreen() {
         ))}
       </Content>
 
-      <JournalTrack onChangeDay={handleChangeDay} onAdd={handleAdd} />
+      <JournalTrack
+        entries={entries}
+        showAddButton={showAddButton}
+        onChangeDay={handleChangeDay}
+        onAdd={handleAdd}
+        onSave={handleSave}
+      />
     </Container>
   );
 }

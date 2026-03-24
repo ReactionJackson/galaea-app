@@ -2,9 +2,8 @@ import { BlurView } from "@/components/BlurView";
 import { StickyLabel } from "@/components/StickyLabel";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
-import { daysData } from "@/data/entries";
 import * as Haptics from "expo-haptics";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Animated, {
   Easing,
   useAnimatedScrollHandler,
@@ -19,7 +18,6 @@ import styled from "styled-components/native";
 const ITEM_WIDTH = 40;
 const ITEM_SPACING = 10;
 const SNAP_INTERVAL = ITEM_WIDTH + ITEM_SPACING;
-const ADD_INDEX = daysData.length;
 
 // Styled Components:
 
@@ -75,68 +73,85 @@ const DateCircle = styled.Pressable`
   align-items: center;
 `;
 
-// Utils:
-
-const getMonthGroups = () => {
-  const groups = {};
-  daysData.forEach((day, index) => {
-    const date = new Date(day.date);
-    const key = `${date.getFullYear()}-${date.getMonth()}`;
-    if (!groups[key]) {
-      groups[key] = {
-        key,
-        label: date.toLocaleString("default", { month: "short" }).toUpperCase(),
-        year: String(date.getFullYear()),
-        firstIndex: index,
-        lastIndex: index,
-      };
-    } else {
-      groups[key].lastIndex = index;
-    }
-  });
-  return Object.values(groups);
-};
-
-const MONTH_GROUPS = getMonthGroups();
-
-const getYearGroups = () => {
-  const groups = {};
-  daysData.forEach((day, index) => {
-    const date = new Date(day.date);
-    const key = date.getFullYear();
-    if (!groups[key]) {
-      groups[key] = {
-        key,
-        label: String(date.getFullYear()),
-        year: String(date.getFullYear()),
-        firstIndex: index,
-        lastIndex: index,
-      };
-    } else {
-      groups[key].lastIndex = index;
-    }
-  });
-  return Object.values(groups);
-};
-
-const YEAR_GROUPS = getYearGroups();
+const SaveButton = styled.Pressable`
+  position: absolute;
+  top: 5px;
+  right: 20px;
+  padding: 4px 14px;
+  background-color: ${Colors.accent};
+  border-radius: 20px;
+`;
 
 // Component:
 
-export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
+export function JournalTrack({
+  entries = [],
+  showAddButton = true,
+  onChangeDay = () => {},
+  onAdd = () => {},
+  onSave = () => {},
+}) {
+  // ADD_INDEX is always entries.length — the slot just past the last real item.
+  const ADD_INDEX = entries.length;
+
   const [editMode, setEditMode] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [dayNumbers, setDayNumbers] = useState([]);
-  const [trackPadding, setTrackPadding] = useState({
-    left: 0,
-    right: 0,
-  });
+  const [basePadding, setBasePadding] = useState(0);
   const [addActive, setAddActive] = useState(false);
   const trackRef = useRef(null);
   // Flagged when a tap on + has expanded the padding but the scroll hasn't
   // fired yet — cleared in onContentSizeChange once layout is ready.
   const scrollToAddAfterResize = useRef(false);
+  // Track entries length to detect when a save has committed a new entry.
+  const prevEntriesLengthRef = useRef(entries.length);
+
+  // Derived values:
+
+  const dayNumbers = useMemo(
+    () => entries.map(({ date }) => new Date(date).getDate()),
+    [entries],
+  );
+
+  const monthGroups = useMemo(() => {
+    const groups = {};
+    entries.forEach((day, index) => {
+      const date = new Date(day.date);
+      const key = `${date.getFullYear()}-${date.getMonth()}`;
+      if (!groups[key]) {
+        groups[key] = {
+          key,
+          label: date.toLocaleString("default", { month: "short" }).toUpperCase(),
+          year: String(date.getFullYear()),
+          firstIndex: index,
+          lastIndex: index,
+        };
+      } else {
+        groups[key].lastIndex = index;
+      }
+    });
+    return Object.values(groups);
+  }, [entries]);
+
+  const yearGroups = useMemo(() => {
+    const groups = {};
+    entries.forEach((day, index) => {
+      const date = new Date(day.date);
+      const key = date.getFullYear();
+      if (!groups[key]) {
+        groups[key] = {
+          key,
+          label: String(date.getFullYear()),
+          year: String(date.getFullYear()),
+          firstIndex: index,
+          lastIndex: index,
+        };
+      } else {
+        groups[key].lastIndex = index;
+      }
+    });
+    return Object.values(groups);
+  }, [entries]);
 
   // Helpers:
 
@@ -151,7 +166,7 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }
         trackRef.current?.scrollTo({
-          x: (daysData.length - 1) * SNAP_INTERVAL,
+          x: (entries.length - 1) * SNAP_INTERVAL,
           animated: true,
         });
         return;
@@ -179,14 +194,6 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
       return;
     }
     trackRef.current?.scrollTo({ x: index * SNAP_INTERVAL, animated: true });
-  };
-
-  const parseDayNumbersFromDates = () => {
-    let numbers = daysData.map(({ date }) => {
-      const day = new Date(date).getDate();
-      return day;
-    });
-    setDayNumbers(numbers);
   };
 
   // Animations:
@@ -227,10 +234,7 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
     const padding = width / 2 - ITEM_WIDTH / 2;
     halfTrackWidth.value = width / 2;
     trackPaddingLeft.value = padding;
-    // Right padding is one SNAP_INTERVAL shorter than left so the content's
-    // maximum scroll position lands exactly on the last real item — the +
-    // button is visible peeking to the right but the range stops there.
-    setTrackPadding({ left: padding, right: padding - SNAP_INTERVAL });
+    setBasePadding(padding);
   };
 
   const handleContentSizeChange = () => {
@@ -248,7 +252,7 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
     const index = Math.round(contentOffset.x / SNAP_INTERVAL);
     // When addActive the content is expanded and ADD_INDEX is a valid landing
     // position; otherwise clamp to the last real entry.
-    const maxIndex = addActive ? ADD_INDEX : daysData.length - 1;
+    const maxIndex = showAddButton && addActive ? ADD_INDEX : entries.length - 1;
     return Math.max(0, Math.min(index, maxIndex));
   };
 
@@ -290,21 +294,47 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
   // Effects:
 
   useEffect(() => {
-    parseDayNumbersFromDates();
-  }, []);
-
-  useEffect(() => {
-    if (daysData[activeIndex]) {
-      onChangeDay(daysData[activeIndex].dayId);
+    if (entries[activeIndex]) {
+      onChangeDay(entries[activeIndex].dayId);
     }
   }, [activeIndex, onChangeDay]);
+
+  useEffect(() => {
+    if (entries.length > prevEntriesLengthRef.current) {
+      // A new entry was saved — the + slot is now a real date circle.
+      // Exit edit mode and scroll to the newly saved entry.
+      const newIndex = entries.length - 1;
+      prevEntriesLengthRef.current = entries.length;
+      setEditMode(false);
+      setAddActive(false);
+      setActiveIndex(newIndex);
+      trackRef.current?.scrollTo({
+        x: newIndex * SNAP_INTERVAL,
+        animated: true,
+      });
+    } else {
+      prevEntriesLengthRef.current = entries.length;
+    }
+  }, [entries.length]);
+
+  // Padding values:
+  // Right padding is one SNAP_INTERVAL shorter than left so the content's
+  // maximum scroll position lands exactly on the last real item — the +
+  // button is visible peeking to the right but gesture range stops there.
+  const paddingRight = basePadding - SNAP_INTERVAL;
+  // When the + button is visible, right padding is reduced by SNAP_INTERVAL so
+  // the gesture scroll range stops at the last real item — the + peeks from the
+  // right edge but is unreachable by drag. This restriction is lifted when
+  // addActive (tap-to-navigate needs the full width) or when showAddButton is
+  // false (no + at all — the last item must be fully centerable).
+  const paddingEnd = showAddButton && !addActive ? basePadding - SNAP_INTERVAL : basePadding;
 
   // Render:
 
   return (
     <Container>
       <YearLabels>
-        {YEAR_GROUPS.map((group) => (
+        {yearGroups.map((group) => (
           <StickyLabel
             key={group.key}
             group={group}
@@ -316,7 +346,7 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
         ))}
       </YearLabels>
       <MonthLabels>
-        {MONTH_GROUPS.map((group) => (
+        {monthGroups.map((group) => (
           <StickyLabel
             key={group.key}
             group={group}
@@ -327,6 +357,13 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
         ))}
       </MonthLabels>
       <RedIndicator style={indicatorStyle} />
+      {editMode && activeIndex === ADD_INDEX && (
+        <SaveButton onPress={onSave}>
+          <ThemedText type="subtitle" color="white">
+            Save
+          </ThemedText>
+        </SaveButton>
+      )}
       <Track
         horizontal
         ref={trackRef}
@@ -342,8 +379,8 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
           gap: ITEM_SPACING,
-          paddingInlineStart: trackPadding.left,
-          paddingInlineEnd: addActive ? trackPadding.left : trackPadding.right,
+          paddingInlineStart: basePadding,
+          paddingInlineEnd: paddingEnd,
           alignItems: "center",
         }}
       >
@@ -368,25 +405,27 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
             </ThemedText>
           </DateCircle>
         ))}
-        <DateCircle
-          key="add-button"
-          onPress={() => scrollToIndex(ADD_INDEX)}
-          disabled={editMode && activeIndex !== ADD_INDEX}
-        >
-          <ThemedText
-            type="date-number"
-            colorSwitch={
-              activeIndex !== ADD_INDEX || isScrolling
-                ? {
-                    colors: [Colors.black, Colors.disabled],
-                    active: editMode,
-                  }
-                : undefined
-            }
+        {showAddButton && (
+          <DateCircle
+            key="add-button"
+            onPress={() => scrollToIndex(ADD_INDEX)}
+            disabled={editMode && activeIndex !== ADD_INDEX}
           >
-            +
-          </ThemedText>
-        </DateCircle>
+            <ThemedText
+              type="date-number"
+              colorSwitch={
+                activeIndex !== ADD_INDEX || isScrolling
+                  ? {
+                      colors: [Colors.black, Colors.disabled],
+                      active: editMode,
+                    }
+                  : undefined
+              }
+            >
+              +
+            </ThemedText>
+          </DateCircle>
+        )}
       </Track>
     </Container>
   );
