@@ -7,15 +7,11 @@
     }
   },
   "include": [
+    "**/*.js",
+    "**/*.jsx",
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts",
-    "app/_layout.jsx",
-    "app/(tabs)/index.jsx",
-    "app/(tabs)/_layout.jsx",
-    "app/(tabs)/collection.jsx",
-    "app/(tabs)/friends.jsx",
-    "components/ThemedText.jsx"
+    "expo-env.d.ts"
   ]
 }
