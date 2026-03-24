@@ -5,7 +5,8 @@ import { Tags } from "@/components/Tags";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { daysData } from "@/data/entries";
-import { useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
@@ -72,6 +73,7 @@ const Content = styled.ScrollView`
 export default function HomeScreen() {
   const [activeEntry, setActiveEntry] = useState(daysData[0]);
   const { top } = useSafeAreaInsets();
+  const scrollRef = useRef(null);
 
   // Handlers:
 
@@ -93,9 +95,19 @@ export default function HomeScreen() {
     }
   };
 
-  const handleChangeDay = (dayId) => {
+  const handleChangeDay = useCallback((dayId) => {
     setActiveEntry(daysData.find((day) => day.dayId === dayId));
-  };
+  }, []);
+
+  // Effects:
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }, []),
+  );
+
+  // Render:
 
   return (
     <Container>
@@ -122,6 +134,8 @@ export default function HomeScreen() {
       </Header>
 
       <Content
+        key={activeEntry.dayId}
+        ref={scrollRef}
         contentContainerStyle={{
           gap: 20,
           paddingTop: 70,
