@@ -305,13 +305,13 @@ export function JournalTrack({ onChangeDay = () => {} }) {
           >
             <ThemedText
               type="date-number"
-              animateColor
-              color={
-                !isScrolling && activeIndex === i
-                  ? "white"
-                  : editMode
-                    ? "disabled"
-                    : "black"
+              colorSwitch={
+                activeIndex !== i || isScrolling
+                  ? {
+                      colors: [Colors.black, Colors.disabled],
+                      active: editMode,
+                    }
+                  : undefined
               }
             >
               {dayNumber}

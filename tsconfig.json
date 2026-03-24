@@ -15,6 +15,7 @@
     "app/(tabs)/index.jsx",
     "app/(tabs)/_layout.jsx",
     "app/(tabs)/collection.jsx",
-    "app/(tabs)/friends.jsx"
+    "app/(tabs)/friends.jsx",
+    "components/ThemedText.jsx"
   ]
 }
