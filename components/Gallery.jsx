@@ -25,14 +25,10 @@ const GALLERY_ITEM_GAP = 10;
 
 export function Gallery({ images }) {
   const [containerWidth, setContainerWidth] = useState(0);
-
-  const handleLayout = (event) => {
-    const { width } = event.nativeEvent.layout;
-    setContainerWidth(width);
-  };
-
   return (
-    <View onLayout={handleLayout}>
+    <View
+      onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width)}
+    >
       <Track
         horizontal
         snapToInterval={containerWidth + GALLERY_ITEM_GAP}
