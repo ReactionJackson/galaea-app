@@ -7,6 +7,7 @@ export const Colors = {
   faded: "rgba(0, 0, 0, 0.3)",
   disabled: "rgba(0, 0, 0, 0.1)",
   dateBorder: "rgba(0, 0, 0, 0.1)",
+  placeholder: "rgba(0, 0, 0, 0.025)",
   accent: "#f96156",
   background: "#fff",
   backgroundBlurTint: "rgba(255, 255, 255, 0.4)",

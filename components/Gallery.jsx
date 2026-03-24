@@ -1,7 +1,9 @@
+import { Colors } from "@/constants/theme";
 import { Image as ExpoImage } from "expo-image";
 import { useState } from "react";
 import { View } from "react-native";
 import styled from "styled-components/native";
+import { ThemedText } from "./ThemedText";
 
 const Track = styled.ScrollView`
   flex: 1;
@@ -19,6 +21,16 @@ const Item = styled.View`
 const Image = styled(ExpoImage)`
   width: 100%;
   height: 100%;
+`;
+
+const EditableView = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  border: 2px dashed ${Colors.disabled};
+  border-radius: 20px;
+  transform: scale(0.9);
 `;
 
 const GALLERY_ITEM_GAP = 10;
@@ -46,6 +58,11 @@ export function Gallery({ images }) {
             <Image contentFit="cover" source={{ uri }} />
           </Item>
         ))}
+        <Item style={{ width: containerWidth }}>
+          <EditableView>
+            <ThemedText>Add Image</ThemedText>
+          </EditableView>
+        </Item>
       </Track>
     </View>
   );
