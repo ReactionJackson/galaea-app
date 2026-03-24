@@ -8,12 +8,10 @@ Galaea is a stress-free personal journal app centred around gaming. It is explic
 
 ## Technology Stack
 
-- **Framework:** Next.js (React) — use Next.js routing and folder conventions throughout
-- **Styling:** `styled-components`
-- **Animation:** `@gsap/react`
-- **Deployment:** Vercel
-- **Backend (initial):** `@vercel/kv` as a faked backend during early development, to be replaced with a real backend later
-- **Target:** Mobile-first progressive web app — not React Native, but designed to feel native on mobile
+- **Framework:** React Native
+- **Styling:** `styled-components/native`
+- **Deployment:** TBD
+- **Backend (initial):** TBD
 
 ---
 
@@ -41,28 +39,29 @@ Both primary views share the same core navigation mechanic: a horizontally scrol
 
 ### Behaviour
 
-- Uses CSS `scroll-snap-type: x mandatory` with `scroll-snap-align: center` on each item
-- Start and end padding is calculated in JS on mount so the first and last items can reach the centre position: `paddingLeft = (trackWidth - firstItemWidth) / 2`, same for end. This matters particularly for the Collection View where items have variable widths due to differing box art aspect ratios.
-- As the track scrolls, the content area above updates only when the scroll snap settles — not during the drag. Content, text colour, and the red indicator all update simultaneously at the moment the snap animation geometrically completes (detected via a RAF loop that polls until the closest item is within 2px of centre). This makes entry transition animations viable, and avoids firing image load requests for entries the user scrolls past without landing on.
+- Uses React Native's `snapToInterval` prop on `Animated.ScrollView` (via `react-native-reanimated`) combined with `decelerationRate="fast"` to achieve snapping. The snap interval is `ITEM_WIDTH + ITEM_SPACING` (currently 40 + 10 = 50px for the Journal Date Track).
+- Start and end padding is calculated on mount via the `onLayout` event: `padding = (trackWidth / 2) - (itemWidth / 2)`, so the first and last items can reach the centre position. This padding is applied via `contentContainerStyle` (`paddingInlineStart` / `paddingInlineEnd`). This matters particularly for the Collection View where items have variable widths due to differing box art aspect ratios.
+- As the track scrolls, the content area above updates only when the scroll snap settles — not during the drag. `activeIndex` state is set in `onMomentumScrollEnd` (handles flick-and-release) and in `onScrollEndDrag` when velocity is below a threshold (handles slow drags that come to rest without momentum). This avoids firing data lookups for entries the user scrolls past without landing on.
 - A `+` button is present as the final item in both HSN tracks. In the Journal View it creates a new day entry (see behaviour below); in the Collection View it adds a new game to the collection. Tapping it updates the main area above with a blank version of the relevant content page with all fields ready for input.
 
 ### Implementation notes (Journal View HSN)
 
-The Journal View is implemented as a single `/journal` page with an `activeIndex` React state, not dynamic routing. Dynamic routing (`/journal/[date]`) was ruled out because `router.push()` is incompatible with the per-frame RAF scroll listener — page transitions remount components and restart image loads. Single-page state eliminates this entirely.
+The Journal View is a single tab screen (`app/(tabs)/index.jsx`) with an `activeEntry` React state, not dynamic routing. The `JournalTrack` component manages its own `activeIndex` state and calls the `onChangeDay` prop callback when the settled index changes. `onChangeDay` is memoised with `useCallback` (empty deps) so `JournalTrack`'s internal `useEffect` — which has `onChangeDay` in its dependency array — does not re-run spuriously on every render.
 
-- Content, active text colour, and the red indicator all update together on snap settle only — not during drag. The settle moment is detected geometrically (RAF loop, 2px threshold) not via `scrollend`, which fires on pause-while-holding. `scrollend` is retained only as a trigger for trackpad/programmatic scrolls where no pointer release event fires.
-- The active circle uses a `data-active` attribute managed via direct DOM writes (not JSX props) so it can be decoupled from React's render cycle and updated only at settle time
-- The last-viewed entry is persisted to `localStorage` by `dayId` (not array index) and restored on mount, with the Track imperatively scrolled to the restored position via `scrollToIndex`
-- "Is today?" comparisons use the user's local date, not UTC — everything in the display layer uses UTC to avoid SSR hydration mismatches, but whether an entry exists for today is a local-time question
+- Content and the red indicator update together on snap settle only — not during drag. The settle moment is detected via `onMomentumScrollEnd` (flick) and `onScrollEndDrag` with a velocity check (`< 0.1`) for slow drags.
+- The active circle state is tracked as `activeIndex` in React state inside `JournalTrack`, updated only at settle time. The parent receives the resolved `dayId` via the `onChangeDay` callback.
+- Programmatic navigation (`scrollToIndex`) uses `scrollRef.current.scrollTo({ x: index * SNAP_INTERVAL })` and triggers the indicator-out animation immediately; the indicator-in fires when `onMomentumScrollEnd` settles.
+- The last-viewed entry is not yet persisted between app launches — this is TBC. A natural approach would be `AsyncStorage` keyed by `dayId`.
+- "Is today?" comparisons use the device's local date — no SSR/UTC concerns apply in React Native.
 
 ### Journal View HSN — Date Track
 
 - Contains circles for each date that has a journal entry — **only dates with entries appear**, not every calendar day
 - Each circle shows the day number
-- A static month label sits above the track, centred, and updates to reflect whichever month the currently active date belongs to
-- All circles have transparent backgrounds with a 10% black border at all times — there is no per-item active colour
-- A fixed red circle sits behind the scrollable track at the centre position (absolutely positioned, `z-index` below the items). Whatever circle is centred naturally inherits the red background through its transparent fill. The red circle dims and scales down while the track is moving, and grows back to full size/opacity when the snap settles.
-- The centred circle's text transitions from black to white on settle (matching the red circle growing back in)
+- Animated year and month labels sit above the track. These are `StickyLabel` components rendered using `react-native-reanimated`'s `useAnimatedStyle` and `interpolate`. Each label translates horizontally to stay centred over the visible portion of its date range, and fades to 30% opacity once the viewport scrolls more than one snap interval outside that range. Year labels sit above month labels and are slightly faded at all times.
+- All circles have transparent backgrounds with a coloured border at all times — there is no per-item active background
+- A fixed red circle (`RedIndicator`) sits behind the scrollable track at the centre position, absolutely positioned. It is an `Animated.View` driven by `useSharedValue` for `scale` and `opacity`. It scales down to 0.6 and fades to 0.2 while the track is in motion, and animates back to full size/opacity on settle using `withTiming` via `react-native-reanimated`.
+- The centred circle's text colour is driven by `activeIndex` and `isScrolling` React state — it switches from the default colour to white when that index is active and not scrolling (matching the red indicator being fully visible)
 
 ### Collection View HSN — Games Track
 
@@ -111,12 +110,12 @@ Each game entry is a self-contained block within the day entry, in the order the
 
 All entries (not just new ones) are editable and can be deleted. The default state for all entries as you scroll across the HSN is view mode. Edit mode shows editable text fields, tag inputs, image management, and a delete option for the entire entry.
 
-The mechanism for toggling edit mode on an existing entry is **TBC** — two options under consideration:
+The mechanism for toggling edit mode on an existing entry is currently implemented as: **tapping the already-active circle** toggles edit mode (tapping a non-active circle navigates to it instead). This is handled in `JournalTrack`'s `scrollToIndex` — if the tapped index matches `activeIndex`, `editMode` state is toggled and haptic feedback fires (`Heavy` entering edit, `Light` exiting). Two options are still under consideration for the final design:
 
-- **Long press on date circle** — normal tap navigates to that entry; long press on the active circle toggles edit mode. Hidden but discoverable over time.
-- **Edit icon on the active circle** — a small pencil or ✎ that appears only on the currently active circle, sitting just above it. Tap the circle to navigate; tap the icon to edit. More immediately discoverable, no second gesture type required.
+- **Long press on date circle** — normal tap navigates; long press on the active circle toggles edit mode. Hidden but discoverable over time.
+- **Edit icon on the active circle** — a small pencil or ✎ that appears only on the currently active circle. More immediately discoverable, no second gesture type required.
 
-Both patterns may coexist (long press as a power-user shortcut alongside a visible affordance). Not yet designed.
+Both patterns may coexist (long press as a power-user shortcut alongside a visible affordance). Not yet fully designed.
 
 **Adding a game entry to the day entry:**
 
@@ -197,7 +196,7 @@ A visual representation of the friend's game collection as physical spines on a 
 - Each spine sits flush against the next with minimal gap and a subtle random lean (deterministic per user via a seeded random function, so the same user always has the same shelf layout).
 - The shelf has a visible plank at the bottom with a shadow beneath it.
 
-**Spine design by console** — all text uppercase:
+**Spine design by console** — all text uppercase. Each spine is a React Native `View` styled via `styled-components/native`, with dimensions and colours as below. The random lean per game is a `rotate` transform applied via `useAnimatedStyle` (Reanimated) using a seeded deterministic value derived from the user's ID and game ID so the shelf layout is consistent across renders.
 
 | Console  | Height | Width | Body                | Text  | Badge                         |
 | -------- | ------ | ----- | ------------------- | ----- | ----------------------------- |
@@ -281,34 +280,20 @@ The tier list is a manually ordered ranking of games, rebuilt year by year. It i
 
 ### Aspect Ratio System
 
-Images within game entries are displayed at full width of the content area (which has 20px padding on all sides within the bubble). The image scroll track uses negative margins to break out of the content padding, allowing adjacent images to peek into the padding zone on either side — no extra padding is added for the peek effect, it is a natural consequence of the bleed:
+Images within game entries are displayed at full width of the content area (which has 20px padding on all sides within the bubble). The `Gallery` component uses negative `margin` (`margin: 0 -20px` in styled-components/native) to bleed out to the bubble edge, with matching `paddingInlineStart`/`paddingInlineEnd: 20` in the `contentContainerStyle` so the first image starts flush at the content position. Adjacent images peek into the padding zone on either side — no extra padding is added for the peek effect, it is a natural consequence of the bleed.
 
-```css
-.image-scroll-track {
-  margin: 0 -20px; /* bleed out to bubble edge, reclaiming the content padding */
-  padding: 0 20px; /* first image starts at the content position */
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-}
+The gallery is a `ScrollView` with `snapToInterval={containerWidth + GALLERY_ITEM_GAP}` and `decelerationRate="fast"`. The container width is measured via `onLayout`. `scrollEnabled` is set to `false` when only one image is present.
 
-.image-item {
-  width: 100%; /* full width of the content area, not the bubble */
-  flex-shrink: 0;
-  scroll-snap-align: center;
-  margin-right: 10px;
-}
-```
+Each image item uses `aspect-ratio: 16/9` (via styled-components/native) and `contentFit="cover"` on the `expo-image` `Image` component. Currently all gallery items use a fixed 16:9 ratio.
 
-A single image appears full-width with no empty space beside it. Multiple images scroll horizontally with the adjacent image peeking into the padding gap on the right, signalling that more images exist.
-
-The display height is determined by the **average aspect ratio** of all images in that entry's image set:
+The **intended** display height behaviour (not yet implemented) is to derive height from the **average aspect ratio** of all images in that entry's image set:
 
 - Collect the aspect ratio (width ÷ height) of each image
 - Average them
-- Set the container height as `(1 / avgAspectRatio) * 100%` of the full width via `padding-top`
-- Each image fills the container with `object-fit: cover`
+- Set `aspectRatio` on the container to the result (React Native's `aspectRatio` prop accepts a numeric value)
+- Each image fills the container with `contentFit="cover"`
 
-This means a set of 4:3 images displays at 4:3 (uncropped), a set of 16:9 images displays at 16:9 (uncropped), and mixed sets find a reasonable middle ground, perhaps with a preference to the most common aspect-ratio if there is a single outlier for example.
+This means a set of 4:3 images displays at 4:3 (uncropped), a set of 16:9 images at 16:9 (uncropped), and mixed sets find a reasonable middle ground — with a preference towards the most common ratio if there is a single outlier.
 
 ### Lightbox
 
@@ -347,45 +332,16 @@ Both views are different lenses on the same underlying data.
 
 ## Scroll Architecture
 
-Both the Journal View and Collection View use a bottom-anchored feed:
+The Journal View main content area is a React Native `ScrollView` (styled as `Content` in `index.jsx`) with `flex: 1` so it fills the space between the top bar and the `JournalTrack`. The `contentContainerStyle` uses `paddingBottom: 110` to ensure content scrolls clear of the fixed `JournalTrack` overlay at the bottom, and `paddingTop: 70` to clear the floating `Header` blur overlay at the top.
 
-```css
-.feed {
-  display: flex;
-  flex-direction: column-reverse;
-  overflow-y: auto;
-  overflow-anchor: none;
-}
+The `ScrollView` is keyed by `activeEntry.dayId` so it remounts fresh (zero scroll position, no retained content height) each time the active entry changes. A `ref` is attached to support programmatic `scrollTo({ y: 0 })` calls via `useFocusEffect` when the user returns to the Journal tab from another tab.
 
-.scroll-anchor {
-  height: 0;
-  overflow-anchor: auto; /* keeps bottom in view as content grows */
-}
-```
+The Collection View timeline is intended to be bottom-anchored (newest entry at the bottom, scroll position maintained as entries grow). This will be implemented using React Native's `inverted` prop on a `FlatList`, which flips rendering order without requiring a `column-reverse` flex workaround. TBC when the Collection View is built out.
 
-The `scroll-anchor` div is the **first child** of the feed (rendered at visual bottom due to `column-reverse`). New items are **prepended** to the data array (newest at index 0) so they render at the visual bottom. Height growth (typing, adding images) pushes content upward naturally with no JS scroll correction.
-
-The iOS keyboard appearing reduces the viewport height. Because content is bottom-anchored, the active textarea remains in view. On focus, `overflow-anchor: auto` moves to a wrapper around the active textarea so the input (not the feed bottom) stays in view as the entry grows taller than the viewport.
+**Keyboard avoidance:** React Native handles keyboard intrusion via `KeyboardAvoidingView` (with `behavior="padding"` on iOS). Because content is in a scrollable area, the active input stays accessible when the keyboard appears. The exact implementation is TBC when edit mode is built.
 
 ---
 
-## Textarea (Entry Text Input)
+## Text Input (Entry Text Input)
 
-```css
-textarea {
-  resize: none;
-  overflow-y: auto;
-  min-height: 1lh;
-  max-height: 12lh;
-  field-sizing: content; /* auto-grows with content, no JS needed */
-}
-```
-
-A JS fallback runs only if `CSS.supports('field-sizing', 'content')` returns false:
-
-```js
-el.style.overflowY = "hidden";
-el.style.height = "auto";
-el.style.height = el.scrollHeight + "px";
-el.style.overflowY = "auto";
-```
+Entry text fields use React Native's `TextInput` component with `multiline={true}`. Auto-growing height (to match content) is the default behaviour of multiline `TextInput` in React Native — no JS fallback or `field-sizing` equivalent is needed. A `maxHeight` style constraint can be applied if needed to cap growth before the input becomes scrollable within itself.
