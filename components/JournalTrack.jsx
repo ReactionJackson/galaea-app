@@ -19,6 +19,7 @@ import styled from "styled-components/native";
 const ITEM_WIDTH = 40;
 const ITEM_SPACING = 10;
 const SNAP_INTERVAL = ITEM_WIDTH + ITEM_SPACING;
+const ADD_INDEX = daysData.length;
 
 // Styled Components:
 
@@ -122,7 +123,7 @@ const YEAR_GROUPS = getYearGroups();
 
 // Component:
 
-export function JournalTrack({ onChangeDay = () => {} }) {
+export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
   const [editMode, setEditMode] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -131,12 +132,20 @@ export function JournalTrack({ onChangeDay = () => {} }) {
     left: 0,
     right: 0,
   });
+  const [addActive, setAddActive] = useState(false);
   const trackRef = useRef(null);
+  // Flagged when a tap on + has expanded the padding but the scroll hasn't
+  // fired yet — cleared in onContentSizeChange once layout is ready.
+  const scrollToAddAfterResize = useRef(false);
 
   // Helpers:
 
   const scrollToIndex = (index) => {
     if (index === activeIndex) {
+      if (index === ADD_INDEX) {
+        onAdd();
+        return;
+      }
       setEditMode((prev) => !prev);
       if (process.env.EXPO_OS === "ios") {
         Haptics.impactAsync(
@@ -147,17 +156,19 @@ export function JournalTrack({ onChangeDay = () => {} }) {
       }
       return;
     }
-    if (trackRef.current) {
-      trackRef.current.scrollTo({
-        x: index * SNAP_INTERVAL,
-        animated: true,
-      });
-      animateIndicatorOut();
-      setIsScrolling(true);
-      if (process.env.EXPO_OS === "ios") {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
+    animateIndicatorOut();
+    setIsScrolling(true);
+    if (process.env.EXPO_OS === "ios") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
+    if (index === ADD_INDEX) {
+      // Expand right padding so the content is wide enough to scroll there,
+      // then wait for onContentSizeChange to fire the actual scrollTo.
+      setAddActive(true);
+      scrollToAddAfterResize.current = true;
+      return;
+    }
+    trackRef.current?.scrollTo({ x: index * SNAP_INTERVAL, animated: true });
   };
 
   const parseDayNumbersFromDates = () => {
@@ -206,31 +217,55 @@ export function JournalTrack({ onChangeDay = () => {} }) {
     const padding = width / 2 - ITEM_WIDTH / 2;
     halfTrackWidth.value = width / 2;
     trackPaddingLeft.value = padding;
-    setTrackPadding({ left: padding, right: padding });
+    // Right padding is one SNAP_INTERVAL shorter than left so the content's
+    // maximum scroll position lands exactly on the last real item — the +
+    // button is visible peeking to the right but the range stops there.
+    setTrackPadding({ left: padding, right: padding - SNAP_INTERVAL });
+  };
+
+  const handleContentSizeChange = () => {
+    if (scrollToAddAfterResize.current) {
+      scrollToAddAfterResize.current = false;
+      trackRef.current?.scrollTo({
+        x: ADD_INDEX * SNAP_INTERVAL,
+        animated: true,
+      });
+    }
   };
 
   const getIndexFromScrollEnd = (event) => {
     const { contentOffset } = event.nativeEvent;
     const index = Math.round(contentOffset.x / SNAP_INTERVAL);
-    return Math.max(0, Math.min(index, daysData.length - 1));
+    // When addActive the content is expanded and ADD_INDEX is a valid landing
+    // position; otherwise clamp to the last real entry.
+    const maxIndex = addActive ? ADD_INDEX : daysData.length - 1;
+    return Math.max(0, Math.min(index, maxIndex));
   };
 
   const handleScrollEndDrag = (event) => {
     const { velocity } = event.nativeEvent;
     if (!velocity || Math.abs(velocity.x) < 0.1) {
-      setActiveIndex(getIndexFromScrollEnd(event));
+      const index = getIndexFromScrollEnd(event);
+      // Only clear addActive once settled on a real entry — clearing it while
+      // the scroll is still at ADD_INDEX * SNAP_INTERVAL would shrink the
+      // content and trigger a snap-back.
+      if (addActive && index !== ADD_INDEX) setAddActive(false);
+      setActiveIndex(index);
       setIsScrolling(false);
       animateIndicatorIn();
     }
   };
 
   const handleMomentumScrollEnd = (event) => {
-    setActiveIndex(getIndexFromScrollEnd(event));
+    const index = getIndexFromScrollEnd(event);
+    if (addActive && index !== ADD_INDEX) setAddActive(false);
+    setActiveIndex(index);
     setIsScrolling(false);
     animateIndicatorIn();
   };
 
   const handleScrollBeginDrag = () => {
+    scrollToAddAfterResize.current = false;
     setIsScrolling(true);
     animateIndicatorOut();
     if (process.env.EXPO_OS === "ios") {
@@ -289,11 +324,12 @@ export function JournalTrack({ onChangeDay = () => {} }) {
         scrollEnabled={!editMode}
         snapToInterval={SNAP_INTERVAL}
         decelerationRate="fast"
+        onContentSizeChange={handleContentSizeChange}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
           gap: ITEM_SPACING,
           paddingInlineStart: trackPadding.left,
-          paddingInlineEnd: trackPadding.right,
+          paddingInlineEnd: addActive ? trackPadding.left : trackPadding.right,
           alignItems: "center",
         }}
       >
@@ -318,6 +354,25 @@ export function JournalTrack({ onChangeDay = () => {} }) {
             </ThemedText>
           </DateCircle>
         ))}
+        <DateCircle
+          key="add-button"
+          onPress={() => scrollToIndex(ADD_INDEX)}
+          disabled={editMode}
+        >
+          <ThemedText
+            type="date-number"
+            colorSwitch={
+              activeIndex !== ADD_INDEX || isScrolling
+                ? {
+                    colors: [Colors.black, Colors.disabled],
+                    active: editMode,
+                  }
+                : undefined
+            }
+          >
+            +
+          </ThemedText>
+        </DateCircle>
       </Track>
     </Container>
   );
