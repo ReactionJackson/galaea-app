@@ -9,7 +9,7 @@ export const Colors = {
   dateBorder: "rgba(0, 0, 0, 0.1)",
   accent: "#f96156",
   background: "#fff",
-  backgroundBlurTint: "rgba(255, 255, 255, 0.6)",
+  backgroundBlurTint: "rgba(255, 255, 255, 0.4)",
   tags: {
     default: {
       primary: "#777",
