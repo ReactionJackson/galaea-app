@@ -269,7 +269,10 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
   const handleMomentumScrollEnd = (event) => {
     const index = getIndexFromScrollEnd(event);
     if (addActive && index !== ADD_INDEX) setAddActive(false);
-    if (index === ADD_INDEX) { setEditMode(true); onAdd(); }
+    if (index === ADD_INDEX) {
+      setEditMode(true);
+      onAdd();
+    }
     setActiveIndex(index);
     setIsScrolling(false);
     animateIndicatorIn();

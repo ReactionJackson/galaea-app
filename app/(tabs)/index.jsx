@@ -154,7 +154,9 @@ export default function HomeScreen() {
           paddingHorizontal: 20,
         }}
       >
-        <ThemedText>{activeEntry.text}</ThemedText>
+        <ThemedText>
+          {activeEntry.text || "Write something about today..."}
+        </ThemedText>
         <Tags tagIds={activeEntry.tags} />
         {activeEntry.games.map(({ gameId, entryId }, i) => (
           <GameEntry
