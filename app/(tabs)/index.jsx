@@ -99,6 +99,17 @@ export default function HomeScreen() {
     setActiveEntry(daysData.find((day) => day.dayId === dayId));
   }, []);
 
+  const handleAdd = useCallback(() => {
+    setActiveEntry({
+      dayId: `day-new-${Date.now()}`,
+      date: new Date().toISOString(),
+      title: null,
+      text: "",
+      tags: [],
+      games: [],
+    });
+  }, []);
+
   // Effects:
 
   useFocusEffect(
@@ -154,7 +165,7 @@ export default function HomeScreen() {
         ))}
       </Content>
 
-      <JournalTrack onChangeDay={handleChangeDay} />
+      <JournalTrack onChangeDay={handleChangeDay} onAdd={handleAdd} />
     </Container>
   );
 }

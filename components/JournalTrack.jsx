@@ -143,7 +143,17 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
   const scrollToIndex = (index) => {
     if (index === activeIndex) {
       if (index === ADD_INDEX) {
-        onAdd();
+        // Cancel create: exit edit mode and navigate back to the last real entry.
+        setEditMode(false);
+        animateIndicatorOut();
+        setIsScrolling(true);
+        if (process.env.EXPO_OS === "ios") {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+        trackRef.current?.scrollTo({
+          x: (daysData.length - 1) * SNAP_INTERVAL,
+          animated: true,
+        });
         return;
       }
       setEditMode((prev) => !prev);
@@ -259,6 +269,7 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
   const handleMomentumScrollEnd = (event) => {
     const index = getIndexFromScrollEnd(event);
     if (addActive && index !== ADD_INDEX) setAddActive(false);
+    if (index === ADD_INDEX) { setEditMode(true); onAdd(); }
     setActiveIndex(index);
     setIsScrolling(false);
     animateIndicatorIn();
@@ -357,7 +368,7 @@ export function JournalTrack({ onChangeDay = () => {}, onAdd = () => {} }) {
         <DateCircle
           key="add-button"
           onPress={() => scrollToIndex(ADD_INDEX)}
-          disabled={editMode}
+          disabled={editMode && activeIndex !== ADD_INDEX}
         >
           <ThemedText
             type="date-number"
