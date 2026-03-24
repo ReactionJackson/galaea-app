@@ -2,6 +2,7 @@ import { Colors } from "@/constants/theme";
 import { gamesData } from "@/data/entries";
 import { Image as ExpoImage } from "expo-image";
 import styled from "styled-components/native";
+import { Gallery } from "./Gallery";
 import { Tags } from "./Tags";
 import { ThemedText } from "./ThemedText";
 
@@ -74,6 +75,7 @@ export function GameEntry({ gameId = 1, entryId = 1 }) {
       </Header>
 
       <Content>
+        {gallery.length > 0 && <Gallery images={gallery} />}
         <ThemedText type="subtitle" color="text" style={{ marginBottom: -10 }}>
           Entry {entryId.toString().padStart(2, "0")}
         </ThemedText>

@@ -100,6 +100,7 @@ export const gamesData = [
         gallery: [
           "https://images.launchbox-app.com/4b488f82-83f5-4088-a870-9ebe8f5c6c7d.jpg",
           "https://images.launchbox-app.com/b7a444fc-f6b3-415c-b270-55b9aab05756.jpg",
+          "https://images.launchbox-app.com/4b488f82-83f5-4088-a870-9ebe8f5c6c7d.jpg",
         ],
       },
     ],
@@ -167,7 +168,11 @@ export const gamesData = [
         entryId: 2,
         text: "Made some progress on Parasite Eve tonight. The game is starting to feel more engaging now — the story is more interesting and the combat is more fun. The puzzles are starting to click and I'm getting the hang of the game. The game is definitely a slow burn but I'm enjoying it so far.",
         tags: [5],
-        gallery: [],
+        gallery: [
+          "https://images.launchbox-app.com//0cc69537-216a-4c96-bf16-c6b1299acefc.jpg",
+          "https://images.launchbox-app.com//7c180d3f-3426-4ec6-bcad-03e2d89cea57.jpg",
+          "https://images.launchbox-app.com//14b11046-ef42-4ae6-9d70-5b0708460078.jpg",
+        ],
       },
     ],
   },
