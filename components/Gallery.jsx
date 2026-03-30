@@ -36,34 +36,36 @@ const EditableView = styled.View`
 const GALLERY_ITEM_GAP = 10;
 
 export function Gallery({ images }) {
-  const [containerWidth, setContainerWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(null);
   return (
     <View
       onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width)}
     >
-      <Track
-        horizontal
-        snapToInterval={containerWidth + GALLERY_ITEM_GAP}
-        decelerationRate="fast"
-        showsHorizontalScrollIndicator={false}
-        scrollEnabled={images.length > 1}
-        contentContainerStyle={{
-          gap: GALLERY_ITEM_GAP,
-          paddingInlineStart: 20,
-          paddingInlineEnd: 20,
-        }}
-      >
-        {images.map((uri, i) => (
-          <Item key={`image-${i}`} style={{ width: containerWidth }}>
-            <Image contentFit="cover" source={{ uri }} />
+      {containerWidth !== null && (
+        <Track
+          horizontal
+          snapToInterval={containerWidth + GALLERY_ITEM_GAP}
+          decelerationRate="fast"
+          showsHorizontalScrollIndicator={false}
+          scrollEnabled={images.length > 1}
+          contentContainerStyle={{
+            gap: GALLERY_ITEM_GAP,
+            paddingInlineStart: 20,
+            paddingInlineEnd: 20,
+          }}
+        >
+          {images.map((uri, i) => (
+            <Item key={`image-${i}`} style={{ width: containerWidth }}>
+              <Image contentFit="cover" source={{ uri }} />
+            </Item>
+          ))}
+          <Item style={{ width: containerWidth }}>
+            <EditableView>
+              <ThemedText>Add Image</ThemedText>
+            </EditableView>
           </Item>
-        ))}
-        <Item style={{ width: containerWidth }}>
-          <EditableView>
-            <ThemedText>Add Image</ThemedText>
-          </EditableView>
-        </Item>
-      </Track>
+        </Track>
+      )}
     </View>
   );
 }

@@ -90,12 +90,13 @@ export function JournalTrack({
   onChangeDay = () => {},
   onAdd = () => {},
   onSave = () => {},
+  editMode = false,
+  setEditMode = () => {},
 }) {
   // ADD_INDEX is always entries.length — the slot just past the last real item.
   const ADD_INDEX = entries.length;
 
-  const [editMode, setEditMode] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(entries.length - 1);
   const [isScrolling, setIsScrolling] = useState(false);
   const [basePadding, setBasePadding] = useState(0);
   const [addActive, setAddActive] = useState(false);
@@ -105,6 +106,8 @@ export function JournalTrack({
   const scrollToAddAfterResize = useRef(false);
   // Track entries length to detect when a save has committed a new entry.
   const prevEntriesLengthRef = useRef(entries.length);
+  // Guard so the initial scroll-to-last fires once only, after layout is ready.
+  const hasScrolledToInitial = useRef(false);
 
   // Derived values:
 
@@ -121,7 +124,9 @@ export function JournalTrack({
       if (!groups[key]) {
         groups[key] = {
           key,
-          label: date.toLocaleString("default", { month: "short" }).toUpperCase(),
+          label: date
+            .toLocaleString("default", { month: "short" })
+            .toUpperCase(),
           year: String(date.getFullYear()),
           firstIndex: index,
           lastIndex: index,
@@ -252,7 +257,8 @@ export function JournalTrack({
     const index = Math.round(contentOffset.x / SNAP_INTERVAL);
     // When addActive the content is expanded and ADD_INDEX is a valid landing
     // position; otherwise clamp to the last real entry.
-    const maxIndex = showAddButton && addActive ? ADD_INDEX : entries.length - 1;
+    const maxIndex =
+      showAddButton && addActive ? ADD_INDEX : entries.length - 1;
     return Math.max(0, Math.min(index, maxIndex));
   };
 
@@ -317,6 +323,19 @@ export function JournalTrack({
     }
   }, [entries.length]);
 
+  // Scroll to the most recent entry once basePadding is available (i.e. after
+  // onLayout has run and the content is correctly sized). Firing earlier would
+  // scroll into an unlaid-out container and land in the wrong position.
+  useEffect(() => {
+    if (!hasScrolledToInitial.current && basePadding > 0 && trackRef.current) {
+      hasScrolledToInitial.current = true;
+      trackRef.current.scrollTo({
+        x: (entries.length - 1) * SNAP_INTERVAL,
+        animated: false,
+      });
+    }
+  }, [basePadding]);
+
   // Padding values:
   // Right padding is one SNAP_INTERVAL shorter than left so the content's
   // maximum scroll position lands exactly on the last real item — the +
@@ -327,7 +346,8 @@ export function JournalTrack({
   // right edge but is unreachable by drag. This restriction is lifted when
   // addActive (tap-to-navigate needs the full width) or when showAddButton is
   // false (no + at all — the last item must be fully centerable).
-  const paddingEnd = showAddButton && !addActive ? basePadding - SNAP_INTERVAL : basePadding;
+  const paddingEnd =
+    showAddButton && !addActive ? basePadding - SNAP_INTERVAL : basePadding;
 
   // Render:
 

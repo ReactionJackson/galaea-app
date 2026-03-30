@@ -54,6 +54,7 @@ const EntryNumber = styled.View`
 `;
 
 const EntryInfo = styled.View`
+  flex: 1;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
@@ -72,7 +73,8 @@ const Content = styled.ScrollView`
 
 export default function HomeScreen() {
   const [entries, setEntries] = useState(() => [...daysData]);
-  const [activeEntry, setActiveEntry] = useState(daysData[0]);
+  const [activeEntry, setActiveEntry] = useState(daysData[daysData.length - 1]);
+  const [editMode, setEditMode] = useState(false);
   const { top } = useSafeAreaInsets();
   const scrollRef = useRef(null);
 
@@ -164,9 +166,20 @@ export default function HomeScreen() {
               {formatDate("time")}
             </ThemedText>
           </EntryDate>
-          <ThemedText type="title">
-            {activeEntry.title || formatDate("weekday")}
-          </ThemedText>
+          <ThemedText
+            type="title"
+            isInput
+            value={
+              !editMode && !activeEntry.title
+                ? formatDate("weekday")
+                : activeEntry.title
+            }
+            placeholder={formatDate("weekday")}
+            onChangeText={(text) =>
+              setActiveEntry({ ...activeEntry, title: text })
+            }
+            editable={editMode}
+          />
         </EntryInfo>
       </Header>
 
@@ -180,9 +193,16 @@ export default function HomeScreen() {
           paddingHorizontal: 20,
         }}
       >
-        <ThemedText>
-          {activeEntry.text || "Write something about today..."}
-        </ThemedText>
+        {activeEntry.text || editMode ? (
+          <ThemedText
+            isInput
+            multiline={true}
+            value={activeEntry.text}
+            placeholder="Write something about today..."
+            onChangeText={(text) => setActiveEntry({ ...activeEntry, text })}
+            editable={editMode}
+          />
+        ) : null}
         <Tags tagIds={activeEntry.tags} />
         {activeEntry.games.map(({ gameId, entryId }, i) => (
           <GameEntry
@@ -199,6 +219,8 @@ export default function HomeScreen() {
         onChangeDay={handleChangeDay}
         onAdd={handleAdd}
         onSave={handleSave}
+        editMode={editMode}
+        setEditMode={setEditMode}
       />
     </Container>
   );

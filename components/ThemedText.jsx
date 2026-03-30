@@ -1,12 +1,14 @@
 import { Colors, Fonts } from "@/constants/theme";
 import { useEffect } from "react";
-import { Platform, StyleSheet, Text } from "react-native";
+import { Platform, StyleSheet, Text, TextInput } from "react-native";
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 function resolveColor(color) {
   return Colors.tags[color]?.primary ?? Colors[color] ?? color;
@@ -17,6 +19,10 @@ export function ThemedText({
   type = "text",
   color,
   colorSwitch,
+  isInput = false,
+  multiline = false,
+  value,
+  editable,
   ...rest
 }) {
   const progress = useSharedValue(colorSwitch?.active ? 1 : 0);
@@ -46,8 +52,34 @@ export function ThemedText({
       : color
         ? { color: resolveColor(color) }
         : undefined,
+    isInput ? styles.inputReset : undefined,
+    // lineHeight on a single-line input causes vertical wiggle on focus — strip it
+    isInput && !multiline ? { lineHeight: undefined } : undefined,
+    isInput ? { alignSelf: "stretch" } : undefined,
     style,
   ];
+
+  if (isInput) {
+    const inputProps = {
+      multiline,
+      value,
+      editable,
+      pointerEvents: editable ? "auto" : "none",
+      spellCheck: false,
+      autoCorrect: true,
+      ...rest,
+    };
+
+    if (colorSwitch) {
+      return (
+        <AnimatedTextInput
+          style={[...baseStyle, animatedStyle]}
+          {...inputProps}
+        />
+      );
+    }
+    return <TextInput style={baseStyle} {...inputProps} />;
+  }
 
   if (colorSwitch) {
     return <Animated.Text style={[...baseStyle, animatedStyle]} {...rest} />;
@@ -108,5 +140,9 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bold,
     fontSize: 12,
     ...webTextStyles,
+  },
+  inputReset: {
+    padding: 0,
+    textAlignVertical: "top",
   },
 });

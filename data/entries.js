@@ -365,7 +365,7 @@ export const daysData = [
     dayId: 20,
     date: "2026-03-16T19:30:00.000Z",
     title: "",
-    text: "Got back from work later than planned and didn't have the energy for much. Put Xenogears on for an hour or so, made some progress but mostly just needed to decompress. The CRT warm-up glow is genuinely one of the most relaxing things to sit in front of. Also finally cracked open Parasite Eve — only did the opera house opening but the tone is immediately striking.",
+    text: "",
     tags: [3, 7],
     games: [
       { gameId: 3, entryId: 2 },
