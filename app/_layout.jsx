@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/AppHeader";
 import {
   Outfit_400Regular as Outfit400,
   Outfit_500Medium as Outfit500,
@@ -8,6 +9,7 @@ import {
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+
 import { useEffect } from "react";
 import "react-native-reanimated";
 
@@ -33,6 +35,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={DefaultTheme}>
+      <AppHeader />
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>

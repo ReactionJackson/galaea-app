@@ -7,39 +7,24 @@ import { Colors } from "@/constants/theme";
 import { daysData } from "@/data/entries";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
-const Container = styled.SafeAreaView`
+const Container = styled.View`
   flex: 1;
   justify-content: flex-start;
   align-items: center;
   background-color: ${Colors.background};
 `;
 
-const TopBar = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  height: 60px;
-  padding: 0 20px;
-  background-color: ${Colors.background};
-  shadow-color: ${Colors.black};
-  shadow-offset: 0px 5px;
-  shadow-opacity: 0.12;
-  shadow-radius: 4px;
-`;
-
 const Header = styled(BlurView)`
   z-index: 100;
   position: absolute;
-  top: ${({ topInset }) => topInset + 60}px;
+  top: 0;
   left: 0;
   right: 0;
   gap: 10px;
   height: 70px;
-  padding: 20px 20px 10px 20px;
+  padding: 15px 20px;
   flex-direction: row;
   justify-content: flex-start;
 `;
@@ -75,7 +60,6 @@ export default function HomeScreen() {
   const [entries, setEntries] = useState(() => [...daysData]);
   const [activeEntry, setActiveEntry] = useState(daysData[daysData.length - 1]);
   const [editMode, setEditMode] = useState(false);
-  const { top } = useSafeAreaInsets();
   const scrollRef = useRef(null);
 
   // Stable refs so callbacks don't go stale:
@@ -150,12 +134,7 @@ export default function HomeScreen() {
 
   return (
     <Container>
-      <TopBar>
-        <ThemedText type="title">Galaea</ThemedText>
-        <ThemedText type="title">O</ThemedText>
-      </TopBar>
-
-      <Header tint="light" topInset={top}>
+      <Header tint="light">
         <EntryNumber>
           <ThemedText type="date-number">{formatDate("day")}</ThemedText>
         </EntryNumber>
@@ -188,7 +167,7 @@ export default function HomeScreen() {
         ref={scrollRef}
         contentContainerStyle={{
           gap: 20,
-          paddingTop: 70,
+          paddingTop: 65,
           paddingBottom: 110,
           paddingHorizontal: 20,
         }}
