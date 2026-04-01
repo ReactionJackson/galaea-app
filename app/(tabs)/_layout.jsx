@@ -7,6 +7,7 @@ import React from "react";
 export default function TabLayout() {
   return (
     <Tabs
+      initialRouteName="journal"
       screenOptions={{
         tabBarActiveTintColor: Colors.tint,
         headerShown: false,
@@ -26,8 +27,11 @@ export default function TabLayout() {
           ),
         }}
       />
+      {/* Required by Expo Router to resolve the root path — hidden from the tab bar */}
+      <Tabs.Screen name="index" options={{ href: null }} />
+
       <Tabs.Screen
-        name="index"
+        name="journal"
         options={{
           title: "Journal",
           tabBarIcon: ({ color, focused }) => (
