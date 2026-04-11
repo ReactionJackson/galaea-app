@@ -62,12 +62,6 @@ export default function HomeScreen() {
   const [editMode, setEditMode] = useState(false);
   const scrollRef = useRef(null);
 
-  // Stable refs so callbacks don't go stale:
-  const entriesRef = useRef(entries);
-  const activeEntryRef = useRef(activeEntry);
-  entriesRef.current = entries;
-  activeEntryRef.current = activeEntry;
-
   // Derived state:
 
   const showAddButton = useMemo(() => {
@@ -101,11 +95,11 @@ export default function HomeScreen() {
     }
   };
 
-  const handleChangeDay = useCallback((dayId) => {
-    setActiveEntry(entriesRef.current.find((day) => day.dayId === dayId));
-  }, []);
+  const handleChangeDay = (dayId) => {
+    setActiveEntry(entries.find((day) => day.dayId === dayId));
+  };
 
-  const handleAdd = useCallback(() => {
+  const handleAdd = () => {
     setActiveEntry({
       dayId: `day-new-${Date.now()}`,
       date: new Date().toISOString(),
@@ -114,13 +108,12 @@ export default function HomeScreen() {
       tags: [],
       games: [],
     });
-  }, []);
+  };
 
-  const handleSave = useCallback(() => {
-    const entry = activeEntryRef.current;
-    if (!entry) return;
-    setEntries((prev) => [...prev, entry]);
-  }, []);
+  const handleSave = () => {
+    if (!activeEntry) return;
+    setEntries((prev) => [...prev, activeEntry]);
+  };
 
   // Effects:
 

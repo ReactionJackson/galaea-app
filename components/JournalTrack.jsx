@@ -270,6 +270,7 @@ export function JournalTrack({
       // the scroll is still at ADD_INDEX * SNAP_INTERVAL would shrink the
       // content and trigger a snap-back.
       if (addActive && index !== ADD_INDEX) setAddActive(false);
+      if (entries[index]) onChangeDay(entries[index].dayId);
       setActiveIndex(index);
       setIsScrolling(false);
       animateIndicatorIn();
@@ -282,6 +283,8 @@ export function JournalTrack({
     if (index === ADD_INDEX) {
       setEditMode(true);
       onAdd();
+    } else {
+      onChangeDay(entries[index].dayId);
     }
     setActiveIndex(index);
     setIsScrolling(false);
@@ -298,12 +301,6 @@ export function JournalTrack({
   };
 
   // Effects:
-
-  useEffect(() => {
-    if (entries[activeIndex]) {
-      onChangeDay(entries[activeIndex].dayId);
-    }
-  }, [activeIndex, onChangeDay]);
 
   useEffect(() => {
     if (entries.length > prevEntriesLengthRef.current) {
