@@ -455,7 +455,7 @@ export function JournalTrack({
             <ThemedText color="black">Delete</ThemedText>
           </Button>
           <View style={{ flexDirection: "row", gap: 10 }}>
-            <Button onPress={() => setEditMode(false)}>
+            <Button onPress={() => scrollToIndex(activeIndex)}>
               <ThemedText color="black">Cancel</ThemedText>
             </Button>
             <SaveButton onPress={onSave}>
