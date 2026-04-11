@@ -2,9 +2,8 @@ import { AnimateHeight } from "@/components/AnimateHeight";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { tagsData } from "@/data/entries";
+import { View } from "react-native";
 import styled from "styled-components/native";
-
-const Container = styled.View``;
 
 const TrackWrapper = styled.View`
   padding-bottom: 10px;
@@ -12,7 +11,7 @@ const TrackWrapper = styled.View`
 
 const Track = styled.ScrollView`
   width: 100%;
-  height: 46px;
+  height: 26px;
 `;
 
 const ActiveTags = styled.View`
@@ -37,7 +36,7 @@ const Tag = styled.View`
 
 export function Tags({ tagIds = [], editMode = false }) {
   return (
-    <>
+    <View>
       <AnimateHeight visible={editMode}>
         <TrackWrapper>
           <Track
@@ -68,6 +67,6 @@ export function Tags({ tagIds = [], editMode = false }) {
           );
         })}
       </ActiveTags>
-    </>
+    </View>
   );
 }
