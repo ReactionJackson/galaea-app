@@ -5,6 +5,7 @@ import { Colors } from "@/constants/theme";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import * as Haptics from "expo-haptics";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedScrollHandler,
@@ -22,7 +23,7 @@ const SNAP_INTERVAL = ITEM_WIDTH + ITEM_SPACING;
 
 // Styled Components:
 
-const TrackContainer = styled(Animated.View)`
+const Container = styled(Animated.View)`
   z-index: 100;
   position: absolute;
   left: 0;
@@ -30,9 +31,17 @@ const TrackContainer = styled(Animated.View)`
   bottom: 0;
 `;
 
-const Container = styled(BlurView)`
+const TrackContainer = styled.View`
   height: 90px;
   padding-top: 25px;
+  align-items: center;
+`;
+
+const ControlsContainer = styled.View`
+  padding: 20px;
+  padding-top: 10px;
+  justify-content: space-between;
+  flex-direction: row;
   align-items: center;
 `;
 
@@ -77,13 +86,16 @@ const DateCircle = styled.Pressable`
   align-items: center;
 `;
 
-const SaveButton = styled.Pressable`
-  position: absolute;
-  top: 5px;
-  right: 20px;
+const Button = styled.Pressable`
+  justify-content: center;
   padding: 4px 14px;
-  background-color: ${Colors.accent};
   border-radius: 20px;
+  border: 2px solid ${Colors.dateBorder};
+`;
+
+const SaveButton = styled(Button)`
+  background-color: ${Colors.accent};
+  border: none;
 `;
 
 // Component:
@@ -208,7 +220,7 @@ export function JournalTrack({
   // Animations:
 
   const trackContainerStyle = useAnimatedTransition(editMode, {
-    translateY: [0, -80],
+    translateY: [60, 0],
   });
 
   const indicatorScale = useSharedValue(1);
@@ -347,103 +359,111 @@ export function JournalTrack({
   // Render:
 
   return (
-    <TrackContainer style={trackContainerStyle}>
-      <Container>
-        <YearLabels>
-          {yearGroups.map((group) => (
-            <StickyLabel
-              key={group.key}
-              group={group}
-              scrollX={scrollX}
-              halfTrackWidth={halfTrackWidth}
-              trackPaddingLeft={trackPaddingLeft}
-              condensed={true}
-            />
-          ))}
-        </YearLabels>
-        <MonthLabels>
-          {monthGroups.map((group) => (
-            <StickyLabel
-              key={group.key}
-              group={group}
-              scrollX={scrollX}
-              halfTrackWidth={halfTrackWidth}
-              trackPaddingLeft={trackPaddingLeft}
-            />
-          ))}
-        </MonthLabels>
-        <RedIndicator style={indicatorStyle} />
-        {editMode && (
-          <SaveButton onPress={onSave}>
-            <ThemedText type="subtitle" color="white">
-              Save
-            </ThemedText>
-          </SaveButton>
-        )}
-        <Track
-          horizontal
-          ref={trackRef}
-          onScroll={scrollHandler}
-          onLayout={handleTrackPadding}
-          onScrollBeginDrag={handleScrollBeginDrag}
-          onScrollEndDrag={handleScrollEndDrag}
-          onMomentumScrollEnd={handleMomentumScrollEnd}
-          scrollEnabled={!editMode}
-          snapToInterval={SNAP_INTERVAL}
-          decelerationRate="fast"
-          onContentSizeChange={handleContentSizeChange}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            gap: ITEM_SPACING,
-            paddingInlineStart: basePadding,
-            paddingInlineEnd: paddingEnd,
-            alignItems: "center",
-          }}
-        >
-          {dayNumbers.map((dayNumber, i) => (
-            <DateCircle
-              key={`day-${dayNumber}-${i}`}
-              onPress={() => scrollToIndex(i)}
-              disabled={editMode && activeIndex !== i}
-            >
-              <ThemedText
-                type="date-number"
-                colorSwitch={
-                  activeIndex !== i || isScrolling
-                    ? {
-                        colors: [Colors.black, Colors.disabled],
-                        active: editMode,
-                      }
-                    : undefined
-                }
+    <Container style={trackContainerStyle}>
+      <BlurView>
+        <TrackContainer>
+          <YearLabels>
+            {yearGroups.map((group) => (
+              <StickyLabel
+                key={group.key}
+                group={group}
+                scrollX={scrollX}
+                halfTrackWidth={halfTrackWidth}
+                trackPaddingLeft={trackPaddingLeft}
+                condensed={true}
+              />
+            ))}
+          </YearLabels>
+          <MonthLabels>
+            {monthGroups.map((group) => (
+              <StickyLabel
+                key={group.key}
+                group={group}
+                scrollX={scrollX}
+                halfTrackWidth={halfTrackWidth}
+                trackPaddingLeft={trackPaddingLeft}
+              />
+            ))}
+          </MonthLabels>
+          <RedIndicator style={indicatorStyle} />
+          <Track
+            horizontal
+            ref={trackRef}
+            onScroll={scrollHandler}
+            onLayout={handleTrackPadding}
+            onScrollBeginDrag={handleScrollBeginDrag}
+            onScrollEndDrag={handleScrollEndDrag}
+            onMomentumScrollEnd={handleMomentumScrollEnd}
+            scrollEnabled={!editMode}
+            snapToInterval={SNAP_INTERVAL}
+            decelerationRate="fast"
+            onContentSizeChange={handleContentSizeChange}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              gap: ITEM_SPACING,
+              paddingInlineStart: basePadding,
+              paddingInlineEnd: paddingEnd,
+              alignItems: "center",
+            }}
+          >
+            {dayNumbers.map((dayNumber, i) => (
+              <DateCircle
+                key={`day-${dayNumber}-${i}`}
+                onPress={() => scrollToIndex(i)}
+                disabled={editMode && activeIndex !== i}
               >
-                {dayNumber}
-              </ThemedText>
-            </DateCircle>
-          ))}
-          {showAddButton && (
-            <DateCircle
-              key="add-button"
-              onPress={() => scrollToIndex(ADD_INDEX)}
-              disabled={editMode && activeIndex !== ADD_INDEX}
-            >
-              <ThemedText
-                type="date-number"
-                colorSwitch={
-                  activeIndex !== ADD_INDEX || isScrolling
-                    ? {
-                        colors: [Colors.black, Colors.disabled],
-                        active: editMode,
-                      }
-                    : undefined
-                }
+                <ThemedText
+                  type="date-number"
+                  colorSwitch={
+                    activeIndex !== i || isScrolling
+                      ? {
+                          colors: [Colors.black, Colors.disabled],
+                          active: editMode,
+                        }
+                      : undefined
+                  }
+                >
+                  {dayNumber}
+                </ThemedText>
+              </DateCircle>
+            ))}
+            {showAddButton && (
+              <DateCircle
+                key="add-button"
+                onPress={() => scrollToIndex(ADD_INDEX)}
+                disabled={editMode && activeIndex !== ADD_INDEX}
               >
-                +
-              </ThemedText>
-            </DateCircle>
-          )}
-        </Track>
-      </Container>
-    </TrackContainer>
+                <ThemedText
+                  type="date-number"
+                  colorSwitch={
+                    activeIndex !== ADD_INDEX || isScrolling
+                      ? {
+                          colors: [Colors.black, Colors.disabled],
+                          active: editMode,
+                        }
+                      : undefined
+                  }
+                >
+                  +
+                </ThemedText>
+              </DateCircle>
+            )}
+          </Track>
+        </TrackContainer>
+        <ControlsContainer>
+          <Button>
+            <ThemedText color="black">Delete</ThemedText>
+          </Button>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <Button onPress={() => setEditMode(false)}>
+              <ThemedText color="black">Cancel</ThemedText>
+            </Button>
+            <SaveButton onPress={onSave}>
+              <ThemedText color="white">Save</ThemedText>
+            </SaveButton>
+          </View>
+        </ControlsContainer>
+      </BlurView>
+    </Container>
   );
 }
