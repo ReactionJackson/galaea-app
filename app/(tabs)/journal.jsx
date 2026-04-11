@@ -1,3 +1,4 @@
+import { AnimateHeight } from "@/components/AnimateHeight";
 import { BlurView } from "@/components/BlurView";
 import { GameEntry } from "@/components/GameEntry";
 import { JournalTrack } from "@/components/JournalTrack";
@@ -157,9 +158,7 @@ export default function HomeScreen() {
                 : activeEntry.title
             }
             placeholder={formatDate("weekday")}
-            onChangeText={(text) =>
-              setActiveEntry({ ...activeEntry, title: text })
-            }
+            onChangeText={(title) => setActiveEntry({ ...activeEntry, title })}
             editable={editMode}
           />
         </EntryInfo>
@@ -175,7 +174,7 @@ export default function HomeScreen() {
           paddingHorizontal: 20,
         }}
       >
-        {activeEntry.text || editMode ? (
+        <AnimateHeight visible={!!(activeEntry.text || editMode)}>
           <ThemedText
             isInput
             multiline={true}
@@ -184,7 +183,7 @@ export default function HomeScreen() {
             onChangeText={(text) => setActiveEntry({ ...activeEntry, text })}
             editable={editMode}
           />
-        ) : null}
+        </AnimateHeight>
         <Tags tagIds={activeEntry.tags} editMode={editMode} />
         {activeEntry.games.map(({ gameId, entryId }, i) => (
           <GameEntry
