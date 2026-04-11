@@ -1,4 +1,4 @@
-import { AnimateHeight } from "@/components/AnimateHeight";
+import { AnimateHeight, AnimatedSpacer } from "@/components/AnimateHeight";
 import { BlurView } from "@/components/BlurView";
 import { GameEntry } from "@/components/GameEntry";
 import { JournalTrack } from "@/components/JournalTrack";
@@ -7,7 +7,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { daysData } from "@/data/entries";
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useMemo, useRef, useState } from "react";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -64,6 +64,9 @@ export default function HomeScreen() {
   const scrollRef = useRef(null);
 
   // Derived state:
+
+  const textVisible = !!(activeEntry.text || editMode);
+  const tagsVisible = !!(activeEntry.tags.length || editMode);
 
   const showAddButton = useMemo(() => {
     if (entries.length === 0) return true;
@@ -168,13 +171,12 @@ export default function HomeScreen() {
         key={activeEntry.dayId}
         ref={scrollRef}
         contentContainerStyle={{
-          gap: 20,
-          paddingTop: 65,
+          paddingTop: 70,
           paddingBottom: 110,
           paddingHorizontal: 20,
         }}
       >
-        <AnimateHeight visible={!!(activeEntry.text || editMode)}>
+        <AnimateHeight visible={textVisible}>
           <ThemedText
             isInput
             multiline={true}
@@ -184,13 +186,16 @@ export default function HomeScreen() {
             editable={editMode}
           />
         </AnimateHeight>
+        <AnimatedSpacer visible={textVisible} />
+
         <Tags tagIds={activeEntry.tags} editMode={editMode} />
+        <AnimatedSpacer visible={tagsVisible} />
+
         {activeEntry.games.map(({ gameId, entryId }, i) => (
-          <GameEntry
-            key={`${gameId}-${entryId}-${i}`}
-            gameId={gameId}
-            entryId={entryId}
-          />
+          <Fragment key={`${gameId}-${entryId}-${i}`}>
+            <GameEntry gameId={gameId} entryId={entryId} editMode={editMode} />
+            <AnimatedSpacer visible={true} />
+          </Fragment>
         ))}
       </Content>
 

@@ -1,3 +1,4 @@
+import { AnimatedSpacer, AnimateHeight } from "@/components/AnimateHeight";
 import { Colors } from "@/constants/theme";
 import { gamesData } from "@/data/entries";
 import { Image as ExpoImage } from "expo-image";
@@ -41,7 +42,6 @@ const HeaderBackground = styled(ExpoImage)`
 
 const Content = styled.View`
   padding: 20px;
-  gap: 20px;
   border: 1px solid ${Colors.border};
   border-top-width: 0px;
   border-bottom-left-radius: 15px;
@@ -49,7 +49,11 @@ const Content = styled.View`
   background-color: ${Colors.background};
 `;
 
-export const GameEntry = memo(function GameEntry({ gameId = 1, entryId = 1 }) {
+export const GameEntry = memo(function GameEntry({
+  gameId = 1,
+  entryId = 1,
+  editMode = false,
+}) {
   const { title, platform, genre, cover, entries } = gamesData.find(
     (game) => game.gameId === gameId,
   );
@@ -76,12 +80,16 @@ export const GameEntry = memo(function GameEntry({ gameId = 1, entryId = 1 }) {
       </Header>
 
       <Content>
-        {gallery.length > 0 && <Gallery images={gallery} />}
-        <ThemedText type="subtitle" color="text" style={{ marginBottom: -10 }}>
+        <AnimateHeight visible={!!(gallery.length || editMode)}>
+          <Gallery images={gallery} editMode={editMode} />
+        </AnimateHeight>
+        <AnimatedSpacer visible={!!(gallery.length || editMode)} />
+        <ThemedText type="subtitle" color="text" style={{ marginBottom: 10 }}>
           Entry {entryId.toString().padStart(2, "0")}
         </ThemedText>
         <ThemedText type="text">{text}</ThemedText>
-        <Tags tagIds={tags} />
+        <AnimatedSpacer visible={!!(text || editMode)} />
+        <Tags tagIds={tags} editMode={editMode} />
       </Content>
     </Container>
   );

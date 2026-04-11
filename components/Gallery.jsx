@@ -25,20 +25,19 @@ const EditableView = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
-  padding: 10px;
   border: 2px dashed ${Colors.disabled};
-  border-radius: 20px;
-  transform: scale(0.9);
+  border-radius: 10px;
 `;
 
 const GALLERY_ITEM_GAP = 10;
 const ASPECT_RATIO = 9 / 16;
 const HORIZONTAL_PADDING = 80;
 
-export const Gallery = memo(function Gallery({ images }) {
+export const Gallery = memo(function Gallery({ images, editMode = false }) {
   const { width: screenWidth } = useWindowDimensions();
   const containerWidth = screenWidth - HORIZONTAL_PADDING;
   const trackHeight = Math.round(containerWidth * ASPECT_RATIO);
+  const itemCount = images.length + (editMode ? 1 : 0);
 
   return (
     <Track
@@ -47,7 +46,7 @@ export const Gallery = memo(function Gallery({ images }) {
       snapToInterval={containerWidth + GALLERY_ITEM_GAP}
       decelerationRate="fast"
       showsHorizontalScrollIndicator={false}
-      scrollEnabled={images.length > 1}
+      scrollEnabled={itemCount > 1}
       contentContainerStyle={{
         gap: GALLERY_ITEM_GAP,
         paddingInlineStart: 20,
@@ -59,11 +58,13 @@ export const Gallery = memo(function Gallery({ images }) {
           <Image contentFit="cover" source={{ uri }} />
         </Item>
       ))}
-      <Item style={{ width: containerWidth }}>
-        <EditableView>
-          <ThemedText>Add Image</ThemedText>
-        </EditableView>
-      </Item>
+      {editMode && (
+        <Item style={{ width: containerWidth }}>
+          <EditableView>
+            <ThemedText>Add Image</ThemedText>
+          </EditableView>
+        </Item>
+      )}
     </Track>
   );
 });

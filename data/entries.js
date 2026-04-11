@@ -366,7 +366,7 @@ export const daysData = [
     date: "2026-03-16T19:30:00.000Z",
     title: "",
     text: "",
-    tags: [3, 7],
+    tags: [],
     games: [
       { gameId: 3, entryId: 2 },
       { gameId: 4, entryId: 1 },
