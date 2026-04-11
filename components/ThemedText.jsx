@@ -52,7 +52,12 @@ export function ThemedText({
   const baseStyle = [
     styles[TYPE_STYLES[type]],
     isInput ? styles.inputReset : null,
-    isInput && !multiline ? { lineHeight: undefined } : null,
+    // Single-line inputs: drop explicit height so iOS lays out text and
+    // placeholder using the same metrics (misalignment occurs when height is
+    // set without a matching lineHeight). Keep lineHeight so both text and
+    // placeholder are governed by the same value — removing it causes iOS to
+    // calculate them slightly differently, which shifts the placeholder.
+    isInput && !multiline ? { height: undefined } : null,
     // Multiline inputs must be at least one line tall even when empty,
     // otherwise the parent AnimateHeight measures 0 and can't animate open.
     isInput && multiline
@@ -72,6 +77,7 @@ export function ThemedText({
         value={value}
         editable={editable}
         pointerEvents={editable ? "auto" : "none"}
+        placeholderTextColor={Colors.placeholder}
         spellCheck={false}
         autoCorrect={true}
         {...rest}

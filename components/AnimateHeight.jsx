@@ -9,6 +9,14 @@ import Animated, {
 
 const OPEN_MAX_HEIGHT = 9999;
 
+export function AnimatedSpacer({ visible, height = 20 }) {
+  return (
+    <AnimateHeight visible={visible}>
+      <View style={{ height }} />
+    </AnimateHeight>
+  );
+}
+
 export function AnimateHeight({ visible, children, duration = 250 }) {
   const heightValue = useSharedValue(0);
   const naturalHeight = useRef(0);
