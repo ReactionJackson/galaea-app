@@ -4,8 +4,10 @@ import { Colors } from "@/constants/theme";
 import { tagsData } from "@/data/entries";
 import styled from "styled-components/native";
 
-const Container = styled.View`
-  gap: 10px;
+const Container = styled.View``;
+
+const TrackWrapper = styled.View`
+  padding-bottom: 10px;
 `;
 
 const Track = styled.ScrollView`
@@ -35,22 +37,24 @@ const Tag = styled.View`
 
 export function Tags({ tagIds = [], editMode = false }) {
   return (
-    <Container>
+    <>
       <AnimateHeight visible={editMode}>
-        <Track
-          horizontal
-          decelerationRate="fast"
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 10 }}
-        >
-          {tagsData.map(({ tagId, name, color }, i) => (
-            <Tag key={`tag-${tagId}-${i}`} color={color}>
-              <ThemedText type="tag" color={color}>
-                {name}
-              </ThemedText>
-            </Tag>
-          ))}
-        </Track>
+        <TrackWrapper>
+          <Track
+            horizontal
+            decelerationRate="fast"
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 10 }}
+          >
+            {tagsData.map(({ tagId, name, color }, i) => (
+              <Tag key={`tag-${tagId}-${i}`} color={color}>
+                <ThemedText type="tag" color={color}>
+                  {name}
+                </ThemedText>
+              </Tag>
+            ))}
+          </Track>
+        </TrackWrapper>
       </AnimateHeight>
       <ActiveTags>
         {tagIds.map((id, i) => {
@@ -64,6 +68,6 @@ export function Tags({ tagIds = [], editMode = false }) {
           );
         })}
       </ActiveTags>
-    </Container>
+    </>
   );
 }
