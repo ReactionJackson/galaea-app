@@ -6,13 +6,14 @@ import Animated from "react-native-reanimated";
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const TYPE_STYLES = {
-  title: "title",
+  title:         "title",
   "title-small": "titleSmall",
-  text: "text",
-  subtitle: "subtitle",
+  text:          "text",
+  subtitle:      "subtitle",
   "date-number": "dateNumber",
-  tag: "tag",
+  tag:           "tag",
 };
+
 
 function resolveColor(color) {
   return Colors.tags[color]?.primary ?? Colors[color] ?? color;
@@ -29,9 +30,20 @@ export function ThemedText({
   editable,
   ...rest
 }) {
-  const fromColor = resolveColor(colorSwitch?.colors[0] ?? Colors.black);
-  const toColor = resolveColor(colorSwitch?.colors[1] ?? Colors.black);
+  const defaultColor =
+    type === "tag"
+      ? (Colors.tags[color ?? "default"]?.primary ?? Colors.black)
+      : color
+        ? resolveColor(color)
+        : styles[TYPE_STYLES[type]]?.color ?? Colors.black;
 
+  const fromColor = resolveColor(colorSwitch?.colors[0] ?? defaultColor);
+  const toColor = resolveColor(colorSwitch?.colors[1] ?? defaultColor);
+
+  // Always applied — never conditional. Reanimated writes colour values directly
+  // to the native node, so conditionally removing this style leaves stale values
+  // behind. When no colorSwitch is present, from === to === defaultColor, making
+  // it a consistent no-op rather than fighting the native layer.
   const animatedColorStyle = useAnimatedTransition(
     colorSwitch?.active ?? false,
     { color: [fromColor, toColor] },
@@ -40,15 +52,10 @@ export function ThemedText({
 
   const baseStyle = [
     styles[TYPE_STYLES[type]],
-    type === "tag" && !colorSwitch
-      ? { color: Colors.tags[color ?? "default"]?.primary }
-      : !colorSwitch && color
-        ? { color: resolveColor(color) }
-        : null,
     isInput ? styles.inputReset : null,
     isInput && !multiline ? { lineHeight: undefined } : null,
     isInput ? { alignSelf: "stretch" } : null,
-    colorSwitch ? animatedColorStyle : null,
+    animatedColorStyle,
     style,
   ];
 
