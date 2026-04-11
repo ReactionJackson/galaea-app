@@ -112,7 +112,17 @@ export default function HomeScreen() {
 
   const handleSave = () => {
     if (!activeEntry) return;
-    setEntries((prev) => [...prev, activeEntry]);
+    const exists = entries.some((entry) => entry.dayId === activeEntry.dayId);
+    if (exists) {
+      setEntries(
+        entries.map((entry) =>
+          entry.dayId === activeEntry.dayId ? activeEntry : entry,
+        ),
+      );
+    } else {
+      setEntries([...entries, activeEntry]);
+    }
+    setEditMode(false);
   };
 
   // Effects:
