@@ -5,9 +5,9 @@ import { JournalTrack } from "@/components/JournalTrack";
 import { Tags } from "@/components/Tags";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
-import { daysData } from "@/data/entries";
+import { JournalProvider, useJournal } from "@/context/JournalContext";
 import { useFocusEffect } from "@react-navigation/native";
-import { Fragment, useCallback, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useMemo, useRef } from "react";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -66,10 +66,9 @@ const Button = styled.Pressable`
 `;
 // End Duplicate
 
-export default function HomeScreen() {
-  const [entries, setEntries] = useState(() => [...daysData]);
-  const [activeEntry, setActiveEntry] = useState(daysData[daysData.length - 1]);
-  const [editMode, setEditMode] = useState(false);
+function JournalScreen() {
+  const { state, activeEntry, dispatch } = useJournal();
+  const { entries, editMode } = state;
   const scrollRef = useRef(null);
 
   // Derived state:
@@ -88,7 +87,7 @@ export default function HomeScreen() {
     );
   }, [entries]);
 
-  // Handlers:
+  // Helpers:
 
   const formatDate = (format) => {
     const date = new Date(activeEntry.date);
@@ -108,51 +107,19 @@ export default function HomeScreen() {
     }
   };
 
-  const handleChangeDay = (dayId) => {
-    setActiveEntry(entries.find((day) => day.dayId === dayId));
+  // Handlers:
+
+  const handleChangeDay = (dayId) => dispatch({ type: "CHANGE_DAY", dayId });
+  const handleAdd = () => dispatch({ type: "ADD_DAY" });
+  const handleSave = () => dispatch({ type: "SAVE_EDIT" });
+
+  const setEditMode = (value) => {
+    const next = typeof value === "function" ? value(editMode) : value;
+    dispatch({ type: next ? "ENTER_EDIT" : "CANCEL_EDIT" });
   };
 
-  const handleAdd = () => {
-    setActiveEntry({
-      dayId: `day-new-${Date.now()}`,
-      date: new Date().toISOString(),
-      title: null,
-      text: "",
-      tags: [],
-      games: [],
-    });
-  };
-
-  const handleChangeGame = (index, changes) => {
-    setActiveEntry({
-      ...activeEntry,
-      games: activeEntry.games.map((game, i) =>
-        i === index ? { ...game, ...changes } : game,
-      ),
-    });
-  };
-
-  const handleAddGame = () => {
-    setActiveEntry({
-      ...activeEntry,
-      games: [...activeEntry.games, { gameId: 1, entryId: null, isNew: true }],
-    });
-  };
-
-  const handleSave = () => {
-    if (!activeEntry) return;
-    const exists = entries.some((entry) => entry.dayId === activeEntry.dayId);
-    if (exists) {
-      setEntries(
-        entries.map((entry) =>
-          entry.dayId === activeEntry.dayId ? activeEntry : entry,
-        ),
-      );
-    } else {
-      setEntries([...entries, activeEntry]);
-    }
-    setEditMode(false);
-  };
+  const handleEnterEdit = () => dispatch({ type: "ENTER_EDIT" });
+  const handleCancelEdit = () => dispatch({ type: "CANCEL_EDIT" });
 
   // Effects:
 
@@ -186,7 +153,7 @@ export default function HomeScreen() {
                 : activeEntry.title
             }
             placeholder={formatDate("weekday")}
-            onChangeText={(title) => setActiveEntry({ ...activeEntry, title })}
+            onChangeText={(title) => dispatch({ type: "UPDATE_TITLE", title })}
             editable={editMode}
           />
         </EntryInfo>
@@ -207,7 +174,7 @@ export default function HomeScreen() {
             multiline={true}
             value={activeEntry.text}
             placeholder="Write something about today..."
-            onChangeText={(text) => setActiveEntry({ ...activeEntry, text })}
+            onChangeText={(text) => dispatch({ type: "UPDATE_TEXT", text })}
             editable={editMode}
           />
         </AnimateHeight>
@@ -224,7 +191,9 @@ export default function HomeScreen() {
                 entryId={entryId}
                 editMode={editMode}
                 text={text}
-                onChangeText={(t) => handleChangeGame(i, { text: t })}
+                onChangeText={(t) =>
+                  dispatch({ type: "UPDATE_GAME", index: i, changes: { text: t } })
+                }
               />
             </AnimateHeight>
             <AnimatedSpacer visible={true} animateOnMount={!!isNew} />
@@ -233,7 +202,7 @@ export default function HomeScreen() {
         <AnimatedSpacer visible={activeEntry.games.length > 0} height={10} />
 
         <AnimateHeight visible={editMode}>
-          <Button onPress={handleAddGame}>
+          <Button onPress={() => dispatch({ type: "ADD_GAME" })}>
             <ThemedText color="white">Add Game</ThemedText>
           </Button>
         </AnimateHeight>
@@ -246,9 +215,19 @@ export default function HomeScreen() {
         onChangeDay={handleChangeDay}
         onAdd={handleAdd}
         onSave={handleSave}
+        onEnterEdit={handleEnterEdit}
+        onCancelEdit={handleCancelEdit}
         editMode={editMode}
         setEditMode={setEditMode}
       />
     </Container>
+  );
+}
+
+export default function JournalTab() {
+  return (
+    <JournalProvider>
+      <JournalScreen />
+    </JournalProvider>
   );
 }

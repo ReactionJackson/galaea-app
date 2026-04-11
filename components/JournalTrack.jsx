@@ -106,6 +106,8 @@ export function JournalTrack({
   onChangeDay = () => {},
   onAdd = () => {},
   onSave = () => {},
+  onEnterEdit = () => {},
+  onCancelEdit = () => {},
   editMode = false,
   setEditMode = () => {},
 }) {
@@ -180,7 +182,7 @@ export function JournalTrack({
     if (index === activeIndex) {
       if (index === ADD_INDEX) {
         // Cancel create: exit edit mode and navigate back to the last real entry.
-        setEditMode(false);
+        onCancelEdit();
         animateIndicatorOut();
         setIsScrolling(true);
         if (process.env.EXPO_OS === "ios") {
@@ -192,7 +194,11 @@ export function JournalTrack({
         });
         return;
       }
-      setEditMode((prev) => !prev);
+      if (editMode) {
+        onCancelEdit();
+      } else {
+        onEnterEdit();
+      }
       if (process.env.EXPO_OS === "ios") {
         Haptics.impactAsync(
           editMode
@@ -301,7 +307,6 @@ export function JournalTrack({
     const index = getIndexFromScrollEnd(event);
     if (addActive && index !== ADD_INDEX) setAddActive(false);
     if (index === ADD_INDEX) {
-      setEditMode(true);
       onAdd();
     } else {
       onChangeDay(entries[index].dayId);
@@ -328,7 +333,7 @@ export function JournalTrack({
       // Exit edit mode and scroll to the newly saved entry.
       const newIndex = entries.length - 1;
       prevEntriesLengthRef.current = entries.length;
-      setEditMode(false);
+      onCancelEdit();
       setAddActive(false);
       setActiveIndex(newIndex);
       trackRef.current?.scrollTo({
