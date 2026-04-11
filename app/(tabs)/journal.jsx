@@ -182,7 +182,7 @@ export default function HomeScreen() {
             editable={editMode}
           />
         ) : null}
-        <Tags tagIds={activeEntry.tags} />
+        <Tags tagIds={activeEntry.tags} editMode={editMode} />
         {activeEntry.games.map(({ gameId, entryId }, i) => (
           <GameEntry
             key={`${gameId}-${entryId}-${i}`}

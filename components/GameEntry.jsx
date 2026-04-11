@@ -1,6 +1,7 @@
 import { Colors } from "@/constants/theme";
 import { gamesData } from "@/data/entries";
 import { Image as ExpoImage } from "expo-image";
+import { memo } from "react";
 import styled from "styled-components/native";
 import { Gallery } from "./Gallery";
 import { Tags } from "./Tags";
@@ -48,7 +49,7 @@ const Content = styled.View`
   background-color: ${Colors.background};
 `;
 
-export function GameEntry({ gameId = 1, entryId = 1 }) {
+export const GameEntry = memo(function GameEntry({ gameId = 1, entryId = 1 }) {
   const { title, platform, genre, cover, entries } = gamesData.find(
     (game) => game.gameId === gameId,
   );
@@ -84,4 +85,4 @@ export function GameEntry({ gameId = 1, entryId = 1 }) {
       </Content>
     </Container>
   );
-}
+});
