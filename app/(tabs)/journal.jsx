@@ -12,7 +12,7 @@ import styled from "styled-components/native";
 
 const Container = styled.View`
   flex: 1;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   background-color: ${Colors.background};
 `;
@@ -56,6 +56,15 @@ const Content = styled.ScrollView`
   flex: 1;
   width: 100%;
 `;
+
+// Duplicate:
+const Button = styled.Pressable`
+  align-self: center;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background-color: ${Colors.accent};
+`;
+// End Duplicate
 
 export default function HomeScreen() {
   const [entries, setEntries] = useState(() => [...daysData]);
@@ -111,6 +120,22 @@ export default function HomeScreen() {
       text: "",
       tags: [],
       games: [],
+    });
+  };
+
+  const handleChangeGame = (index, changes) => {
+    setActiveEntry({
+      ...activeEntry,
+      games: activeEntry.games.map((game, i) =>
+        i === index ? { ...game, ...changes } : game,
+      ),
+    });
+  };
+
+  const handleAddGame = () => {
+    setActiveEntry({
+      ...activeEntry,
+      games: [...activeEntry.games, { gameId: 1, entryId: null, isNew: true }],
     });
   };
 
@@ -191,12 +216,28 @@ export default function HomeScreen() {
         <Tags tagIds={activeEntry.tags} editMode={editMode} />
         <AnimatedSpacer visible={tagsVisible} />
 
-        {activeEntry.games.map(({ gameId, entryId }, i) => (
-          <Fragment key={`${gameId}-${entryId}-${i}`}>
-            <GameEntry gameId={gameId} entryId={entryId} editMode={editMode} />
-            <AnimatedSpacer visible={true} />
+        {activeEntry.games.map(({ gameId, entryId, isNew, text }, i) => (
+          <Fragment key={`${gameId}-${String(entryId)}-${i}`}>
+            <AnimateHeight visible={true} animateOnMount={!!isNew}>
+              <GameEntry
+                gameId={gameId}
+                entryId={entryId}
+                editMode={editMode}
+                text={text}
+                onChangeText={(t) => handleChangeGame(i, { text: t })}
+              />
+            </AnimateHeight>
+            <AnimatedSpacer visible={true} animateOnMount={!!isNew} />
           </Fragment>
         ))}
+        <AnimatedSpacer visible={activeEntry.games.length > 0} height={10} />
+
+        <AnimateHeight visible={editMode}>
+          <Button onPress={handleAddGame}>
+            <ThemedText color="white">Add Game</ThemedText>
+          </Button>
+        </AnimateHeight>
+        <AnimatedSpacer visible={editMode} height={70} />
       </Content>
 
       <JournalTrack

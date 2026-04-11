@@ -42,6 +42,7 @@ const HeaderBackground = styled(ExpoImage)`
 
 const Content = styled.View`
   padding: 20px;
+  padding-bottom: 0px;
   border: 1px solid ${Colors.border};
   border-top-width: 0px;
   border-bottom-left-radius: 15px;
@@ -51,16 +52,28 @@ const Content = styled.View`
 
 export const GameEntry = memo(function GameEntry({
   gameId = 1,
-  entryId = 1,
+  entryId = null,
   editMode = false,
+  text: textProp,
+  onChangeText,
 }) {
   const { title, platform, genre, cover, entries } = gamesData.find(
     (game) => game.gameId === gameId,
   );
 
-  const { text, tags, gallery } = entries.find(
-    (entry) => entry.entryId === entryId,
-  );
+  // For existing entries, entryId is the sequential index already;
+  // for new entries (null), it's total historical count + 1.
+  const entryNumber = entryId ?? entries.length + 1;
+
+  const {
+    text: dataText = "",
+    tags = [],
+    gallery = [],
+  } = entries.find((entry) => entry.entryId === entryId) ?? {};
+
+  // Controlled when parent passes text explicitly (after first edit),
+  // otherwise fall back to the static gamesData value.
+  const text = textProp ?? dataText;
 
   return (
     <Container>
@@ -84,12 +97,22 @@ export const GameEntry = memo(function GameEntry({
           <Gallery images={gallery} editMode={editMode} />
         </AnimateHeight>
         <AnimatedSpacer visible={!!(gallery.length || editMode)} />
-        <ThemedText type="subtitle" color="text" style={{ marginBottom: 10 }}>
-          Entry {entryId.toString().padStart(2, "0")}
-        </ThemedText>
-        <ThemedText type="text">{text}</ThemedText>
+        <AnimateHeight visible={!!(text || editMode)}>
+          <ThemedText type="subtitle" color="text" style={{ marginBottom: 10 }}>
+            Entry {String(entryNumber).padStart(2, "0")}
+          </ThemedText>
+          <ThemedText
+            isInput
+            multiline={true}
+            value={text}
+            placeholder="Write something about this game..."
+            onChangeText={onChangeText}
+            editable={editMode}
+          />
+        </AnimateHeight>
         <AnimatedSpacer visible={!!(text || editMode)} />
         <Tags tagIds={tags} editMode={editMode} />
+        <AnimatedSpacer visible={!!(tags.length || editMode)} />
       </Content>
     </Container>
   );

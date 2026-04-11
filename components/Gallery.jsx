@@ -27,6 +27,7 @@ const EditableView = styled.View`
   align-items: center;
   border: 2px dashed ${Colors.disabled};
   border-radius: 10px;
+  transform: scale(0.99);
 `;
 
 const GALLERY_ITEM_GAP = 10;

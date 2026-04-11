@@ -9,15 +9,15 @@ import Animated, {
 
 const OPEN_MAX_HEIGHT = 9999;
 
-export function AnimatedSpacer({ visible, height = 20 }) {
+export function AnimatedSpacer({ visible, height = 20, animateOnMount = false }) {
   return (
-    <AnimateHeight visible={visible}>
+    <AnimateHeight visible={visible} animateOnMount={animateOnMount}>
       <View style={{ height }} />
     </AnimateHeight>
   );
 }
 
-export function AnimateHeight({ visible, children, duration = 250 }) {
+export function AnimateHeight({ visible, children, duration = 250, animateOnMount = false }) {
   const heightValue = useSharedValue(0);
   const naturalHeight = useRef(0);
   const measured = useRef(false);
@@ -27,7 +27,9 @@ export function AnimateHeight({ visible, children, duration = 250 }) {
   // Track whether the component was visible from its very first render.
   // Used to distinguish "has existing content, open immediately" from
   // "visible changed to true before onLayout fired" (race condition).
-  const wasInitiallyVisible = useRef(visible);
+  // animateOnMount overrides this so newly inserted items animate in even
+  // when mounted with visible=true.
+  const wasInitiallyVisible = useRef(animateOnMount ? false : visible);
 
   const onLayout = (e) => {
     const h = e.nativeEvent.layout.height;
