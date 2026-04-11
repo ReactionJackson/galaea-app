@@ -2,6 +2,7 @@ import { BlurView } from "@/components/BlurView";
 import { StickyLabel } from "@/components/StickyLabel";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
+import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import * as Haptics from "expo-haptics";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Animated, {
@@ -21,12 +22,15 @@ const SNAP_INTERVAL = ITEM_WIDTH + ITEM_SPACING;
 
 // Styled Components:
 
-const Container = styled(BlurView)`
+const TrackContainer = styled(Animated.View)`
   z-index: 100;
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
+`;
+
+const Container = styled(BlurView)`
   height: 90px;
   padding-top: 25px;
   align-items: center;
@@ -203,6 +207,10 @@ export function JournalTrack({
 
   // Animations:
 
+  const trackContainerStyle = useAnimatedTransition(editMode, {
+    translateY: [0, -80],
+  });
+
   const indicatorScale = useSharedValue(1);
   const indicatorOpacity = useSharedValue(1);
   const indicatorStyle = useAnimatedStyle(() => ({
@@ -333,117 +341,109 @@ export function JournalTrack({
     }
   }, [basePadding]);
 
-  // Padding values:
-  // Right padding is one SNAP_INTERVAL shorter than left so the content's
-  // maximum scroll position lands exactly on the last real item — the +
-  // button is visible peeking to the right but gesture range stops there.
-  const paddingRight = basePadding - SNAP_INTERVAL;
-  // When the + button is visible, right padding is reduced by SNAP_INTERVAL so
-  // the gesture scroll range stops at the last real item — the + peeks from the
-  // right edge but is unreachable by drag. This restriction is lifted when
-  // addActive (tap-to-navigate needs the full width) or when showAddButton is
-  // false (no + at all — the last item must be fully centerable).
   const paddingEnd =
     showAddButton && !addActive ? basePadding - SNAP_INTERVAL : basePadding;
 
   // Render:
 
   return (
-    <Container>
-      <YearLabels>
-        {yearGroups.map((group) => (
-          <StickyLabel
-            key={group.key}
-            group={group}
-            scrollX={scrollX}
-            halfTrackWidth={halfTrackWidth}
-            trackPaddingLeft={trackPaddingLeft}
-            condensed={true}
-          />
-        ))}
-      </YearLabels>
-      <MonthLabels>
-        {monthGroups.map((group) => (
-          <StickyLabel
-            key={group.key}
-            group={group}
-            scrollX={scrollX}
-            halfTrackWidth={halfTrackWidth}
-            trackPaddingLeft={trackPaddingLeft}
-          />
-        ))}
-      </MonthLabels>
-      <RedIndicator style={indicatorStyle} />
-      {editMode && activeIndex === ADD_INDEX && (
-        <SaveButton onPress={onSave}>
-          <ThemedText type="subtitle" color="white">
-            Save
-          </ThemedText>
-        </SaveButton>
-      )}
-      <Track
-        horizontal
-        ref={trackRef}
-        onScroll={scrollHandler}
-        onLayout={handleTrackPadding}
-        onScrollBeginDrag={handleScrollBeginDrag}
-        onScrollEndDrag={handleScrollEndDrag}
-        onMomentumScrollEnd={handleMomentumScrollEnd}
-        scrollEnabled={!editMode}
-        snapToInterval={SNAP_INTERVAL}
-        decelerationRate="fast"
-        onContentSizeChange={handleContentSizeChange}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          gap: ITEM_SPACING,
-          paddingInlineStart: basePadding,
-          paddingInlineEnd: paddingEnd,
-          alignItems: "center",
-        }}
-      >
-        {dayNumbers.map((dayNumber, i) => (
-          <DateCircle
-            key={`day-${dayNumber}-${i}`}
-            onPress={() => scrollToIndex(i)}
-            disabled={editMode && activeIndex !== i}
-          >
-            <ThemedText
-              type="date-number"
-              colorSwitch={
-                activeIndex !== i || isScrolling
-                  ? {
-                      colors: [Colors.black, Colors.disabled],
-                      active: editMode,
-                    }
-                  : undefined
-              }
-            >
-              {dayNumber}
+    <TrackContainer style={trackContainerStyle}>
+      <Container>
+        <YearLabels>
+          {yearGroups.map((group) => (
+            <StickyLabel
+              key={group.key}
+              group={group}
+              scrollX={scrollX}
+              halfTrackWidth={halfTrackWidth}
+              trackPaddingLeft={trackPaddingLeft}
+              condensed={true}
+            />
+          ))}
+        </YearLabels>
+        <MonthLabels>
+          {monthGroups.map((group) => (
+            <StickyLabel
+              key={group.key}
+              group={group}
+              scrollX={scrollX}
+              halfTrackWidth={halfTrackWidth}
+              trackPaddingLeft={trackPaddingLeft}
+            />
+          ))}
+        </MonthLabels>
+        <RedIndicator style={indicatorStyle} />
+        {editMode && (
+          <SaveButton onPress={onSave}>
+            <ThemedText type="subtitle" color="white">
+              Save
             </ThemedText>
-          </DateCircle>
-        ))}
-        {showAddButton && (
-          <DateCircle
-            key="add-button"
-            onPress={() => scrollToIndex(ADD_INDEX)}
-            disabled={editMode && activeIndex !== ADD_INDEX}
-          >
-            <ThemedText
-              type="date-number"
-              colorSwitch={
-                activeIndex !== ADD_INDEX || isScrolling
-                  ? {
-                      colors: [Colors.black, Colors.disabled],
-                      active: editMode,
-                    }
-                  : undefined
-              }
-            >
-              +
-            </ThemedText>
-          </DateCircle>
+          </SaveButton>
         )}
-      </Track>
-    </Container>
+        <Track
+          horizontal
+          ref={trackRef}
+          onScroll={scrollHandler}
+          onLayout={handleTrackPadding}
+          onScrollBeginDrag={handleScrollBeginDrag}
+          onScrollEndDrag={handleScrollEndDrag}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          scrollEnabled={!editMode}
+          snapToInterval={SNAP_INTERVAL}
+          decelerationRate="fast"
+          onContentSizeChange={handleContentSizeChange}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            gap: ITEM_SPACING,
+            paddingInlineStart: basePadding,
+            paddingInlineEnd: paddingEnd,
+            alignItems: "center",
+          }}
+        >
+          {dayNumbers.map((dayNumber, i) => (
+            <DateCircle
+              key={`day-${dayNumber}-${i}`}
+              onPress={() => scrollToIndex(i)}
+              disabled={editMode && activeIndex !== i}
+            >
+              <ThemedText
+                type="date-number"
+                colorSwitch={
+                  activeIndex !== i || isScrolling
+                    ? {
+                        colors: [Colors.black, Colors.disabled],
+                        active: editMode,
+                      }
+                    : undefined
+                }
+              >
+                {dayNumber}
+              </ThemedText>
+            </DateCircle>
+          ))}
+          {showAddButton && (
+            <DateCircle
+              key="add-button"
+              onPress={() => scrollToIndex(ADD_INDEX)}
+              disabled={editMode && activeIndex !== ADD_INDEX}
+            >
+              <ThemedText
+                type="date-number"
+                colorSwitch={
+                  activeIndex !== ADD_INDEX || isScrolling
+                    ? {
+                        colors: [Colors.black, Colors.disabled],
+                        active: editMode,
+                      }
+                    : undefined
+                }
+              >
+                +
+              </ThemedText>
+            </DateCircle>
+          )}
+        </Track>
+      </Container>
+    </TrackContainer>
   );
 }
