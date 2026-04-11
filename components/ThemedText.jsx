@@ -6,14 +6,13 @@ import Animated from "react-native-reanimated";
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const TYPE_STYLES = {
-  title:         "title",
+  title: "title",
   "title-small": "titleSmall",
-  text:          "text",
-  subtitle:      "subtitle",
+  text: "text",
+  subtitle: "subtitle",
   "date-number": "dateNumber",
-  tag:           "tag",
+  tag: "tag",
 };
-
 
 function resolveColor(color) {
   return Colors.tags[color]?.primary ?? Colors[color] ?? color;
@@ -35,7 +34,7 @@ export function ThemedText({
       ? (Colors.tags[color ?? "default"]?.primary ?? Colors.black)
       : color
         ? resolveColor(color)
-        : styles[TYPE_STYLES[type]]?.color ?? Colors.black;
+        : (styles[TYPE_STYLES[type]]?.color ?? Colors.black);
 
   const fromColor = resolveColor(colorSwitch?.colors[0] ?? defaultColor);
   const toColor = resolveColor(colorSwitch?.colors[1] ?? defaultColor);
@@ -54,6 +53,11 @@ export function ThemedText({
     styles[TYPE_STYLES[type]],
     isInput ? styles.inputReset : null,
     isInput && !multiline ? { lineHeight: undefined } : null,
+    // Multiline inputs must be at least one line tall even when empty,
+    // otherwise the parent AnimateHeight measures 0 and can't animate open.
+    isInput && multiline
+      ? { minHeight: styles[TYPE_STYLES[type]]?.lineHeight ?? 24 }
+      : null,
     isInput ? { alignSelf: "stretch" } : null,
     animatedColorStyle,
     style,
@@ -64,6 +68,7 @@ export function ThemedText({
       <AnimatedTextInput
         style={baseStyle}
         multiline={multiline}
+        scrollEnabled={!multiline}
         value={value}
         editable={editable}
         pointerEvents={editable ? "auto" : "none"}
