@@ -21,6 +21,12 @@ export function AnimateHeight({ visible, children, duration = 250, animateOnMoun
   const heightValue = useSharedValue(0);
   const naturalHeight = useRef(0);
   const measured = useRef(false);
+  // True only while the component is sitting at OPEN_MAX_HEIGHT (fully open).
+  // naturalHeight is only updated during the initial pre-ready measurement OR
+  // while fully open — intermediate/constrained layout passes (e.g. the
+  // re-layout that fires after maxHeight collapses to 0) give wrong values and
+  // must be ignored, otherwise the animation targets a corrupted height.
+  const isFullyOpen = useRef(false);
   const [ready, setReady] = useState(false);
   const visibleRef = useRef(visible);
   visibleRef.current = visible;
@@ -34,15 +40,20 @@ export function AnimateHeight({ visible, children, duration = 250, animateOnMoun
   const onLayout = (e) => {
     const h = e.nativeEvent.layout.height;
     if (!h) return;
-    // Always track current height so collapse animations start from the right
-    // value even if content has grown or shrunk since first measurement.
-    naturalHeight.current = h;
+    // Only trust measurements taken during the initial pre-ready pass or while
+    // the component is fully open. Once we've collapsed (maxHeight=0) React
+    // Native re-lays out the inner view inside a 0-height parent; any non-zero
+    // value it reports is a constrained artefact, not the true content height.
+    if (!measured.current || isFullyOpen.current) {
+      naturalHeight.current = h;
+    }
     if (!measured.current) {
       measured.current = true;
       if (visibleRef.current) {
         if (wasInitiallyVisible.current) {
           // Visible from the start (entry already has content) — snap open,
           // no entrance animation needed.
+          isFullyOpen.current = true;
           heightValue.value = OPEN_MAX_HEIGHT;
         } else {
           // visible became true before onLayout had a chance to fire.
@@ -50,7 +61,12 @@ export function AnimateHeight({ visible, children, duration = 250, animateOnMoun
           heightValue.value = withTiming(
             h,
             { duration, easing: Easing.out(Easing.quad) },
-            (finished) => { if (finished) heightValue.value = OPEN_MAX_HEIGHT; }
+            (finished) => {
+              if (finished) {
+                isFullyOpen.current = true;
+                heightValue.value = OPEN_MAX_HEIGHT;
+              }
+            }
           );
         }
       } else {
@@ -68,10 +84,16 @@ export function AnimateHeight({ visible, children, duration = 250, animateOnMoun
         naturalHeight.current,
         { duration, easing: Easing.out(Easing.quad) },
         (finished) => {
-          if (finished) heightValue.value = OPEN_MAX_HEIGHT;
+          if (finished) {
+            isFullyOpen.current = true;
+            heightValue.value = OPEN_MAX_HEIGHT;
+          }
         },
       );
     } else {
+      // Mark as closing before the snap so onLayout can't mistake the
+      // constrained re-layout for a valid open measurement.
+      isFullyOpen.current = false;
       // Capture actual current height before collapsing — content may have
       // grown or shrunk while open.
       heightValue.value = naturalHeight.current;
