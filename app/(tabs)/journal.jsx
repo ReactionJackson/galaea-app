@@ -7,7 +7,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { JournalProvider, useJournal } from "@/context/JournalContext";
 import { useFocusEffect } from "@react-navigation/native";
-import { Fragment, useCallback, useMemo, useRef } from "react";
+import { Fragment, useCallback, useMemo, useRef, useEffect } from "react";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -59,22 +59,34 @@ const Content = styled.ScrollView`
 
 // Duplicate:
 const Button = styled.Pressable`
+  height: 36px;
   align-self: center;
   padding: 4px 14px;
   border-radius: 20px;
+  border: 2px solid ${Colors.dateBorder};
   background-color: ${Colors.accent};
 `;
 // End Duplicate
 
 function JournalScreen() {
   const { state, activeEntry, dispatch } = useJournal();
-  const { entries, editMode } = state;
+  const { entries, editMode, cancelling } = state;
+  const committed = state.committed;
   const scrollRef = useRef(null);
+  const cancelTimerRef = useRef(null);
 
   // Derived state:
 
-  const textVisible = !!(activeEntry.text || editMode);
-  const tagsVisible = !!(activeEntry.tags.length || editMode);
+  // During the cancel animation window we use committed as the visibility
+  // source — this ensures content that only existed in the draft (typed text,
+  // added tags) starts closing immediately rather than snapping away after the
+  // timer fires.
+  const textVisible = cancelling
+    ? !!committed.text
+    : !!(activeEntry.text || editMode);
+  const tagsVisible = cancelling
+    ? !!(committed.tags.length)
+    : !!(activeEntry.tags.length || editMode);
 
   const showAddButton = useMemo(() => {
     if (entries.length === 0) return true;
@@ -113,13 +125,34 @@ function JournalScreen() {
   const handleAdd = () => dispatch({ type: "ADD_DAY" });
   const handleSave = () => dispatch({ type: "SAVE_EDIT" });
 
-  const setEditMode = (value) => {
-    const next = typeof value === "function" ? value(editMode) : value;
-    dispatch({ type: next ? "ENTER_EDIT" : "CANCEL_EDIT" });
+  const handleEnterEdit = () => {
+    // If a cancel is already in flight, abort it and go straight to edit.
+    if (cancelTimerRef.current) {
+      clearTimeout(cancelTimerRef.current);
+      cancelTimerRef.current = null;
+      dispatch({ type: "COMPLETE_CANCEL" });
+    }
+    dispatch({ type: "ENTER_EDIT" });
   };
 
-  const handleEnterEdit = () => dispatch({ type: "ENTER_EDIT" });
-  const handleCancelEdit = () => dispatch({ type: "CANCEL_EDIT" });
+  const handleCancelEdit = () => {
+    // Phase 1: exit edit mode so animations start (controls slide away,
+    // new game entries collapse, draft-only text closes, etc.)
+    dispatch({ type: "BEGIN_CANCEL" });
+    // Phase 2: once animations have had time to finish, clear the draft.
+    // The delay matches the AnimateHeight duration with a small buffer.
+    cancelTimerRef.current = setTimeout(() => {
+      cancelTimerRef.current = null;
+      dispatch({ type: "COMPLETE_CANCEL" });
+    }, 350);
+  };
+
+  // Clean up any pending cancel timer if the component unmounts mid-animation.
+  useEffect(() => {
+    return () => {
+      if (cancelTimerRef.current) clearTimeout(cancelTimerRef.current);
+    };
+  }, []);
 
   // Effects:
 
@@ -183,22 +216,34 @@ function JournalScreen() {
         <Tags tagIds={activeEntry.tags} editMode={editMode} />
         <AnimatedSpacer visible={tagsVisible} />
 
-        {activeEntry.games.map(({ gameId, entryId, isNew, text }, i) => (
-          <Fragment key={`${gameId}-${String(entryId)}-${i}`}>
-            <AnimateHeight visible={true} animateOnMount={!!isNew}>
-              <GameEntry
-                gameId={gameId}
-                entryId={entryId}
-                editMode={editMode}
-                text={text}
-                onChangeText={(t) =>
-                  dispatch({ type: "UPDATE_GAME", index: i, changes: { text: t } })
-                }
-              />
-            </AnimateHeight>
-            <AnimatedSpacer visible={true} animateOnMount={!!isNew} />
-          </Fragment>
-        ))}
+        {activeEntry.games.map(({ gameId, entryId, isNew, text }, i) => {
+          // New entries with no content collapse away on cancel — an empty card
+          // animating shut looks intentional. New entries that already have
+          // content (user typed something) stay visible until COMPLETE_CANCEL
+          // removes them from the list, because squishing real content looks wrong.
+          // Existing (committed) entries are always visible.
+          const gameVisible = !cancelling || !isNew || !!text;
+          return (
+            <Fragment key={`${gameId}-${String(entryId)}-${i}`}>
+              <AnimateHeight visible={gameVisible} animateOnMount={!!isNew}>
+                <GameEntry
+                  gameId={gameId}
+                  entryId={entryId}
+                  editMode={editMode}
+                  text={text}
+                  onChangeText={(t) =>
+                    dispatch({
+                      type: "UPDATE_GAME",
+                      index: i,
+                      changes: { text: t },
+                    })
+                  }
+                />
+              </AnimateHeight>
+              <AnimatedSpacer visible={gameVisible} animateOnMount={!!isNew} />
+            </Fragment>
+          );
+        })}
         <AnimatedSpacer visible={activeEntry.games.length > 0} height={10} />
 
         <AnimateHeight visible={editMode}>
@@ -218,7 +263,6 @@ function JournalScreen() {
         onEnterEdit={handleEnterEdit}
         onCancelEdit={handleCancelEdit}
         editMode={editMode}
-        setEditMode={setEditMode}
       />
     </Container>
   );

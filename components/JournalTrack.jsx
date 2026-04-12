@@ -87,6 +87,7 @@ const DateCircle = styled.Pressable`
 `;
 
 const Button = styled.Pressable`
+  height: 36px;
   justify-content: center;
   padding: 4px 14px;
   border-radius: 20px;
@@ -95,7 +96,6 @@ const Button = styled.Pressable`
 
 const SaveButton = styled(Button)`
   background-color: ${Colors.accent};
-  border: none;
 `;
 
 // Component:
@@ -109,7 +109,6 @@ export function JournalTrack({
   onEnterEdit = () => {},
   onCancelEdit = () => {},
   editMode = false,
-  setEditMode = () => {},
 }) {
   // ADD_INDEX is always entries.length — the slot just past the last real item.
   const ADD_INDEX = entries.length;

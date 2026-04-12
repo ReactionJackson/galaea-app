@@ -29,6 +29,7 @@ const initialState = {
   committed: daysData[daysData.length - 1],
   draft: null,
   editMode: false,
+  cancelling: false,
 };
 
 function journalReducer(state, action) {
@@ -49,14 +50,25 @@ function journalReducer(state, action) {
         ...state,
         draft: deepClone(state.committed),
         editMode: true,
+        cancelling: false,
       };
 
-    // Cancel: throw away the draft, revert to committed.
-    case "CANCEL_EDIT":
+    // Phase 1 of cancel: exit edit mode so close animations start playing,
+    // but keep draft alive so the content is still rendered during the transition.
+    case "BEGIN_CANCEL":
+      return {
+        ...state,
+        editMode: false,
+        cancelling: true,
+      };
+
+    // Phase 2 of cancel: animations have finished — now clear the draft so
+    // activeEntry reverts to committed.
+    case "COMPLETE_CANCEL":
       return {
         ...state,
         draft: null,
-        editMode: false,
+        cancelling: false,
       };
 
     // Save: promote draft → committed and persist to the entries list.
@@ -82,6 +94,7 @@ function journalReducer(state, action) {
         ...state,
         draft: buildNewEntry(),
         editMode: true,
+        cancelling: false,
       };
 
     // Field-level mutations — all target draft only.
