@@ -104,6 +104,13 @@ function journalReducer(state, action) {
     case "UPDATE_TEXT":
       return { ...state, draft: { ...state.draft, text: action.text } };
 
+    case "TOGGLE_TAG": {
+      const tags = state.draft.tags.includes(action.tagId)
+        ? state.draft.tags.filter((id) => id !== action.tagId)
+        : [...state.draft.tags, action.tagId];
+      return { ...state, draft: { ...state.draft, tags } };
+    }
+
     case "UPDATE_GAME":
       return {
         ...state,

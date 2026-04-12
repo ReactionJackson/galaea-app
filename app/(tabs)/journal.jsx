@@ -124,6 +124,7 @@ function JournalScreen() {
   const handleChangeDay = (dayId) => dispatch({ type: "CHANGE_DAY", dayId });
   const handleAdd = () => dispatch({ type: "ADD_DAY" });
   const handleSave = () => dispatch({ type: "SAVE_EDIT" });
+  const handleToggleTag = (tagId) => dispatch({ type: "TOGGLE_TAG", tagId });
 
   const handleEnterEdit = () => {
     // If a cancel is already in flight, abort it and go straight to edit.
@@ -213,7 +214,7 @@ function JournalScreen() {
         </AnimateHeight>
         <AnimatedSpacer visible={textVisible} />
 
-        <Tags tagIds={activeEntry.tags} editMode={editMode} />
+        <Tags tagIds={activeEntry.tags} editMode={editMode} onToggleTag={handleToggleTag} />
         <AnimatedSpacer visible={tagsVisible} />
 
         {activeEntry.games.map(({ gameId, entryId, isNew, text }, i) => {

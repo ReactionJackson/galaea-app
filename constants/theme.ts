@@ -16,6 +16,10 @@ export const Colors = {
       primary: "#777",
       secondary: "#eee",
     },
+    disabled: {
+      primary: "rgba(0, 0, 0, 0.1)",
+      secondary: "rgba(0, 0, 0, 0.025)",
+    },
     green: {
       primary: "#56ba40",
       secondary: "#ddf1d9",
