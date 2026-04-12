@@ -40,6 +40,22 @@ export const Colors = {
       primary: "#e74c3c",
       secondary: "#f5d7d5",
     },
+    orange: {
+      primary: "#e8833a",
+      secondary: "#fde8d5",
+    },
+    pink: {
+      primary: "#d4427a",
+      secondary: "#f7d5e7",
+    },
+    teal: {
+      primary: "#2a9d8f",
+      secondary: "#d5f0ee",
+    },
+    lime: {
+      primary: "#7cb518",
+      secondary: "#e6f4c2",
+    },
   },
 };
 

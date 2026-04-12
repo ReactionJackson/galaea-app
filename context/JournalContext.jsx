@@ -1,4 +1,4 @@
-import { daysData } from "@/data/entries";
+import { daysData, tagsData } from "@/data/entries";
 import { createContext, useContext, useReducer } from "react";
 
 // ---------------------------------------------------------------------------
@@ -30,6 +30,7 @@ const initialState = {
   draft: null,
   editMode: false,
   cancelling: false,
+  tags: tagsData.map((t) => ({ ...t, archived: false })),
 };
 
 function journalReducer(state, action) {
@@ -133,6 +134,50 @@ function journalReducer(state, action) {
           ],
         },
       };
+
+    // Tag mutations — these write to state.tags (global), not just the draft.
+
+    // New tag: prepend to global tags list so it appears first in the picker.
+    // Does NOT auto-activate on the current draft — user taps it to add it.
+    case "ADD_TAG": {
+      const newId = Math.max(...state.tags.map((t) => t.tagId), 0) + 1;
+      const newTag = { tagId: newId, name: action.name, color: action.color, archived: false };
+      return {
+        ...state,
+        tags: [newTag, ...state.tags],
+      };
+    }
+
+    // Colour-only change: update the tag in-place (retroactive — all entries see it).
+    case "UPDATE_TAG_COLOR":
+      return {
+        ...state,
+        tags: state.tags.map((t) =>
+          t.tagId === action.tagId ? { ...t, color: action.color } : t
+        ),
+      };
+
+    // Name change: archive the old tag, create a fresh one spliced in at the
+    // same position so it appears in the same slot in the picker.
+    // If the old tagId was active on the current draft, swap it for the new one.
+    case "REPLACE_TAG": {
+      const newId = Math.max(...state.tags.map((t) => t.tagId), 0) + 1;
+      const newTag = { tagId: newId, name: action.name, color: action.color, archived: false };
+      const oldIndex = state.tags.findIndex((t) => t.tagId === action.tagId);
+      // Archive the old tag in-place, then splice the new one in at the same index.
+      const newTags = state.tags.map((t) =>
+        t.tagId === action.tagId ? { ...t, archived: true } : t
+      );
+      newTags.splice(oldIndex, 0, newTag);
+      const draftTags = state.draft.tags.includes(action.tagId)
+        ? state.draft.tags.map((id) => (id === action.tagId ? newId : id))
+        : state.draft.tags;
+      return {
+        ...state,
+        tags: newTags,
+        draft: { ...state.draft, tags: draftTags },
+      };
+    }
 
     default:
       return state;
