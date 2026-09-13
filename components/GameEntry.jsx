@@ -1,11 +1,8 @@
-import { AnimatedSpacer, AnimateHeight } from "@/components/AnimateHeight";
 import { Colors } from "@/constants/theme";
-import { gamesData } from "@/data/entries";
 import { Image as ExpoImage } from "expo-image";
 import { memo } from "react";
 import styled from "styled-components/native";
-import { Gallery, getImageUri } from "./Gallery";
-import { Tags } from "./Tags";
+import { EntryContent } from "./EntryContent";
 import { ThemedText } from "./ThemedText";
 
 const Container = styled.View`
@@ -50,7 +47,12 @@ const Content = styled.View`
   background-color: ${Colors.background};
 `;
 
+// games is the live games store (JournalContext's state.games), passed down
+// rather than imported statically — its entries can change at runtime (see
+// JournalContext's SAVE_EDIT), so this always needs the current copy rather
+// than the seed data snapshot.
 export const GameEntry = memo(function GameEntry({
+  games = [],
   gameId = 1,
   entryId = null,
   editMode = false,
@@ -65,52 +67,24 @@ export const GameEntry = memo(function GameEntry({
   onUpdateTagColor,
   onReplaceTag,
 }) {
-  const { title, platform, genre, cover, entries } = gamesData.find(
-    (game) => game.gameId === gameId,
-  );
+  const { title, platform, genre, cover, entries } =
+    games.find((game) => game.gameId === gameId) ?? {};
 
   // For existing entries, entryId is the sequential index already;
   // for new entries (null), it's total historical count + 1.
-  const entryNumber = entryId ?? entries.length + 1;
+  const entryNumber = entryId ?? (entries?.length ?? 0) + 1;
 
   const {
     text: dataText = "",
     tags: dataTagIds = [],
     gallery: dataGallery = [],
-  } = entries.find((entry) => entry.entryId === entryId) ?? {};
+  } = entries?.find((entry) => entry.entryId === entryId) ?? {};
 
   // Controlled when parent passes text/tags/gallery explicitly (after first
-  // edit), otherwise fall back to the static gamesData value.
+  // edit), otherwise fall back to the live games-store value.
   const text = textProp ?? dataText;
   const tagIds = tagIdsProp ?? dataTagIds;
   const gallery = galleryProp ?? dataGallery;
-
-  const handleToggleTag = (tagId) => {
-    const next = tagIds.includes(tagId)
-      ? tagIds.filter((id) => id !== tagId)
-      : [...tagIds, tagId];
-    onChangeTags?.(next);
-  };
-
-  // Newly picked images are appended to the end of the list, before the
-  // ever-present "Add Image" box (which lives outside this array in Gallery).
-  // item is a plain uri string, or { uri, focus } when a focal point was set.
-  const handleAddImage = (item) => {
-    onChangeGallery?.([...gallery, item]);
-  };
-
-  // Re-editing an existing image's focal point (only reachable in edit mode)
-  // updates that one entry in place rather than appending — focus === null
-  // (Reset, then Save) collapses it back to a plain uri string.
-  const handleUpdateImage = (index, focus) => {
-    onChangeGallery?.(
-      gallery.map((item, i) => {
-        if (i !== index) return item;
-        const uri = getImageUri(item);
-        return focus ? { uri, focus } : uri;
-      }),
-    );
-  };
 
   return (
     <Container>
@@ -130,42 +104,20 @@ export const GameEntry = memo(function GameEntry({
       </Header>
 
       <Content>
-        <AnimateHeight
-          visible={!!(gallery.length || editMode)}
-          style={{ marginHorizontal: -20 }}
-        >
-          <Gallery
-            images={gallery}
-            editMode={editMode}
-            onAddImage={handleAddImage}
-            onUpdateImage={handleUpdateImage}
-          />
-        </AnimateHeight>
-        <AnimatedSpacer visible={!!(gallery.length || editMode)} />
-        <AnimateHeight visible={!!(text || editMode)}>
-          <ThemedText type="subtitle" color="text" style={{ marginBottom: 10 }}>
-            Entry {String(entryNumber).padStart(2, "0")}
-          </ThemedText>
-          <ThemedText
-            isInput
-            multiline={true}
-            value={text}
-            placeholder="Write something about this game..."
-            onChangeText={onChangeText}
-            editable={editMode}
-          />
-        </AnimateHeight>
-        <AnimatedSpacer visible={!!(text || editMode)} />
-        <Tags
+        <EntryContent
+          entryNumber={entryNumber}
+          editMode={editMode}
+          text={text}
           tagIds={tagIds}
           tags={allTags}
-          editMode={editMode}
-          onToggleTag={handleToggleTag}
+          gallery={gallery}
+          onChangeText={onChangeText}
+          onChangeTags={onChangeTags}
+          onChangeGallery={onChangeGallery}
           onAddTag={onAddTag}
           onUpdateTagColor={onUpdateTagColor}
           onReplaceTag={onReplaceTag}
         />
-        <AnimatedSpacer visible={!!(tagIds.length || editMode)} />
       </Content>
     </Container>
   );

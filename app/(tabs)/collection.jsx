@@ -1,10 +1,10 @@
+import { CollectionEntry } from "@/components/CollectionEntry";
 import { CollectionTrack } from "@/components/CollectionTrack";
 import { PageHeader } from "@/components/PageHeader";
 import { PageScroll } from "@/components/PageScroll";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
-import { gamesData } from "@/data/entries";
-import { Image as ExpoImage } from "expo-image";
+import { useJournal } from "@/context/JournalContext";
 import { useState } from "react";
 import styled from "styled-components/native";
 
@@ -13,25 +13,6 @@ const Container = styled.View`
   background-color: ${Colors.background};
 `;
 
-// Temporary — just here so there's enough vertical content to confirm the
-// track keeps working correctly while this area scrolls. Remove once real
-// per-game content replaces it.
-const CoverBlock = styled.View`
-  width: 100%;
-  height: 220px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-top: 16px;
-`;
-
-const CoverImage = styled(ExpoImage).attrs({ transition: 200 })`
-  width: 100%;
-  height: 100%;
-`;
-
-// Same small-text-above-title pattern as the journal header (see
-// EntryInfo/EntryDate in journal.jsx) — the leading circle isn't used here
-// yet, so this is just the column, not a full duplicate of that layout.
 const InfoColumn = styled.View`
   flex-direction: column;
   justify-content: flex-start;
@@ -45,10 +26,24 @@ const GameMeta = styled.View`
 `;
 
 export default function CollectionScreen() {
-  const [activeGameId, setActiveGameId] = useState(gamesData[gamesData.length - 1]?.gameId);
+  // Same context journal.jsx reads from (provided once, in the tab layout)
+  // — games/entries and tags are the shared live store, not a static import,
+  // so a journal edit shows up here without a reload.
+  const { state } = useJournal();
+  const games = state.games;
+
+  const [activeGameId, setActiveGameId] = useState(
+    games[games.length - 1]?.gameId,
+  );
   const [addMode, setAddMode] = useState(false);
 
-  const activeGame = gamesData.find((g) => g.gameId === activeGameId);
+  const activeGame = games.find((g) => g.gameId === activeGameId);
+  // A game's page shows every entry ever written for it, oldest first —
+  // distinct from the journal view, which only ever shows the one entry
+  // made on that particular day.
+  const orderedEntries = activeGame
+    ? [...activeGame.entries].sort((a, b) => a.entryId - b.entryId)
+    : [];
 
   const handleSave = () => {
     // Nothing to persist yet — add-game itself isn't built out. This just
@@ -83,16 +78,20 @@ export default function CollectionScreen() {
         }}
       >
         {!addMode &&
-          activeGame?.cover &&
-          Array.from({ length: 6 }).map((_, i) => (
-            <CoverBlock key={i}>
-              <CoverImage source={{ uri: activeGame.cover }} contentFit="cover" />
-            </CoverBlock>
+          orderedEntries.map((entry) => (
+            <CollectionEntry
+              key={entry.entryId}
+              entryId={entry.entryId}
+              text={entry.text}
+              tagIds={entry.tags}
+              tags={state.tags}
+              gallery={entry.gallery}
+            />
           ))}
       </PageScroll>
 
       <CollectionTrack
-        games={gamesData}
+        games={games}
         editMode={addMode}
         onChangeGame={setActiveGameId}
         onAddGame={() => setAddMode(true)}

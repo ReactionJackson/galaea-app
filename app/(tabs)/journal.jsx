@@ -6,8 +6,8 @@ import { PageScroll } from "@/components/PageScroll";
 import { Tags } from "@/components/Tags";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
-import { JournalProvider, useJournal } from "@/context/JournalContext";
-import { Fragment, useMemo, useRef, useEffect } from "react";
+import { useJournal } from "@/context/JournalContext";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -66,7 +66,7 @@ function JournalScreen() {
     ? !!committed.text
     : !!(activeEntry.text || editMode);
   const tagsVisible = cancelling
-    ? !!(committed.tags.length)
+    ? !!committed.tags.length
     : !!(activeEntry.tags.length || editMode);
 
   const showAddButton = useMemo(() => {
@@ -106,9 +106,12 @@ function JournalScreen() {
   const handleAdd = () => dispatch({ type: "ADD_DAY" });
   const handleSave = () => dispatch({ type: "SAVE_EDIT" });
   const handleToggleTag = (tagId) => dispatch({ type: "TOGGLE_TAG", tagId });
-  const handleAddTag = (name, color) => dispatch({ type: "ADD_TAG", name, color });
-  const handleUpdateTagColor = (tagId, color) => dispatch({ type: "UPDATE_TAG_COLOR", tagId, color });
-  const handleReplaceTag = (tagId, name, color) => dispatch({ type: "REPLACE_TAG", tagId, name, color });
+  const handleAddTag = (name, color) =>
+    dispatch({ type: "ADD_TAG", name, color });
+  const handleUpdateTagColor = (tagId, color) =>
+    dispatch({ type: "UPDATE_TAG_COLOR", tagId, color });
+  const handleReplaceTag = (tagId, name, color) =>
+    dispatch({ type: "REPLACE_TAG", tagId, name, color });
 
   const handleEnterEdit = () => {
     // If a cancel is already in flight, abort it and go straight to edit.
@@ -200,54 +203,60 @@ function JournalScreen() {
         />
         <AnimatedSpacer visible={tagsVisible} />
 
-        {activeEntry.games.map(({ gameId, entryId, isNew, text, tags, gallery }, i) => {
-          // New entries with no content collapse away on cancel — an empty card
-          // animating shut looks intentional. New entries that already have
-          // content (user typed something) stay visible until COMPLETE_CANCEL
-          // removes them from the list, because squishing real content looks wrong.
-          // Existing (committed) entries are always visible.
-          const gameVisible = !cancelling || !isNew || !!text;
-          return (
-            <Fragment key={`${gameId}-${String(entryId)}-${i}`}>
-              <AnimateHeight visible={gameVisible} animateOnMount={!!isNew}>
-                <GameEntry
-                  gameId={gameId}
-                  entryId={entryId}
-                  editMode={editMode}
-                  text={text}
-                  tagIds={tags}
-                  tags={state.tags}
-                  gallery={gallery}
-                  onChangeText={(t) =>
-                    dispatch({
-                      type: "UPDATE_GAME",
-                      index: i,
-                      changes: { text: t },
-                    })
-                  }
-                  onChangeTags={(newTags) =>
-                    dispatch({
-                      type: "UPDATE_GAME",
-                      index: i,
-                      changes: { tags: newTags },
-                    })
-                  }
-                  onChangeGallery={(newGallery) =>
-                    dispatch({
-                      type: "UPDATE_GAME",
-                      index: i,
-                      changes: { gallery: newGallery },
-                    })
-                  }
-                  onAddTag={handleAddTag}
-                  onUpdateTagColor={handleUpdateTagColor}
-                  onReplaceTag={handleReplaceTag}
+        {activeEntry.games.map(
+          ({ gameId, entryId, isNew, text, tags, gallery }, i) => {
+            // New entries with no content collapse away on cancel — an empty card
+            // animating shut looks intentional. New entries that already have
+            // content (user typed something) stay visible until COMPLETE_CANCEL
+            // removes them from the list, because squishing real content looks wrong.
+            // Existing (committed) entries are always visible.
+            const gameVisible = !cancelling || !isNew || !!text;
+            return (
+              <Fragment key={`${gameId}-${String(entryId)}-${i}`}>
+                <AnimateHeight visible={gameVisible} animateOnMount={!!isNew}>
+                  <GameEntry
+                    games={state.games}
+                    gameId={gameId}
+                    entryId={entryId}
+                    editMode={editMode}
+                    text={text}
+                    tagIds={tags}
+                    tags={state.tags}
+                    gallery={gallery}
+                    onChangeText={(t) =>
+                      dispatch({
+                        type: "UPDATE_GAME",
+                        index: i,
+                        changes: { text: t },
+                      })
+                    }
+                    onChangeTags={(newTags) =>
+                      dispatch({
+                        type: "UPDATE_GAME",
+                        index: i,
+                        changes: { tags: newTags },
+                      })
+                    }
+                    onChangeGallery={(newGallery) =>
+                      dispatch({
+                        type: "UPDATE_GAME",
+                        index: i,
+                        changes: { gallery: newGallery },
+                      })
+                    }
+                    onAddTag={handleAddTag}
+                    onUpdateTagColor={handleUpdateTagColor}
+                    onReplaceTag={handleReplaceTag}
+                  />
+                </AnimateHeight>
+                <AnimatedSpacer
+                  visible={gameVisible}
+                  animateOnMount={!!isNew}
                 />
-              </AnimateHeight>
-              <AnimatedSpacer visible={gameVisible} animateOnMount={!!isNew} />
-            </Fragment>
-          );
-        })}
+              </Fragment>
+            );
+          },
+        )}
         <AnimatedSpacer visible={activeEntry.games.length > 0} height={10} />
 
         <AnimateHeight visible={editMode}>
@@ -272,10 +281,4 @@ function JournalScreen() {
   );
 }
 
-export default function JournalTab() {
-  return (
-    <JournalProvider>
-      <JournalScreen />
-    </JournalProvider>
-  );
-}
+export default JournalScreen;

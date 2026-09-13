@@ -1,4 +1,4 @@
-import { daysData, tagsData } from "@/data/entries";
+import { daysData, gamesData, tagsData } from "@/data/entries";
 import { createContext, useContext, useReducer } from "react";
 
 // ---------------------------------------------------------------------------
@@ -20,6 +20,60 @@ function buildNewEntry() {
   };
 }
 
+// The one process any game-entry mutation must go through to actually reach
+// the shared games store. A day's draft.games items carry scratch
+// text/tags/gallery fields directly while being edited (see UPDATE_GAME) —
+// fine as transient in-progress state, but it must never be committed that
+// way, or the day and the game end up with two diverging copies of the same
+// content. This is the single place that split happens: called from
+// SAVE_EDIT today, and whatever commits a game-entry mutation in future
+// (an edit made directly from the game's own page, a delete, etc.) must
+// route through this same function rather than re-implementing it.
+//
+// Untouched refs pass straight through unchanged. A touched one (isNew, or
+// any of text/tags/gallery present) gets written into the matching game's
+// entries — a new entry if it's brand new, merged into the existing one
+// otherwise, with any field the edit didn't touch falling back to what's
+// already stored — and comes back out as a clean { gameId, entryId } ref.
+function reconcileGameEdits(games, draftGames) {
+  let nextGames = games;
+
+  const cleanGames = draftGames.map((g) => {
+    const { gameId, entryId, isNew, text, tags, gallery } = g;
+    const wasEdited =
+      isNew || text !== undefined || tags !== undefined || gallery !== undefined;
+    if (!wasEdited) return { gameId, entryId };
+
+    const gameIndex = nextGames.findIndex((game) => game.gameId === gameId);
+    if (gameIndex === -1) return { gameId, entryId };
+    const game = nextGames[gameIndex];
+
+    const resolvedEntryId =
+      isNew || entryId == null
+        ? Math.max(0, ...game.entries.map((e) => e.entryId)) + 1
+        : entryId;
+
+    const existingEntry = game.entries.find((e) => e.entryId === resolvedEntryId);
+    const nextEntry = {
+      entryId: resolvedEntryId,
+      text: text !== undefined ? text : (existingEntry?.text ?? ""),
+      tags: tags !== undefined ? tags : (existingEntry?.tags ?? []),
+      gallery: gallery !== undefined ? gallery : (existingEntry?.gallery ?? []),
+    };
+    const nextEntries = existingEntry
+      ? game.entries.map((e) => (e.entryId === resolvedEntryId ? nextEntry : e))
+      : [...game.entries, nextEntry];
+
+    nextGames = nextGames.map((gm, i) =>
+      i === gameIndex ? { ...gm, entries: nextEntries } : gm,
+    );
+
+    return { gameId, entryId: resolvedEntryId };
+  });
+
+  return { games: nextGames, cleanGames };
+}
+
 // ---------------------------------------------------------------------------
 // Reducer
 // ---------------------------------------------------------------------------
@@ -31,6 +85,10 @@ const initialState = {
   editMode: false,
   cancelling: false,
   tags: tagsData.map((t) => ({ ...t, archived: false })),
+  // The single source of truth for every game and its entries. Journal days
+  // only ever hold { gameId, entryId } references into this — see SAVE_EDIT,
+  // which is responsible for keeping that split intact.
+  games: deepClone(gamesData),
 };
 
 function journalReducer(state, action) {
@@ -73,18 +131,25 @@ function journalReducer(state, action) {
       };
 
     // Save: promote draft → committed and persist to the entries list.
+    // reconcileGameEdits does the actual split of edited game content out
+    // into the games store — see its comment above for why that has to be
+    // one shared function rather than inline logic here.
     case "SAVE_EDIT": {
       const saved = state.draft;
-      const exists = state.entries.some((e) => e.dayId === saved.dayId);
+      const { games, cleanGames } = reconcileGameEdits(state.games, saved.games);
+      const cleanedSaved = { ...saved, games: cleanGames };
+      const exists = state.entries.some((e) => e.dayId === cleanedSaved.dayId);
       const entries = exists
-        ? state.entries.map((e) => (e.dayId === saved.dayId ? saved : e))
-        : [...state.entries, saved];
+        ? state.entries.map((e) => (e.dayId === cleanedSaved.dayId ? cleanedSaved : e))
+        : [...state.entries, cleanedSaved];
+
       return {
         ...state,
         entries,
-        committed: saved,
+        committed: cleanedSaved,
         draft: null,
         editMode: false,
+        games,
       };
     }
 
