@@ -29,6 +29,21 @@ const CoverImage = styled(ExpoImage).attrs({ transition: 200 })`
   height: 100%;
 `;
 
+// Same small-text-above-title pattern as the journal header (see
+// EntryInfo/EntryDate in journal.jsx) — the leading circle isn't used here
+// yet, so this is just the column, not a full duplicate of that layout.
+const InfoColumn = styled.View`
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+`;
+
+const GameMeta = styled.View`
+  flex-direction: row;
+  gap: 5px;
+  margin: 3px 0 -2px 0;
+`;
+
 export default function CollectionScreen() {
   const [activeGameId, setActiveGameId] = useState(gamesData[gamesData.length - 1]?.gameId);
   const [addMode, setAddMode] = useState(false);
@@ -44,9 +59,19 @@ export default function CollectionScreen() {
   return (
     <Container>
       <PageHeader>
-        <ThemedText type="title">
-          {addMode ? "New Game" : activeGame?.title}
-        </ThemedText>
+        <InfoColumn>
+          {!addMode && activeGame && (
+            <GameMeta>
+              <ThemedText type="subtitle">{activeGame.platform}</ThemedText>
+              <ThemedText type="subtitle" color="faded">
+                {activeGame.genre}
+              </ThemedText>
+            </GameMeta>
+          )}
+          <ThemedText type="title">
+            {addMode ? "New Game" : activeGame?.title}
+          </ThemedText>
+        </InfoColumn>
       </PageHeader>
 
       <PageScroll
