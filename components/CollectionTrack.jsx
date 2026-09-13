@@ -13,7 +13,7 @@ import styled from "styled-components/native";
 
 // Constants:
 
-const ITEM_HEIGHT = 90;
+const ITEM_HEIGHT = 70;
 const ITEM_SPACING = 10;
 
 // Styled Components:
@@ -166,7 +166,7 @@ export function CollectionTrack({
     <TrackChrome
       editMode={editMode}
       trackHeight={ITEM_HEIGHT + 20}
-      trackPaddingTop={10}
+      trackPaddingTop={6}
       onCancel={() => goToIndex(activeIndex)}
       onSave={onSave}
     >
