@@ -8,6 +8,7 @@ export const Colors = {
   disabled: "rgba(0, 0, 0, 0.1)",
   dateBorder: "rgba(0, 0, 0, 0.1)",
   placeholder: "rgba(0, 0, 0, 0.25)",
+  overlay: "rgba(0, 0, 0, 0.9)",
   accent: "#f96156",
   background: "#fff",
   backgroundBlurTint: "rgba(255, 255, 255, 0.4)",
