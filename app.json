@@ -40,7 +40,13 @@
       "expo-font",
       "expo-image",
       "expo-status-bar",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Galaea allows attaching photos and screenshots to journal entries."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
