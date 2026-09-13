@@ -107,7 +107,10 @@ export const GameEntry = memo(function GameEntry({
       </Header>
 
       <Content>
-        <AnimateHeight visible={!!(gallery.length || editMode)}>
+        <AnimateHeight
+          visible={!!(gallery.length || editMode)}
+          style={{ marginHorizontal: -20 }}
+        >
           <Gallery images={gallery} editMode={editMode} />
         </AnimateHeight>
         <AnimatedSpacer visible={!!(gallery.length || editMode)} />

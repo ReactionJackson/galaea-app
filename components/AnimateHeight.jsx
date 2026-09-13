@@ -17,7 +17,7 @@ export function AnimatedSpacer({ visible, height = 20, animateOnMount = false })
   );
 }
 
-export function AnimateHeight({ visible, children, duration = 250, animateOnMount = false }) {
+export function AnimateHeight({ visible, children, duration = 250, animateOnMount = false, style }) {
   const heightValue = useSharedValue(0);
   const naturalHeight = useRef(0);
   const measured = useRef(false);
@@ -111,7 +111,7 @@ export function AnimateHeight({ visible, children, duration = 250, animateOnMoun
 
   return (
     <Animated.View
-      style={ready ? animatedStyle : { overflow: "hidden", opacity: 0 }}
+      style={[ready ? animatedStyle : { overflow: "hidden", opacity: 0 }, style]}
     >
       <View onLayout={onLayout}>{children}</View>
     </Animated.View>

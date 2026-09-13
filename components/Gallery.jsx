@@ -1,13 +1,9 @@
 import { Colors } from "@/constants/theme";
 import { Image as ExpoImage } from "expo-image";
 import { memo } from "react";
-import { useWindowDimensions } from "react-native";
+import { ScrollView, useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
 import { ThemedText } from "./ThemedText";
-
-const Track = styled.ScrollView`
-  margin: 0 -20px;
-`;
 
 const Item = styled.View`
   flex-shrink: 0;
@@ -41,7 +37,7 @@ export const Gallery = memo(function Gallery({ images, editMode = false }) {
   const itemCount = images.length + (editMode ? 1 : 0);
 
   return (
-    <Track
+    <ScrollView
       style={{ height: trackHeight }}
       horizontal
       snapToInterval={containerWidth + GALLERY_ITEM_GAP}
@@ -66,6 +62,6 @@ export const Gallery = memo(function Gallery({ images, editMode = false }) {
           </EditableView>
         </Item>
       )}
-    </Track>
+    </ScrollView>
   );
 });
