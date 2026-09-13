@@ -1,8 +1,17 @@
-import { AnimateHeight, AnimatedSpacer } from "@/components/AnimateHeight";
-import { ThemedText } from "@/components/ThemedText";
+import {
+  AnimateHeight,
+  AnimatedSpacer,
+} from "@/components/interface/AnimateHeight";
+import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors, Fonts } from "@/constants/theme";
 import { LinearGradient } from "expo-linear-gradient";
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
 import Animated, {
   Easing,
@@ -13,18 +22,22 @@ import Animated, {
 } from "react-native-reanimated";
 import styled from "styled-components/native";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 const PICKER_COLORS = [
-  "default", "green", "blue", "yellow", "purple",
-  "red", "orange", "pink", "teal", "lime",
+  "default",
+  "green",
+  "blue",
+  "yellow",
+  "purple",
+  "red",
+  "orange",
+  "pink",
+  "teal",
+  "lime",
 ];
 const MAX_CHARS = 24;
 const FADE_DURATION = 150;
 const FADE_EASING = Easing.out(Easing.quad);
 const COLOR_DURATION = 200;
-
-// ─── Styled components ────────────────────────────────────────────────────────
 
 const Row = styled.View`
   flex-direction: row;
@@ -92,9 +105,10 @@ const ColorDot = styled.View`
     selected ? "border-width: 2px; border-color: rgba(255,255,255,0.85);" : ""}
 `;
 
-// ─── FadeTrack ────────────────────────────────────────────────────────────────
-
-const FadeTrack = forwardRef(function FadeTrack({ children, contentContainerStyle }, ref) {
+const FadeTrack = forwardRef(function FadeTrack(
+  { children, contentContainerStyle },
+  ref,
+) {
   const leftOpacity = useSharedValue(0);
   const rightOpacity = useSharedValue(0);
   const scrollXRef = useRef(0);
@@ -109,7 +123,8 @@ const FadeTrack = forwardRef(function FadeTrack({ children, contentContainerStyl
   const recompute = (scrollX) => {
     scrollXRef.current = scrollX;
     const maxScroll = contentWidthRef.current - containerWidthRef.current;
-    const t = (val) => withTiming(val, { duration: FADE_DURATION, easing: FADE_EASING });
+    const t = (val) =>
+      withTiming(val, { duration: FADE_DURATION, easing: FADE_EASING });
 
     if (maxScroll <= 2) {
       leftOpacity.value = t(0);
@@ -151,7 +166,14 @@ const FadeTrack = forwardRef(function FadeTrack({ children, contentContainerStyl
 
       <Animated.View
         style={[
-          { position: "absolute", top: 0, bottom: 0, left: 0, width: 24, pointerEvents: "none" },
+          {
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            width: 24,
+            pointerEvents: "none",
+          },
           leftStyle,
         ]}
       >
@@ -165,7 +187,14 @@ const FadeTrack = forwardRef(function FadeTrack({ children, contentContainerStyl
 
       <Animated.View
         style={[
-          { position: "absolute", top: 0, bottom: 0, right: 0, width: 24, pointerEvents: "none" },
+          {
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            right: 0,
+            width: 24,
+            pointerEvents: "none",
+          },
           rightStyle,
         ]}
       >
@@ -180,13 +209,6 @@ const FadeTrack = forwardRef(function FadeTrack({ children, contentContainerStyl
   );
 });
 
-// ─── useTagColorTransition ────────────────────────────────────────────────────
-// Interpolates border, background and text colours whenever draftColor changes.
-//
-// All colour values are pre-resolved to plain strings and stored as shared
-// values so the UI-thread worklets inside useAnimatedStyle never need to call
-// any regular JS functions (which would crash the Reanimated Babel plugin).
-
 function resolveTagPrimary(key) {
   return Colors.tags[key]?.primary ?? Colors.tags.default.primary;
 }
@@ -197,35 +219,48 @@ function resolveTagSecondary(key) {
 function useTagColorTransition(draftColor) {
   const progress = useSharedValue(1);
   const fromBorder = useSharedValue(resolveTagPrimary(draftColor));
-  const toBorder   = useSharedValue(resolveTagPrimary(draftColor));
-  const fromBg     = useSharedValue(resolveTagSecondary(draftColor));
-  const toBg       = useSharedValue(resolveTagSecondary(draftColor));
+  const toBorder = useSharedValue(resolveTagPrimary(draftColor));
+  const fromBg = useSharedValue(resolveTagSecondary(draftColor));
+  const toBg = useSharedValue(resolveTagSecondary(draftColor));
 
   useEffect(() => {
     // Snapshot current "to" as the new "from", then update target colours.
     fromBorder.value = toBorder.value;
-    fromBg.value     = toBg.value;
-    toBorder.value   = resolveTagPrimary(draftColor);
-    toBg.value       = resolveTagSecondary(draftColor);
-    progress.value   = 0;
-    progress.value   = withTiming(1, { duration: COLOR_DURATION, easing: FADE_EASING });
+    fromBg.value = toBg.value;
+    toBorder.value = resolveTagPrimary(draftColor);
+    toBg.value = resolveTagSecondary(draftColor);
+    progress.value = 0;
+    progress.value = withTiming(1, {
+      duration: COLOR_DURATION,
+      easing: FADE_EASING,
+    });
   }, [draftColor]);
 
   // Worklets only read shared values and call interpolateColor — no plain JS
   // function calls, which is a hard Reanimated constraint.
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor:     interpolateColor(progress.value, [0, 1], [fromBorder.value, toBorder.value]),
-    backgroundColor: interpolateColor(progress.value, [0, 1], [fromBg.value,     toBg.value]),
+    borderColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      [fromBorder.value, toBorder.value],
+    ),
+    backgroundColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      [fromBg.value, toBg.value],
+    ),
   }));
 
   const textStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(progress.value, [0, 1], [fromBorder.value, toBorder.value]),
+    color: interpolateColor(
+      progress.value,
+      [0, 1],
+      [fromBorder.value, toBorder.value],
+    ),
   }));
 
   return { borderStyle, textStyle };
 }
-
-// ─── Tags ─────────────────────────────────────────────────────────────────────
 
 export function Tags({
   tagIds = [],
@@ -256,8 +291,6 @@ export function Tags({
     }
   }, [editMode]);
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
-
   const openEditRow = (tagId = null) => {
     if (tagId !== null) {
       const tag = tags.find((t) => t.tagId === tagId);
@@ -287,8 +320,6 @@ export function Tags({
 
     if (editingTagId === null) {
       onAddTag(trimmedName, draftColor);
-      // New tag is prepended — scroll the collection back to the start so it's
-      // immediately visible. User taps it themselves to activate it.
       setTimeout(() => collectionTrackRef.current?.scrollToStart(), 80);
     } else {
       const original = tags.find((t) => t.tagId === editingTagId);
@@ -306,12 +337,8 @@ export function Tags({
     setDraftColor("default");
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
-
   return (
     <View>
-
-      {/* ── Collection row ─────────────────────────────────────────────────── */}
       <AnimateHeight visible={editMode}>
         <Row>
           <Pressable onPress={() => openEditRow(null)}>
@@ -329,7 +356,10 @@ export function Tags({
             </PlusCircle>
           </Pressable>
 
-          <FadeTrack ref={collectionTrackRef} contentContainerStyle={{ gap: 10 }}>
+          <FadeTrack
+            ref={collectionTrackRef}
+            contentContainerStyle={{ gap: 10 }}
+          >
             {activeTags.map(({ tagId, name, color }, i) => {
               const active = tagIds.includes(tagId);
               const tagColor = active ? "disabled" : color;
@@ -352,11 +382,9 @@ export function Tags({
         </Row>
       </AnimateHeight>
 
-      {/* ── Edit row ───────────────────────────────────────────────────────── */}
       <AnimateHeight visible={editRowOpen && editMode}>
         <View style={{ paddingTop: 8 }}>
           <Row>
-            {/* Hidden TextInput — focused programmatically when tag is tapped */}
             <TextInput
               ref={inputRef}
               style={{ position: "absolute", opacity: 0, width: 1, height: 1 }}
@@ -367,7 +395,6 @@ export function Tags({
               blurOnSubmit={false}
             />
 
-            {/* Visible tag with animated colour transition */}
             <Pressable
               onPress={() => inputRef.current?.focus()}
               style={{ flexShrink: 0 }}
@@ -400,7 +427,6 @@ export function Tags({
               </Animated.View>
             </Pressable>
 
-            {/* Colour picker */}
             <FadeTrack
               contentContainerStyle={{
                 gap: 8,
@@ -415,7 +441,6 @@ export function Tags({
               ))}
             </FadeTrack>
 
-            {/* Cancel */}
             <Pressable onPress={handleCancelEditRow}>
               <CancelCircle>
                 <Animated.Text
@@ -431,7 +456,6 @@ export function Tags({
               </CancelCircle>
             </Pressable>
 
-            {/* Save */}
             <Pressable onPress={handleSave}>
               <SaveCircle>
                 <Animated.Text
@@ -450,7 +474,6 @@ export function Tags({
         </View>
       </AnimateHeight>
 
-      {/* ── Active tags ────────────────────────────────────────────────────── */}
       <AnimatedSpacer visible={!!tagIds.length && editMode} height={10} />
       <ActiveTags>
         {tagIds.map((id, i) => {

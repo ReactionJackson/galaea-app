@@ -1,4 +1,4 @@
-import { ThemedText } from "@/components/ThemedText";
+import { ThemedText } from "@/components/interface/ThemedText";
 import { StyleSheet, View } from "react-native";
 
 export default function FriendsScreen() {

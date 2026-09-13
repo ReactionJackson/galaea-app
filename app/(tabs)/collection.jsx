@@ -1,8 +1,8 @@
-import { CollectionEntry } from "@/components/CollectionEntry";
-import { CollectionTrack } from "@/components/CollectionTrack";
-import { PageHeader } from "@/components/PageHeader";
-import { PageScroll } from "@/components/PageScroll";
-import { ThemedText } from "@/components/ThemedText";
+import { GameEntry } from "@/components/GameEntry";
+import { CollectionTrack } from "@/components/track/CollectionTrack";
+import { PageHeader } from "@/components/page/PageHeader";
+import { PageScroll } from "@/components/page/PageScroll";
+import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useState } from "react";
@@ -79,8 +79,9 @@ export default function CollectionScreen() {
       >
         {!addMode &&
           orderedEntries.map((entry) => (
-            <CollectionEntry
+            <GameEntry
               key={entry.entryId}
+              isMinimal
               entryId={entry.entryId}
               date={entry.date}
               text={entry.text}

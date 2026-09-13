@@ -1,6 +1,5 @@
-import { StickyLabel } from "@/components/StickyLabel";
-import { ThemedText } from "@/components/ThemedText";
-import { TrackChrome } from "@/components/TrackChrome";
+import { StickyLabel } from "./StickyLabel";
+import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
@@ -13,6 +12,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import styled from "styled-components/native";
+import { Track } from "./Track";
 
 // Constants:
 
@@ -21,7 +21,7 @@ const ITEM_SPACING = 10;
 
 // Styled Components:
 
-const Track = styled(Animated.ScrollView)`
+const ScrollContainer = styled(Animated.ScrollView)`
   flex: 1;
   width: 100%;
   height: 100%;
@@ -230,7 +230,7 @@ export function JournalTrack({
   // Render:
 
   return (
-    <TrackChrome
+    <Track
       editMode={editMode}
       trackHeight={90}
       trackPaddingTop={25}
@@ -262,7 +262,7 @@ export function JournalTrack({
           ))}
         </MonthLabels>
         <RedIndicator style={indicatorStyle} />
-        <Track
+        <ScrollContainer
           horizontal
           ref={trackRef}
           onScroll={scrollHandler}
@@ -324,8 +324,8 @@ export function JournalTrack({
               </ThemedText>
             </DateCircle>
           )}
-        </Track>
+        </ScrollContainer>
       </>
-    </TrackChrome>
+    </Track>
   );
 }

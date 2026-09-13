@@ -1,23 +1,17 @@
 import { Colors } from "@/constants/theme";
-import * as ImagePicker from "expo-image-picker";
 import { Image as ExpoImage } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import { memo, useState } from "react";
 import {
-  Image as RNImage,
   Pressable,
+  Image as RNImage,
   ScrollView,
   useWindowDimensions,
 } from "react-native";
 import styled from "styled-components/native";
 import { Lightbox } from "./Lightbox";
-import { ThemedText } from "./ThemedText";
+import { ThemedText } from "./interface/ThemedText";
 
-// Fixed app-wide crop ratio for gallery thumbnails (width : height). Chosen
-// as a compromise between modern widescreen (16:9 ≈ 1.78) and older 4:3
-// hardware (≈ 1.33) so neither era gets mangled by default. Tapping an
-// image opens the Lightbox at its true ratio, so this only has to look good
-// as a consistent thumbnail — it never needs to be "accurate". A per-user
-// override may live in Settings later; for now it's a single constant.
 export const ITEM_ASPECT_RATIO = 3 / 2;
 
 const Item = styled.View`
@@ -42,18 +36,8 @@ const EditableView = styled.View`
 `;
 
 const GALLERY_ITEM_GAP = 10;
-// Default assumes GameEntry's own context: a 20px page gutter each side,
-// plus the entry card's own 20px padding each side (which the -20px margin
-// on this component's wrapper cancels back out, letting the gallery bleed
-// to the card's edge rather than sitting inset inside it) — 80px total.
-// CollectionEntry has no card padding to cancel, so its gallery bleeds all
-// the way to the screen edge instead and passes a smaller value in.
 const DEFAULT_HORIZONTAL_PADDING = 80;
 
-// Gallery items are plain URI strings for legacy/placeholder data, or
-// { uri, focus } objects for anything with a focal point set — focus is an
-// expo-image contentPosition object ({ top, left } as percentages). Exported
-// so GameEntry.jsx can apply an updated focus without duplicating this.
 export function getImageUri(item) {
   return typeof item === "string" ? item : item.uri;
 }
@@ -73,10 +57,6 @@ export const Gallery = memo(function Gallery({
   const trackHeight = Math.round(containerWidth / ITEM_ASPECT_RATIO);
   const itemCount = images.length + (editMode ? 1 : 0);
 
-  // Unified Lightbox state — see Lightbox.jsx for the two mode shapes.
-  // `index` is this component's own bookkeeping (not passed to Lightbox):
-  // null means "not in the gallery yet", otherwise it's the position to
-  // update in place on Save, rather than append.
   const [lightbox, setLightbox] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
@@ -94,15 +74,16 @@ export const Gallery = memo(function Gallery({
 
     const asset = result.assets?.[0];
     if (!asset?.uri) return;
-    // Nothing is added to the gallery yet — the Lightbox's edit step
-    // confirms (optionally with a focal point) or cancels.
     setLightboxIndex(null);
-    setLightbox({ mode: "edit", uri: asset.uri, width: asset.width, height: asset.height, focus: null });
+    setLightbox({
+      mode: "edit",
+      uri: asset.uri,
+      width: asset.width,
+      height: asset.height,
+      focus: null,
+    });
   };
 
-  // Tapping an existing image while editing the entry re-opens it for focal
-  // point adjustment rather than just viewing it — needs its native pixel
-  // size first, which (unlike a freshly picked image) was never stored.
   const openEditExisting = (item, index) => {
     const uri = getImageUri(item);
     const focus = getImageFocus(item);
@@ -113,8 +94,6 @@ export const Gallery = memo(function Gallery({
         setLightbox({ mode: "edit", uri, width, height, focus });
       },
       () => {
-        // Couldn't measure it (e.g. a network hiccup) — still let Cancel/
-        // Reset/Save work, tap-to-move just won't do anything without a rect.
         setLightboxIndex(index);
         setLightbox({ mode: "edit", uri, width: null, height: null, focus });
       },

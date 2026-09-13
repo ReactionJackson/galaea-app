@@ -1,5 +1,5 @@
-import { BlurView } from "@/components/BlurView";
-import { ThemedText } from "@/components/ThemedText";
+import { BlurView } from "@/components/interface/BlurView";
+import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { View } from "react-native";
@@ -7,13 +7,14 @@ import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TrackChrome
+// Track
 //
 // The bottom-docked shell shared by the horizontal tracks: a blurred panel
 // that slides fully into view when editMode is on (revealing the Delete /
 // Cancel / Save controls) and mostly off-screen otherwise, leaving just the
-// track itself visible. JournalTrack owns this exact chrome inline today —
-// this is the reusable extraction, currently used by CollectionTrack.
+// scrollable track itself visible. Used by both JournalTrack and
+// CollectionTrack, which each supply their own scrollview content as
+// children (see their own local Container styled component).
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Container = styled(Animated.View)`
@@ -50,7 +51,7 @@ export const SaveButton = styled(Button)`
   background-color: ${Colors.accent};
 `;
 
-export function TrackChrome({
+export function Track({
   editMode = false,
   trackHeight = 90,
   trackPaddingTop = 25,

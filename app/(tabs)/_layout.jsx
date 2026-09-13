@@ -1,4 +1,4 @@
-import { HapticTab } from "@/components/HapticTab";
+import { HapticTab } from "@/components/interface/HapticTab";
 import { Colors } from "@/constants/theme";
 import { AppProvider } from "@/context/AppContext";
 import { Ionicons } from "@expo/vector-icons";

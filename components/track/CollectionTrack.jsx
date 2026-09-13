@@ -1,5 +1,4 @@
-import { ThemedText } from "@/components/ThemedText";
-import { TrackChrome } from "@/components/TrackChrome";
+import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import { Image as ExpoImage } from "expo-image";
@@ -10,6 +9,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import styled from "styled-components/native";
+import { Track } from "./Track";
 
 // Constants:
 
@@ -21,7 +21,7 @@ const ITEM_SPACING = 10;
 // normal — only opacity needs to be animated, so that alone comes in via a
 // style prop (see useFadeStyle) rather than the template.
 
-const Track = styled(Animated.ScrollView)`
+const ScrollContainer = styled(Animated.ScrollView)`
   flex: 1;
   width: 100%;
   height: 100%;
@@ -163,14 +163,14 @@ export function CollectionTrack({
   });
 
   return (
-    <TrackChrome
+    <Track
       editMode={editMode}
       trackHeight={ITEM_HEIGHT + 20}
       trackPaddingTop={6}
       onCancel={() => goToIndex(activeIndex)}
       onSave={onSave}
     >
-      <Track
+      <ScrollContainer
         horizontal
         ref={trackRef}
         onLayout={handleTrackLayout}
@@ -204,7 +204,7 @@ export function CollectionTrack({
           onPress={() => goToIndex(ADD_INDEX)}
           disabled={editMode && activeIndex !== ADD_INDEX}
         />
-      </Track>
-    </TrackChrome>
+      </ScrollContainer>
+    </Track>
   );
 }

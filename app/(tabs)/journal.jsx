@@ -1,10 +1,10 @@
-import { AnimateHeight, AnimatedSpacer } from "@/components/AnimateHeight";
+import { AnimateHeight, AnimatedSpacer } from "@/components/interface/AnimateHeight";
 import { GameEntry } from "@/components/GameEntry";
-import { JournalTrack } from "@/components/JournalTrack";
-import { PageHeader } from "@/components/PageHeader";
-import { PageScroll } from "@/components/PageScroll";
+import { JournalTrack } from "@/components/track/JournalTrack";
+import { PageHeader } from "@/components/page/PageHeader";
+import { PageScroll } from "@/components/page/PageScroll";
 import { Tags } from "@/components/Tags";
-import { ThemedText } from "@/components/ThemedText";
+import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { Fragment, useEffect, useMemo, useRef } from "react";

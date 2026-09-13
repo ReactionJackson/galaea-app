@@ -1,4 +1,4 @@
-import { BlurView } from "@/components/BlurView";
+import { BlurView } from "@/components/interface/BlurView";
 import styled from "styled-components/native";
 
 // ─────────────────────────────────────────────────────────────────────────────
