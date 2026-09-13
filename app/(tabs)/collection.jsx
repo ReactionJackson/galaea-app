@@ -24,7 +24,7 @@ const CoverBlock = styled.View`
   margin-top: 16px;
 `;
 
-const CoverImage = styled(ExpoImage)`
+const CoverImage = styled(ExpoImage).attrs({ transition: 200 })`
   width: 100%;
   height: 100%;
 `;

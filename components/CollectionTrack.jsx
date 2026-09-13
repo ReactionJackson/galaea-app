@@ -29,7 +29,7 @@ const Track = styled(Animated.ScrollView)`
 
 const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 
-const BoxArt = styled(AnimatedImage)`
+const BoxArt = styled(AnimatedImage).attrs({ transition: 200 })`
   width: ${({ itemWidth }) => itemWidth}px;
   height: ${ITEM_HEIGHT}px;
   border-radius: 4px;

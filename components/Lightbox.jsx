@@ -47,7 +47,7 @@ const ImageHolder = styled.View`
   position: relative;
 `;
 
-const FullImage = styled(ExpoImage)`
+const FullImage = styled(ExpoImage).attrs({ transition: 200 })`
   width: 100%;
   height: 100%;
 `;

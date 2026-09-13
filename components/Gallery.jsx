@@ -27,7 +27,7 @@ const Item = styled.View`
   overflow: hidden;
 `;
 
-const Image = styled(ExpoImage)`
+const Image = styled(ExpoImage).attrs({ transition: 200 })`
   width: 100%;
   height: 100%;
 `;
