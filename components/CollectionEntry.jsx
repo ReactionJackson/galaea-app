@@ -1,5 +1,6 @@
 import styled from "styled-components/native";
 import { EntryContent } from "./EntryContent";
+import { ThemedText } from "./ThemedText";
 
 // A read-only version of a game entry for the game's own page — same
 // gallery/text/tags content as GameEntry, just without its banner header
@@ -15,11 +16,54 @@ const Container = styled.View`
   width: 100%;
 `;
 
-export function CollectionEntry({ entryId, text, tagIds, tags, gallery }) {
+// "07 September 2026 10:23pm" — day zero-padded, month spelled out, then a
+// lowercase 12-hour time with no space before am/pm. None of that comes for
+// free from toLocaleString, so it's built by hand rather than fighting
+// Intl's formatting options for a shape it doesn't produce directly. Split
+// into datePart/timePart rather than one string so the label below can give
+// the date and the time different shades.
+function formatEntryDate(dateString) {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = date.toLocaleString("default", { month: "long" });
+  const year = date.getFullYear();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const period = date.getHours() >= 12 ? "pm" : "am";
+  const hour12 = date.getHours() % 12 || 12;
+  return {
+    datePart: `${day} ${month} ${year}`,
+    timePart: `${hour12}:${minutes}${period}`,
+  };
+}
+
+export function CollectionEntry({ entryId, date, text, tagIds, tags, gallery }) {
+  // Entries created before this field existed fall back to "Entry XX" —
+  // shouldn't come up once the seed data's backfilled, but keeps the label
+  // from just going blank if a date is ever missing.
+  let label;
+  if (date) {
+    const { datePart, timePart } = formatEntryDate(date);
+    label = (
+      <ThemedText type="subtitle">
+        {datePart}
+        <ThemedText type="subtitle" color="faded">
+          {" "}
+          {timePart}
+        </ThemedText>
+      </ThemedText>
+    );
+  } else {
+    label = (
+      <ThemedText type="subtitle" color="text">
+        Entry {String(entryId).padStart(2, "0")}
+      </ThemedText>
+    );
+  }
+
   return (
     <Container>
       <EntryContent
-        entryNumber={entryId}
+        label={label}
         editMode={false}
         text={text}
         tagIds={tagIds}

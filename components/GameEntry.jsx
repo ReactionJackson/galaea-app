@@ -47,9 +47,9 @@ const Content = styled.View`
   background-color: ${Colors.background};
 `;
 
-// games is the live games store (JournalContext's state.games), passed down
+// games is the live games store (AppContext's state.games), passed down
 // rather than imported statically — its entries can change at runtime (see
-// JournalContext's SAVE_EDIT), so this always needs the current copy rather
+// AppContext's SAVE_EDIT), so this always needs the current copy rather
 // than the seed data snapshot.
 export const GameEntry = memo(function GameEntry({
   games = [],
@@ -105,7 +105,11 @@ export const GameEntry = memo(function GameEntry({
 
       <Content>
         <EntryContent
-          entryNumber={entryNumber}
+          label={
+            <ThemedText type="subtitle" color="text">
+              Entry {String(entryNumber).padStart(2, "0")}
+            </ThemedText>
+          }
           editMode={editMode}
           text={text}
           tagIds={tagIds}

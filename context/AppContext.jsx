@@ -32,10 +32,13 @@ function buildNewEntry() {
 //
 // Untouched refs pass straight through unchanged. A touched one (isNew, or
 // any of text/tags/gallery present) gets written into the matching game's
-// entries — a new entry if it's brand new, merged into the existing one
+// entries — a new entry if it is brand new, merged into the existing one
 // otherwise, with any field the edit didn't touch falling back to what's
 // already stored — and comes back out as a clean { gameId, entryId } ref.
-function reconcileGameEdits(games, draftGames) {
+// dayDate is the day this save is happening on — only used to stamp a
+// brand-new entry's creation date; an existing entry keeps the date it
+// already has.
+function reconcileGameEdits(games, draftGames, dayDate) {
   let nextGames = games;
 
   const cleanGames = draftGames.map((g) => {
@@ -54,8 +57,13 @@ function reconcileGameEdits(games, draftGames) {
         : entryId;
 
     const existingEntry = game.entries.find((e) => e.entryId === resolvedEntryId);
+    // date is the entry's original creation date — stamped once, from the
+    // day it was first written on, and never touched again on later edits
+    // (even if that edit happens to be made from a different day that also
+    // references this same entry).
     const nextEntry = {
       entryId: resolvedEntryId,
+      date: existingEntry?.date ?? dayDate,
       text: text !== undefined ? text : (existingEntry?.text ?? ""),
       tags: tags !== undefined ? tags : (existingEntry?.tags ?? []),
       gallery: gallery !== undefined ? gallery : (existingEntry?.gallery ?? []),
@@ -91,7 +99,7 @@ const initialState = {
   games: deepClone(gamesData),
 };
 
-function journalReducer(state, action) {
+function appReducer(state, action) {
   switch (action.type) {
     // Navigate to a different day — always exits edit mode cleanly.
     case "CHANGE_DAY":
@@ -136,7 +144,7 @@ function journalReducer(state, action) {
     // one shared function rather than inline logic here.
     case "SAVE_EDIT": {
       const saved = state.draft;
-      const { games, cleanGames } = reconcileGameEdits(state.games, saved.games);
+      const { games, cleanGames } = reconcileGameEdits(state.games, saved.games, saved.date);
       const cleanedSaved = { ...saved, games: cleanGames };
       const exists = state.entries.some((e) => e.dayId === cleanedSaved.dayId);
       const entries = exists
@@ -253,23 +261,23 @@ function journalReducer(state, action) {
 // Context
 // ---------------------------------------------------------------------------
 
-const JournalContext = createContext(null);
+const AppContext = createContext(null);
 
-export function JournalProvider({ children }) {
-  const [state, dispatch] = useReducer(journalReducer, initialState);
+export function AppProvider({ children }) {
+  const [state, dispatch] = useReducer(appReducer, initialState);
 
   // The entry the UI always reads from — draft while editing, committed otherwise.
   const activeEntry = state.draft ?? state.committed;
 
   return (
-    <JournalContext.Provider value={{ state, activeEntry, dispatch }}>
+    <AppContext.Provider value={{ state, activeEntry, dispatch }}>
       {children}
-    </JournalContext.Provider>
+    </AppContext.Provider>
   );
 }
 
-export function useJournal() {
-  const ctx = useContext(JournalContext);
-  if (!ctx) throw new Error("useJournal must be used within a JournalProvider");
+export function useApp() {
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error("useApp must be used within an AppProvider");
   return ctx;
 }

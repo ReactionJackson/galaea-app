@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { PageScroll } from "@/components/PageScroll";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
-import { useJournal } from "@/context/JournalContext";
+import { useApp } from "@/context/AppContext";
 import { useState } from "react";
 import styled from "styled-components/native";
 
@@ -29,7 +29,7 @@ export default function CollectionScreen() {
   // Same context journal.jsx reads from (provided once, in the tab layout)
   // — games/entries and tags are the shared live store, not a static import,
   // so a journal edit shows up here without a reload.
-  const { state } = useJournal();
+  const { state } = useApp();
   const games = state.games;
 
   const [activeGameId, setActiveGameId] = useState(
@@ -82,6 +82,7 @@ export default function CollectionScreen() {
             <CollectionEntry
               key={entry.entryId}
               entryId={entry.entryId}
+              date={entry.date}
               text={entry.text}
               tagIds={entry.tags}
               tags={state.tags}

@@ -1,4 +1,5 @@
 import { AnimatedSpacer, AnimateHeight } from "@/components/AnimateHeight";
+import { View } from "react-native";
 import { Gallery, getImageUri } from "./Gallery";
 import { Tags } from "./Tags";
 import { ThemedText } from "./ThemedText";
@@ -10,7 +11,12 @@ import { ThemedText } from "./ThemedText";
 // just wraps it with a plain card, since the banner would repeat the game
 // title/platform/genre already shown once at the top of that page.
 export function EntryContent({
-  entryNumber,
+  // Whatever GameEntry/CollectionEntry want shown above the entry text —
+  // "Entry 07" for the journal-side edit card, a formatted date for the
+  // game's own page — each builds its own label so the styling (and in
+  // the date case, its two-tone colouring) stays with the caller that
+  // actually knows what it means, rather than being guessed at in here.
+  label,
   editMode = false,
   text = "",
   tagIds = [],
@@ -70,9 +76,7 @@ export function EntryContent({
       </AnimateHeight>
       <AnimatedSpacer visible={!!(gallery.length || editMode)} />
       <AnimateHeight visible={!!(text || editMode)}>
-        <ThemedText type="subtitle" color="text" style={{ marginBottom: 10 }}>
-          Entry {String(entryNumber).padStart(2, "0")}
-        </ThemedText>
+        <View style={{ marginBottom: 10 }}>{label}</View>
         <ThemedText
           isInput
           multiline={true}

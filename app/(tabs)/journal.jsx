@@ -6,7 +6,7 @@ import { PageScroll } from "@/components/PageScroll";
 import { Tags } from "@/components/Tags";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
-import { useJournal } from "@/context/JournalContext";
+import { useApp } from "@/context/AppContext";
 import { Fragment, useEffect, useMemo, useRef } from "react";
 import styled from "styled-components/native";
 
@@ -51,7 +51,7 @@ const Button = styled.Pressable`
 // End Duplicate
 
 function JournalScreen() {
-  const { state, activeEntry, dispatch } = useJournal();
+  const { state, activeEntry, dispatch } = useApp();
   const { entries, editMode, cancelling } = state;
   const committed = state.committed;
   const cancelTimerRef = useRef(null);

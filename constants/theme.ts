@@ -4,7 +4,7 @@ export const Colors = {
   title: "#000",
   text: "#777",
   border: "#e2e2e2",
-  faded: "rgba(0, 0, 0, 0.3)",
+  faded: "rgba(0, 0, 0, 0.6)",
   disabled: "rgba(0, 0, 0, 0.1)",
   dateBorder: "rgba(0, 0, 0, 0.1)",
   placeholder: "rgba(0, 0, 0, 0.25)",

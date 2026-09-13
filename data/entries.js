@@ -81,6 +81,7 @@ export const gamesData = [
     entries: [
       {
         entryId: 1,
+        date: "2025-11-04T21:00:00.000Z",
         text: "Still working through the affinity charts for the Torna blades. Patroka is done which took forever — her chart is massive compared to the others. Started on Akhos but hit a wall with one of the field skills needed, so ended up doing some sidequests in Uraya to grind it out. Not the most exciting session but it feels good to be making a dent in it. The Switch Family Collective makes it way less tedious, being able to share rare blades across saves is a lifesaver.",
         tags: [1, 2],
         gallery: [
@@ -89,6 +90,7 @@ export const gamesData = [
       },
       {
         entryId: 2,
+        date: "2025-12-22T22:00:00.000Z",
         text: "Finished Chapter 7 tonight. Wasn't expecting it to hit as hard as it did — there's a couple of reveals in there that reframe a lot of what happened earlier in the game. Mythra is absolutely carrying the party right now, the damage output is ridiculous once you get her specials chained properly. Jin is a great antagonist, actually feels threatening rather than just being a hurdle. Excited to see where it goes from here.",
         tags: [4, 5],
         gallery: [
@@ -97,6 +99,7 @@ export const gamesData = [
       },
       {
         entryId: 3,
+        date: "2026-02-15T21:00:00.000Z",
         text: "Nearly there with the affinity charts. Rex and Pyra are fully maxed, Nia and Dromarch are done too. Just Zeke and Pandoria left which shouldn't take long. The endgame is in sight — I think I'm maybe three or four sessions away from finishing the main story. Bittersweet feeling, I've genuinely loved this one and I'm gonna miss having it as my active game.",
         tags: [5, 6],
         gallery: [
@@ -119,6 +122,7 @@ export const gamesData = [
     entries: [
       {
         entryId: 1,
+        date: "2025-12-28T16:00:00.000Z",
         text: "Started a fresh save on Astral Chain while Marc was here — he'd never seen it before and I wanted an excuse to play it again. The opening sequence still holds up, Platinum really nailed the vibe. The city design is incredible, it's got this cramped neon-soaked thing going on that I never get tired of looking at. Combat felt rusty at first but it comes back quickly. Probably going to stick with this as a secondary game alongside Xenoblade for a while.",
         tags: [3],
         gallery: [
@@ -140,6 +144,7 @@ export const gamesData = [
     entries: [
       {
         entryId: 1,
+        date: "2026-03-12T21:45:00.000Z",
         text: "First proper session. The RGB cable makes such a difference — colours are deep and clean on the CRT, no dot crawl at all. The game opens slow and I mean that in the best way, it's clearly not in a rush to explain anything. There's this weight to the world that you don't really get from modern games. The combat is turn-based with this combo system where you spend AP hitting different buttons, simple on the surface but I can tell it opens up. Already know this is going to be a long one.",
         tags: [1, 3],
         gallery: [
@@ -150,6 +155,7 @@ export const gamesData = [
       },
       {
         entryId: 2,
+        date: "2026-03-16T19:30:00.000Z",
         text: "Short one tonight. Made it to Lahan village and did the opening section there. The dialogue is dense — this is clearly a game that expects you to pay attention. Had to look up how one of the early puzzles worked but I don't feel bad about it, the game gives you nothing. The combat is starting to click though, getting the AP combos to land properly feels satisfying.",
         tags: [5],
         gallery: [],
@@ -168,12 +174,14 @@ export const gamesData = [
     entries: [
       {
         entryId: 1,
+        date: "2026-03-16T19:30:00.000Z",
         text: "Started Parasite Eve tonight. The game is a lot more approachable than Xenogears, the tutorial is very clear and the combat is much more forgiving. The story is interesting but I'm not sure I'm hooked yet — the pacing is a bit slow and I'm not sure I understand the point of the game yet.",
         tags: [3],
         gallery: [],
       },
       {
         entryId: 2,
+        date: "2026-03-20T10:00:00.000Z",
         text: "Made some progress on Parasite Eve tonight. The game is starting to feel more engaging now — the story is more interesting and the combat is more fun. The puzzles are starting to click and I'm getting the hang of the game. The game is definitely a slow burn but I'm enjoying it so far.",
         tags: [5],
         gallery: [
@@ -196,6 +204,7 @@ export const gamesData = [
     entries: [
       {
         entryId: 1,
+        date: "2026-01-24T21:30:00.000Z",
         text: "Started Crystal Bearers tonight. It's not really like the other Crystal Chronicles games, it's more of a traditional Final Fantasy game. The story is interesting but I'm not sure I'm hooked yet — the pacing is a bit slow and I'm not sure I understand the point of the game yet.",
         tags: [3],
         gallery: [],

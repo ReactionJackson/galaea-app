@@ -1,16 +1,16 @@
 import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/theme";
-import { JournalProvider } from "@/context/JournalContext";
+import { AppProvider } from "@/context/AppContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
-// JournalProvider lives here (rather than inside journal.jsx alone) so the
+// AppProvider lives here (rather than inside journal.jsx alone) so the
 // journal and collection tabs read and write the same games/tags store — a
 // game entry saved from the journal must show up on that game's own page
 // without needing a reload.
 export default function TabLayout() {
   return (
-    <JournalProvider>
+    <AppProvider>
       <Tabs
         initialRouteName="journal"
         screenOptions={{
@@ -64,6 +64,6 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-    </JournalProvider>
+    </AppProvider>
   );
 }
