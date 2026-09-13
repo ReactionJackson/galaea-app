@@ -4,7 +4,7 @@ import { gamesData } from "@/data/entries";
 import { Image as ExpoImage } from "expo-image";
 import { memo } from "react";
 import styled from "styled-components/native";
-import { Gallery } from "./Gallery";
+import { Gallery, getImageUri } from "./Gallery";
 import { Tags } from "./Tags";
 import { ThemedText } from "./ThemedText";
 
@@ -94,8 +94,22 @@ export const GameEntry = memo(function GameEntry({
 
   // Newly picked images are appended to the end of the list, before the
   // ever-present "Add Image" box (which lives outside this array in Gallery).
-  const handleAddImage = (uri) => {
-    onChangeGallery?.([...gallery, uri]);
+  // item is a plain uri string, or { uri, focus } when a focal point was set.
+  const handleAddImage = (item) => {
+    onChangeGallery?.([...gallery, item]);
+  };
+
+  // Re-editing an existing image's focal point (only reachable in edit mode)
+  // updates that one entry in place rather than appending — focus === null
+  // (Reset, then Save) collapses it back to a plain uri string.
+  const handleUpdateImage = (index, focus) => {
+    onChangeGallery?.(
+      gallery.map((item, i) => {
+        if (i !== index) return item;
+        const uri = getImageUri(item);
+        return focus ? { uri, focus } : uri;
+      }),
+    );
   };
 
   return (
@@ -120,7 +134,12 @@ export const GameEntry = memo(function GameEntry({
           visible={!!(gallery.length || editMode)}
           style={{ marginHorizontal: -20 }}
         >
-          <Gallery images={gallery} editMode={editMode} onAddImage={handleAddImage} />
+          <Gallery
+            images={gallery}
+            editMode={editMode}
+            onAddImage={handleAddImage}
+            onUpdateImage={handleUpdateImage}
+          />
         </AnimateHeight>
         <AnimatedSpacer visible={!!(gallery.length || editMode)} />
         <AnimateHeight visible={!!(text || editMode)}>
