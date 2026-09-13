@@ -1,7 +1,8 @@
 import { Colors } from "@/constants/theme";
+import * as ImagePicker from "expo-image-picker";
 import { Image as ExpoImage } from "expo-image";
 import { memo } from "react";
-import { ScrollView, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView, useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
 import { ThemedText } from "./ThemedText";
 
@@ -30,11 +31,27 @@ const GALLERY_ITEM_GAP = 10;
 const ASPECT_RATIO = 9 / 16;
 const HORIZONTAL_PADDING = 80;
 
-export const Gallery = memo(function Gallery({ images, editMode = false }) {
+export const Gallery = memo(function Gallery({ images, editMode = false, onAddImage }) {
   const { width: screenWidth } = useWindowDimensions();
   const containerWidth = screenWidth - HORIZONTAL_PADDING;
   const trackHeight = Math.round(containerWidth * ASPECT_RATIO);
   const itemCount = images.length + (editMode ? 1 : 0);
+
+  const handleAddImage = async () => {
+    if (!onAddImage) return;
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.9,
+    });
+    if (result.canceled) return;
+
+    const uri = result.assets?.[0]?.uri;
+    if (uri) onAddImage(uri);
+  };
 
   return (
     <ScrollView
@@ -57,9 +74,11 @@ export const Gallery = memo(function Gallery({ images, editMode = false }) {
       ))}
       {editMode && (
         <Item style={{ width: containerWidth }}>
-          <EditableView>
-            <ThemedText>Add Image</ThemedText>
-          </EditableView>
+          <Pressable onPress={handleAddImage} style={{ flex: 1 }}>
+            <EditableView>
+              <ThemedText>Add Image</ThemedText>
+            </EditableView>
+          </Pressable>
         </Item>
       )}
     </ScrollView>

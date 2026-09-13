@@ -57,8 +57,10 @@ export const GameEntry = memo(function GameEntry({
   text: textProp,
   tagIds: tagIdsProp,
   tags: allTags = [],
+  gallery: galleryProp,
   onChangeText,
   onChangeTags,
+  onChangeGallery,
   onAddTag,
   onUpdateTagColor,
   onReplaceTag,
@@ -74,19 +76,26 @@ export const GameEntry = memo(function GameEntry({
   const {
     text: dataText = "",
     tags: dataTagIds = [],
-    gallery = [],
+    gallery: dataGallery = [],
   } = entries.find((entry) => entry.entryId === entryId) ?? {};
 
-  // Controlled when parent passes text/tags explicitly (after first edit),
-  // otherwise fall back to the static gamesData value.
+  // Controlled when parent passes text/tags/gallery explicitly (after first
+  // edit), otherwise fall back to the static gamesData value.
   const text = textProp ?? dataText;
   const tagIds = tagIdsProp ?? dataTagIds;
+  const gallery = galleryProp ?? dataGallery;
 
   const handleToggleTag = (tagId) => {
     const next = tagIds.includes(tagId)
       ? tagIds.filter((id) => id !== tagId)
       : [...tagIds, tagId];
     onChangeTags?.(next);
+  };
+
+  // Newly picked images are appended to the end of the list, before the
+  // ever-present "Add Image" box (which lives outside this array in Gallery).
+  const handleAddImage = (uri) => {
+    onChangeGallery?.([...gallery, uri]);
   };
 
   return (
@@ -111,7 +120,7 @@ export const GameEntry = memo(function GameEntry({
           visible={!!(gallery.length || editMode)}
           style={{ marginHorizontal: -20 }}
         >
-          <Gallery images={gallery} editMode={editMode} />
+          <Gallery images={gallery} editMode={editMode} onAddImage={handleAddImage} />
         </AnimateHeight>
         <AnimatedSpacer visible={!!(gallery.length || editMode)} />
         <AnimateHeight visible={!!(text || editMode)}>
