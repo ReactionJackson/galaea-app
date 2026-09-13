@@ -1,13 +1,13 @@
 import { AnimateHeight, AnimatedSpacer } from "@/components/AnimateHeight";
-import { BlurView } from "@/components/BlurView";
 import { GameEntry } from "@/components/GameEntry";
 import { JournalTrack } from "@/components/JournalTrack";
+import { PageHeader } from "@/components/PageHeader";
+import { PageScroll } from "@/components/PageScroll";
 import { Tags } from "@/components/Tags";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { JournalProvider, useJournal } from "@/context/JournalContext";
-import { useFocusEffect } from "expo-router";
-import { Fragment, useCallback, useMemo, useRef, useEffect } from "react";
+import { Fragment, useMemo, useRef, useEffect } from "react";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -15,19 +15,6 @@ const Container = styled.View`
   justify-content: center;
   align-items: center;
   background-color: ${Colors.background};
-`;
-
-const Header = styled(BlurView)`
-  z-index: 100;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  gap: 10px;
-  height: 70px;
-  padding: 15px 20px;
-  flex-direction: row;
-  justify-content: flex-start;
 `;
 
 const EntryNumber = styled.View`
@@ -52,11 +39,6 @@ const EntryDate = styled.View`
   margin: 3px 0 -2px 0;
 `;
 
-const Content = styled.ScrollView`
-  flex: 1;
-  width: 100%;
-`;
-
 // Duplicate:
 const Button = styled.Pressable`
   height: 36px;
@@ -72,7 +54,6 @@ function JournalScreen() {
   const { state, activeEntry, dispatch } = useJournal();
   const { entries, editMode, cancelling } = state;
   const committed = state.committed;
-  const scrollRef = useRef(null);
   const cancelTimerRef = useRef(null);
 
   // Derived state:
@@ -158,19 +139,11 @@ function JournalScreen() {
     };
   }, []);
 
-  // Effects:
-
-  useFocusEffect(
-    useCallback(() => {
-      scrollRef.current?.scrollTo({ y: 0, animated: false });
-    }, []),
-  );
-
   // Render:
 
   return (
     <Container>
-      <Header tint="light">
+      <PageHeader>
         <EntryNumber>
           <ThemedText type="date-number">{formatDate("day")}</ThemedText>
         </EntryNumber>
@@ -194,11 +167,10 @@ function JournalScreen() {
             editable={editMode}
           />
         </EntryInfo>
-      </Header>
+      </PageHeader>
 
-      <Content
-        key={activeEntry.dayId}
-        ref={scrollRef}
+      <PageScroll
+        resetKey={activeEntry.dayId}
         contentContainerStyle={{
           paddingTop: 70,
           paddingBottom: 110,
@@ -284,7 +256,7 @@ function JournalScreen() {
           </Button>
         </AnimateHeight>
         <AnimatedSpacer visible={editMode} height={70} />
-      </Content>
+      </PageScroll>
 
       <JournalTrack
         entries={entries}

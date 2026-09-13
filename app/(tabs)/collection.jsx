@@ -1,4 +1,6 @@
 import { CollectionTrack } from "@/components/CollectionTrack";
+import { PageHeader } from "@/components/PageHeader";
+import { PageScroll } from "@/components/PageScroll";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { gamesData } from "@/data/entries";
@@ -9,11 +11,6 @@ import styled from "styled-components/native";
 const Container = styled.View`
   flex: 1;
   background-color: ${Colors.background};
-`;
-
-const Content = styled.ScrollView`
-  flex: 1;
-  width: 100%;
 `;
 
 // Temporary — just here so there's enough vertical content to confirm the
@@ -46,17 +43,20 @@ export default function CollectionScreen() {
 
   return (
     <Container>
-      <Content
+      <PageHeader>
+        <ThemedText type="title">
+          {addMode ? "New Game" : activeGame?.title}
+        </ThemedText>
+      </PageHeader>
+
+      <PageScroll
+        resetKey={addMode ? "new-game" : activeGameId}
         contentContainerStyle={{
-          paddingTop: 20,
+          paddingTop: 70,
           paddingBottom: 130,
           paddingHorizontal: 20,
         }}
       >
-        <ThemedText type="title">
-          {addMode ? "New Game" : activeGame?.title}
-        </ThemedText>
-
         {!addMode &&
           activeGame?.cover &&
           Array.from({ length: 6 }).map((_, i) => (
@@ -64,7 +64,7 @@ export default function CollectionScreen() {
               <CoverImage source={{ uri: activeGame.cover }} contentFit="cover" />
             </CoverBlock>
           ))}
-      </Content>
+      </PageScroll>
 
       <CollectionTrack
         games={gamesData}
