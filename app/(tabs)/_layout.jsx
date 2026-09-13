@@ -2,7 +2,6 @@ import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import React from "react";
 
 export default function TabLayout() {
   return (
@@ -14,6 +13,23 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}
     >
+      {/* Required by Expo Router to resolve the root path — hidden from the tab bar */}
+      <Tabs.Screen name="index" options={{ href: null }} />
+
+      <Tabs.Screen
+        name="friends"
+        options={{
+          title: "Friends",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              size={28}
+              name={focused ? "people" : "people-outline"}
+              color={color}
+            />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="collection"
         options={{
@@ -27,8 +43,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* Required by Expo Router to resolve the root path — hidden from the tab bar */}
-      <Tabs.Screen name="index" options={{ href: null }} />
 
       <Tabs.Screen
         name="journal"
@@ -38,19 +52,6 @@ export default function TabLayout() {
             <Ionicons
               size={28}
               name={focused ? "book" : "book-outline"}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="friends"
-        options={{
-          title: "Friends",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              size={28}
-              name={focused ? "people" : "people-outline"}
               color={color}
             />
           ),
