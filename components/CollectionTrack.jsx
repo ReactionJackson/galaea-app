@@ -51,7 +51,7 @@ const AddButtonBox = styled(Animated.View)`
 // number of hook calls inside the list below.
 function useFadeStyle(active) {
   return useAnimatedStyle(
-    () => ({ opacity: withTiming(active ? 1 : 0.5, { duration: 200 }) }),
+    () => ({ opacity: withTiming(active ? 1 : 0.25, { duration: 200 }) }),
     [active],
   );
 }

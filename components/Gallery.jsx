@@ -42,7 +42,13 @@ const EditableView = styled.View`
 `;
 
 const GALLERY_ITEM_GAP = 10;
-const HORIZONTAL_PADDING = 80;
+// Default assumes GameEntry's own context: a 20px page gutter each side,
+// plus the entry card's own 20px padding each side (which the -20px margin
+// on this component's wrapper cancels back out, letting the gallery bleed
+// to the card's edge rather than sitting inset inside it) — 80px total.
+// CollectionEntry has no card padding to cancel, so its gallery bleeds all
+// the way to the screen edge instead and passes a smaller value in.
+const DEFAULT_HORIZONTAL_PADDING = 80;
 
 // Gallery items are plain URI strings for legacy/placeholder data, or
 // { uri, focus } objects for anything with a focal point set — focus is an
@@ -60,9 +66,10 @@ export const Gallery = memo(function Gallery({
   editMode = false,
   onAddImage,
   onUpdateImage,
+  horizontalPadding = DEFAULT_HORIZONTAL_PADDING,
 }) {
   const { width: screenWidth } = useWindowDimensions();
-  const containerWidth = screenWidth - HORIZONTAL_PADDING;
+  const containerWidth = screenWidth - horizontalPadding;
   const trackHeight = Math.round(containerWidth / ITEM_ASPECT_RATIO);
   const itemCount = images.length + (editMode ? 1 : 0);
 

@@ -16,6 +16,10 @@ export function EntryContent({
   tagIds = [],
   tags = [],
   gallery = [],
+  // Left undefined by default so Gallery falls back to its own default —
+  // only a caller whose surrounding padding differs from GameEntry's card
+  // (see CollectionEntry) needs to override this.
+  galleryHorizontalPadding,
   onChangeText,
   onChangeTags,
   onChangeGallery,
@@ -61,6 +65,7 @@ export function EntryContent({
           editMode={editMode}
           onAddImage={handleAddImage}
           onUpdateImage={handleUpdateImage}
+          horizontalPadding={galleryHorizontalPadding}
         />
       </AnimateHeight>
       <AnimatedSpacer visible={!!(gallery.length || editMode)} />
