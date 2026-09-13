@@ -76,6 +76,8 @@ export const gamesData = [
     genre: "JRPG",
     cover:
       "https://images.launchbox-app.com/b7a444fc-f6b3-415c-b270-55b9aab05756.jpg",
+    boxArt:
+      "https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg",
     entries: [
       {
         entryId: 1,
@@ -112,6 +114,8 @@ export const gamesData = [
     genre: "Action",
     cover:
       "https://images.launchbox-app.com/df8e26e5-c114-4774-8d98-d76d6602df87.jpg",
+    boxArt:
+      "https://images.launchbox-app.com/43d7a157-3cf4-4926-8976-1d19aa03457e.jpg",
     entries: [
       {
         entryId: 1,
@@ -131,6 +135,8 @@ export const gamesData = [
     genre: "JRPG",
     cover:
       "https://images.launchbox-app.com/ef51e342-83bf-4eaf-a36d-8b6c3bf48c2f.png",
+    boxArt:
+      "https://images.launchbox-app.com/r2_9f7ecc57-3c83-49a1-9691-8b6a9dcb3b09.jpg",
     entries: [
       {
         entryId: 1,
@@ -156,7 +162,9 @@ export const gamesData = [
     platform: "PS1",
     genre: "Action",
     cover:
-      "https://images.launchbox-app.com/df8e26e5-c114-4774-8d98-d76d6602df87.jpg",
+      "https://images.launchbox-app.com/853c8013-5985-4f25-ab12-29808d192781.jpg",
+    boxArt:
+      "https://images.launchbox-app.com/r2_7234b4db-0032-4eb3-83d6-a3595c55193e.jpg",
     entries: [
       {
         entryId: 1,
@@ -182,7 +190,9 @@ export const gamesData = [
     platform: "Wii",
     genre: "RPG",
     cover:
-      "https://images.launchbox-app.com/740460a2-d617-4931-a67c-365691359814.jpg",
+      "https://images.launchbox-app.com/f935c18a-b025-4e76-9edf-954bf6e384b9.png",
+    boxArt:
+      "https://images.launchbox-app.com/774593f8-3c54-4567-8086-962731f49ed1.jpg",
     entries: [
       {
         entryId: 1,

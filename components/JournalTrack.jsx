@@ -1,11 +1,10 @@
-import { BlurView } from "@/components/BlurView";
 import { StickyLabel } from "@/components/StickyLabel";
 import { ThemedText } from "@/components/ThemedText";
+import { TrackChrome } from "@/components/TrackChrome";
 import { Colors } from "@/constants/theme";
-import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
+import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { View } from "react-native";
+import { useEffect, useMemo } from "react";
 import Animated, {
   Easing,
   useAnimatedScrollHandler,
@@ -19,31 +18,8 @@ import styled from "styled-components/native";
 
 const ITEM_WIDTH = 40;
 const ITEM_SPACING = 10;
-const SNAP_INTERVAL = ITEM_WIDTH + ITEM_SPACING;
 
 // Styled Components:
-
-const Container = styled(Animated.View)`
-  z-index: 100;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-`;
-
-const TrackContainer = styled.View`
-  height: 90px;
-  padding-top: 25px;
-  align-items: center;
-`;
-
-const ControlsContainer = styled.View`
-  padding: 20px;
-  padding-top: 10px;
-  justify-content: space-between;
-  flex-direction: row;
-  align-items: center;
-`;
 
 const Track = styled(Animated.ScrollView)`
   flex: 1;
@@ -86,18 +62,6 @@ const DateCircle = styled.Pressable`
   align-items: center;
 `;
 
-const Button = styled.Pressable`
-  height: 36px;
-  justify-content: center;
-  padding: 4px 14px;
-  border-radius: 20px;
-  border: 2px solid ${Colors.dateBorder};
-`;
-
-const SaveButton = styled(Button)`
-  background-color: ${Colors.accent};
-`;
-
 // Component:
 
 export function JournalTrack({
@@ -110,21 +74,13 @@ export function JournalTrack({
   onCancelEdit = () => {},
   editMode = false,
 }) {
-  // ADD_INDEX is always entries.length — the slot just past the last real item.
-  const ADD_INDEX = entries.length;
-
-  const [activeIndex, setActiveIndex] = useState(entries.length - 1);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [basePadding, setBasePadding] = useState(0);
-  const [addActive, setAddActive] = useState(false);
-  const trackRef = useRef(null);
-  // Flagged when a tap on + has expanded the padding but the scroll hasn't
-  // fired yet — cleared in onContentSizeChange once layout is ready.
-  const scrollToAddAfterResize = useRef(false);
-  // Track entries length to detect when a save has committed a new entry.
-  const prevEntriesLengthRef = useRef(entries.length);
-  // Guard so the initial scroll-to-last fires once only, after layout is ready.
-  const hasScrolledToInitial = useRef(false);
+  // All items are the same width here, but the shared snap-track engine
+  // works off a widths array regardless (see CollectionTrack for the
+  // irregular-width case) — this just gives it a uniform one.
+  const itemWidths = useMemo(
+    () => entries.map(() => ITEM_WIDTH),
+    [entries.length],
+  );
 
   // Derived values:
 
@@ -175,79 +131,60 @@ export function JournalTrack({
     return Object.values(groups);
   }, [entries]);
 
-  // Helpers:
+  // Shared snap/centre-load engine — see useSnapTrack for the scroll math and
+  // the "+" gating; everything below this is specific to how a date-circle
+  // track presents that (sticky year/month labels, the red indicator).
 
-  const scrollToIndex = (index) => {
-    if (index === activeIndex) {
-      if (index === ADD_INDEX) {
-        // Cancel create: exit edit mode and navigate back to the last real entry.
-        onCancelEdit();
-        animateIndicatorOut();
-        setIsScrolling(true);
-        if (process.env.EXPO_OS === "ios") {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  const {
+    ADD_INDEX,
+    activeIndex,
+    isScrolling,
+    basePadding,
+    paddingEnd,
+    offsets,
+    trackRef,
+    goToIndex,
+    handleTrackLayout,
+    handleContentSizeChange,
+    handleScrollBeginDrag,
+    handleScrollEndDrag,
+    handleMomentumScrollEnd,
+  } = useSnapTrack({
+    itemWidths,
+    itemSpacing: ITEM_SPACING,
+    showAddButton,
+    // Explicit rather than relying on the hook's itemWidths[0] fallback —
+    // that fallback breaks if entries is ever empty (no item 0 to fall back
+    // to), whereas the + button's size should never depend on entry count.
+    addButtonWidth: ITEM_WIDTH,
+    onSettle: (index, { alreadyActive }) => {
+      if (alreadyActive) {
+        // Pressing the already-active circle toggles edit mode for it,
+        // rather than moving anywhere.
+        if (editMode) {
+          onCancelEdit();
+          if (process.env.EXPO_OS === "ios") {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+        } else {
+          onEnterEdit();
+          if (process.env.EXPO_OS === "ios") {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+          }
         }
-        trackRef.current?.scrollTo({
-          x: (entries.length - 1) * SNAP_INTERVAL,
-          animated: true,
-        });
         return;
       }
-      if (editMode) {
-        onCancelEdit();
-      } else {
-        onEnterEdit();
-      }
-      if (process.env.EXPO_OS === "ios") {
-        Haptics.impactAsync(
-          editMode
-            ? Haptics.ImpactFeedbackStyle.Light
-            : Haptics.ImpactFeedbackStyle.Heavy,
-        );
-      }
-      return;
-    }
-    animateIndicatorOut();
-    setIsScrolling(true);
-    if (process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    if (index === ADD_INDEX) {
-      // Expand right padding so the content is wide enough to scroll there,
-      // then wait for onContentSizeChange to fire the actual scrollTo.
-      setAddActive(true);
-      scrollToAddAfterResize.current = true;
-      return;
-    }
-    trackRef.current?.scrollTo({ x: index * SNAP_INTERVAL, animated: true });
-  };
-
-  // Animations:
-
-  const trackContainerStyle = useAnimatedTransition(editMode, {
-    translateY: [60, 0],
+      if (entries[index]) onChangeDay(entries[index].dayId);
+    },
+    onAdd,
+    onCancelAdd: onCancelEdit,
   });
 
-  const indicatorScale = useSharedValue(1);
-  const indicatorOpacity = useSharedValue(1);
-  const indicatorStyle = useAnimatedStyle(() => ({
-    opacity: indicatorOpacity.value,
-    transform: [{ scale: indicatorScale.value }],
-  }));
-
-  const animateIndicatorIn = () => {
-    const config = { duration: 200, easing: Easing.out(Easing.quad) };
-    indicatorScale.value = withTiming(1, config);
-    indicatorOpacity.value = withTiming(1, config);
-  };
-
-  const animateIndicatorOut = () => {
-    const config = { duration: 150, easing: Easing.in(Easing.quad) };
-    indicatorScale.value = withTiming(0.6, config);
-    indicatorOpacity.value = withTiming(0.2, config);
-  };
-
-  // Handlers:
+  // Sticky-label plumbing: scrollX (continuous) and the two layout shared
+  // values StickyLabel needs — mirrors of the hook's own basePadding/track
+  // width, kept as shared values since StickyLabel reads them on the UI
+  // thread. The centring/snapping math itself all still lives in the hook;
+  // this is just wiring for a Journal-only decoration.
 
   const scrollX = useSharedValue(0);
   const halfTrackWidth = useSharedValue(0);
@@ -259,215 +196,136 @@ export function JournalTrack({
     },
   });
 
-  const handleTrackPadding = (event) => {
-    const { width } = event.nativeEvent.layout;
-    const padding = width / 2 - ITEM_WIDTH / 2;
-    halfTrackWidth.value = width / 2;
-    trackPaddingLeft.value = padding;
-    setBasePadding(padding);
+  useEffect(() => {
+    trackPaddingLeft.value = basePadding;
+  }, [basePadding, trackPaddingLeft]);
+
+  const handleTrackLayoutAndWidth = (event) => {
+    handleTrackLayout(event);
+    halfTrackWidth.value = event.nativeEvent.layout.width / 2;
   };
 
-  const handleContentSizeChange = () => {
-    if (scrollToAddAfterResize.current) {
-      scrollToAddAfterResize.current = false;
-      trackRef.current?.scrollTo({
-        x: ADD_INDEX * SNAP_INTERVAL,
-        animated: true,
-      });
-    }
-  };
+  // Red indicator — purely decorative, animates out while scrolling and back
+  // in once settled.
 
-  const getIndexFromScrollEnd = (event) => {
-    const { contentOffset } = event.nativeEvent;
-    const index = Math.round(contentOffset.x / SNAP_INTERVAL);
-    // When addActive the content is expanded and ADD_INDEX is a valid landing
-    // position; otherwise clamp to the last real entry.
-    const maxIndex =
-      showAddButton && addActive ? ADD_INDEX : entries.length - 1;
-    return Math.max(0, Math.min(index, maxIndex));
-  };
-
-  const handleScrollEndDrag = (event) => {
-    const { velocity } = event.nativeEvent;
-    if (!velocity || Math.abs(velocity.x) < 0.1) {
-      const index = getIndexFromScrollEnd(event);
-      // Only clear addActive once settled on a real entry — clearing it while
-      // the scroll is still at ADD_INDEX * SNAP_INTERVAL would shrink the
-      // content and trigger a snap-back.
-      if (addActive && index !== ADD_INDEX) setAddActive(false);
-      if (entries[index]) onChangeDay(entries[index].dayId);
-      setActiveIndex(index);
-      setIsScrolling(false);
-      animateIndicatorIn();
-    }
-  };
-
-  const handleMomentumScrollEnd = (event) => {
-    const index = getIndexFromScrollEnd(event);
-    if (addActive && index !== ADD_INDEX) setAddActive(false);
-    if (index === ADD_INDEX) {
-      onAdd();
-    } else {
-      onChangeDay(entries[index].dayId);
-    }
-    setActiveIndex(index);
-    setIsScrolling(false);
-    animateIndicatorIn();
-  };
-
-  const handleScrollBeginDrag = () => {
-    scrollToAddAfterResize.current = false;
-    setIsScrolling(true);
-    animateIndicatorOut();
-    if (process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  };
-
-  // Effects:
+  const indicatorScale = useSharedValue(1);
+  const indicatorOpacity = useSharedValue(1);
+  const indicatorStyle = useAnimatedStyle(() => ({
+    opacity: indicatorOpacity.value,
+    transform: [{ scale: indicatorScale.value }],
+  }));
 
   useEffect(() => {
-    if (entries.length > prevEntriesLengthRef.current) {
-      // A new entry was saved — the + slot is now a real date circle.
-      // Exit edit mode and scroll to the newly saved entry.
-      const newIndex = entries.length - 1;
-      prevEntriesLengthRef.current = entries.length;
-      onCancelEdit();
-      setAddActive(false);
-      setActiveIndex(newIndex);
-      trackRef.current?.scrollTo({
-        x: newIndex * SNAP_INTERVAL,
-        animated: true,
-      });
+    if (isScrolling) {
+      const config = { duration: 150, easing: Easing.in(Easing.quad) };
+      indicatorScale.value = withTiming(0.6, config);
+      indicatorOpacity.value = withTiming(0.2, config);
     } else {
-      prevEntriesLengthRef.current = entries.length;
+      const config = { duration: 200, easing: Easing.out(Easing.quad) };
+      indicatorScale.value = withTiming(1, config);
+      indicatorOpacity.value = withTiming(1, config);
     }
-  }, [entries.length]);
-
-  // Scroll to the most recent entry once basePadding is available (i.e. after
-  // onLayout has run and the content is correctly sized). Firing earlier would
-  // scroll into an unlaid-out container and land in the wrong position.
-  useEffect(() => {
-    if (!hasScrolledToInitial.current && basePadding > 0 && trackRef.current) {
-      hasScrolledToInitial.current = true;
-      trackRef.current.scrollTo({
-        x: (entries.length - 1) * SNAP_INTERVAL,
-        animated: false,
-      });
-    }
-  }, [basePadding]);
-
-  const paddingEnd =
-    showAddButton && !addActive ? basePadding - SNAP_INTERVAL : basePadding;
+  }, [isScrolling, indicatorScale, indicatorOpacity]);
 
   // Render:
 
   return (
-    <Container style={trackContainerStyle}>
-      <BlurView>
-        <TrackContainer>
-          <YearLabels>
-            {yearGroups.map((group) => (
-              <StickyLabel
-                key={group.key}
-                group={group}
-                scrollX={scrollX}
-                halfTrackWidth={halfTrackWidth}
-                trackPaddingLeft={trackPaddingLeft}
-                condensed={true}
-              />
-            ))}
-          </YearLabels>
-          <MonthLabels>
-            {monthGroups.map((group) => (
-              <StickyLabel
-                key={group.key}
-                group={group}
-                scrollX={scrollX}
-                halfTrackWidth={halfTrackWidth}
-                trackPaddingLeft={trackPaddingLeft}
-              />
-            ))}
-          </MonthLabels>
-          <RedIndicator style={indicatorStyle} />
-          <Track
-            horizontal
-            ref={trackRef}
-            onScroll={scrollHandler}
-            onLayout={handleTrackPadding}
-            onScrollBeginDrag={handleScrollBeginDrag}
-            onScrollEndDrag={handleScrollEndDrag}
-            onMomentumScrollEnd={handleMomentumScrollEnd}
-            scrollEnabled={!editMode}
-            snapToInterval={SNAP_INTERVAL}
-            decelerationRate="fast"
-            onContentSizeChange={handleContentSizeChange}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              gap: ITEM_SPACING,
-              paddingInlineStart: basePadding,
-              paddingInlineEnd: paddingEnd,
-              alignItems: "center",
-            }}
-          >
-            {dayNumbers.map((dayNumber, i) => (
-              <DateCircle
-                key={`day-${dayNumber}-${i}`}
-                onPress={() => scrollToIndex(i)}
-                disabled={editMode && activeIndex !== i}
+    <TrackChrome
+      editMode={editMode}
+      trackHeight={90}
+      trackPaddingTop={25}
+      onCancel={() => goToIndex(activeIndex)}
+      onSave={onSave}
+    >
+      <>
+        <YearLabels>
+          {yearGroups.map((group) => (
+            <StickyLabel
+              key={group.key}
+              group={group}
+              scrollX={scrollX}
+              halfTrackWidth={halfTrackWidth}
+              trackPaddingLeft={trackPaddingLeft}
+              condensed={true}
+            />
+          ))}
+        </YearLabels>
+        <MonthLabels>
+          {monthGroups.map((group) => (
+            <StickyLabel
+              key={group.key}
+              group={group}
+              scrollX={scrollX}
+              halfTrackWidth={halfTrackWidth}
+              trackPaddingLeft={trackPaddingLeft}
+            />
+          ))}
+        </MonthLabels>
+        <RedIndicator style={indicatorStyle} />
+        <Track
+          horizontal
+          ref={trackRef}
+          onScroll={scrollHandler}
+          onLayout={handleTrackLayoutAndWidth}
+          onScrollBeginDrag={handleScrollBeginDrag}
+          onScrollEndDrag={handleScrollEndDrag}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          scrollEnabled={!editMode}
+          snapToOffsets={offsets}
+          decelerationRate="fast"
+          onContentSizeChange={handleContentSizeChange}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            gap: ITEM_SPACING,
+            paddingInlineStart: basePadding,
+            paddingInlineEnd: paddingEnd,
+            alignItems: "center",
+          }}
+        >
+          {dayNumbers.map((dayNumber, i) => (
+            <DateCircle
+              key={`day-${dayNumber}-${i}`}
+              onPress={() => goToIndex(i)}
+              disabled={editMode && activeIndex !== i}
+            >
+              <ThemedText
+                type="date-number"
+                colorSwitch={
+                  activeIndex !== i || isScrolling
+                    ? {
+                        colors: [Colors.black, Colors.disabled],
+                        active: editMode,
+                      }
+                    : undefined
+                }
               >
-                <ThemedText
-                  type="date-number"
-                  colorSwitch={
-                    activeIndex !== i || isScrolling
-                      ? {
-                          colors: [Colors.black, Colors.disabled],
-                          active: editMode,
-                        }
-                      : undefined
-                  }
-                >
-                  {dayNumber}
-                </ThemedText>
-              </DateCircle>
-            ))}
-            {showAddButton && (
-              <DateCircle
-                key="add-button"
-                onPress={() => scrollToIndex(ADD_INDEX)}
-                disabled={editMode && activeIndex !== ADD_INDEX}
+                {dayNumber}
+              </ThemedText>
+            </DateCircle>
+          ))}
+          {showAddButton && (
+            <DateCircle
+              key="add-button"
+              onPress={() => goToIndex(ADD_INDEX)}
+              disabled={editMode && activeIndex !== ADD_INDEX}
+            >
+              <ThemedText
+                type="date-number"
+                colorSwitch={
+                  activeIndex !== ADD_INDEX || isScrolling
+                    ? {
+                        colors: [Colors.black, Colors.disabled],
+                        active: editMode,
+                      }
+                    : undefined
+                }
               >
-                <ThemedText
-                  type="date-number"
-                  colorSwitch={
-                    activeIndex !== ADD_INDEX || isScrolling
-                      ? {
-                          colors: [Colors.black, Colors.disabled],
-                          active: editMode,
-                        }
-                      : undefined
-                  }
-                >
-                  +
-                </ThemedText>
-              </DateCircle>
-            )}
-          </Track>
-        </TrackContainer>
-        <ControlsContainer>
-          <Button>
-            <ThemedText color="black">Delete</ThemedText>
-          </Button>
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <Button onPress={() => scrollToIndex(activeIndex)}>
-              <ThemedText color="black">Cancel</ThemedText>
-            </Button>
-            <SaveButton onPress={onSave}>
-              <ThemedText color="white">Save</ThemedText>
-            </SaveButton>
-          </View>
-        </ControlsContainer>
-      </BlurView>
-    </Container>
+                +
+              </ThemedText>
+            </DateCircle>
+          )}
+        </Track>
+      </>
+    </TrackChrome>
   );
 }
