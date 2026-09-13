@@ -6,8 +6,7 @@ import {
   Outfit_700Bold as Outfit700,
   useFonts,
 } from "@expo-google-fonts/outfit";
-import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { SplashScreen, Stack } from "expo-router";
+import { DefaultTheme, SplashScreen, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { useEffect } from "react";

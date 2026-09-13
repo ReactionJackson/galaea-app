@@ -6,7 +6,7 @@ import { Tags } from "@/components/Tags";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/theme";
 import { JournalProvider, useJournal } from "@/context/JournalContext";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
 import { Fragment, useCallback, useMemo, useRef, useEffect } from "react";
 import styled from "styled-components/native";
 
