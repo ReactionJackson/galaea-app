@@ -55,7 +55,13 @@ export const GameEntry = memo(function GameEntry({
   entryId = null,
   editMode = false,
   text: textProp,
+  tagIds: tagIdsProp,
+  tags: allTags = [],
   onChangeText,
+  onChangeTags,
+  onAddTag,
+  onUpdateTagColor,
+  onReplaceTag,
 }) {
   const { title, platform, genre, cover, entries } = gamesData.find(
     (game) => game.gameId === gameId,
@@ -67,13 +73,21 @@ export const GameEntry = memo(function GameEntry({
 
   const {
     text: dataText = "",
-    tags = [],
+    tags: dataTagIds = [],
     gallery = [],
   } = entries.find((entry) => entry.entryId === entryId) ?? {};
 
-  // Controlled when parent passes text explicitly (after first edit),
+  // Controlled when parent passes text/tags explicitly (after first edit),
   // otherwise fall back to the static gamesData value.
   const text = textProp ?? dataText;
+  const tagIds = tagIdsProp ?? dataTagIds;
+
+  const handleToggleTag = (tagId) => {
+    const next = tagIds.includes(tagId)
+      ? tagIds.filter((id) => id !== tagId)
+      : [...tagIds, tagId];
+    onChangeTags?.(next);
+  };
 
   return (
     <Container>
@@ -111,8 +125,16 @@ export const GameEntry = memo(function GameEntry({
           />
         </AnimateHeight>
         <AnimatedSpacer visible={!!(text || editMode)} />
-        <Tags tagIds={tags} editMode={editMode} />
-        <AnimatedSpacer visible={!!(tags.length || editMode)} />
+        <Tags
+          tagIds={tagIds}
+          tags={allTags}
+          editMode={editMode}
+          onToggleTag={handleToggleTag}
+          onAddTag={onAddTag}
+          onUpdateTagColor={onUpdateTagColor}
+          onReplaceTag={onReplaceTag}
+        />
+        <AnimatedSpacer visible={!!(tagIds.length || editMode)} />
       </Content>
     </Container>
   );

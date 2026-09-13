@@ -228,7 +228,7 @@ function JournalScreen() {
         />
         <AnimatedSpacer visible={tagsVisible} />
 
-        {activeEntry.games.map(({ gameId, entryId, isNew, text }, i) => {
+        {activeEntry.games.map(({ gameId, entryId, isNew, text, tags }, i) => {
           // New entries with no content collapse away on cancel — an empty card
           // animating shut looks intentional. New entries that already have
           // content (user typed something) stay visible until COMPLETE_CANCEL
@@ -243,6 +243,8 @@ function JournalScreen() {
                   entryId={entryId}
                   editMode={editMode}
                   text={text}
+                  tagIds={tags}
+                  tags={state.tags}
                   onChangeText={(t) =>
                     dispatch({
                       type: "UPDATE_GAME",
@@ -250,6 +252,16 @@ function JournalScreen() {
                       changes: { text: t },
                     })
                   }
+                  onChangeTags={(newTags) =>
+                    dispatch({
+                      type: "UPDATE_GAME",
+                      index: i,
+                      changes: { tags: newTags },
+                    })
+                  }
+                  onAddTag={handleAddTag}
+                  onUpdateTagColor={handleUpdateTagColor}
+                  onReplaceTag={handleReplaceTag}
                 />
               </AnimateHeight>
               <AnimatedSpacer visible={gameVisible} animateOnMount={!!isNew} />
