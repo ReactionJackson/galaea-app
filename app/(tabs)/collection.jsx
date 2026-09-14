@@ -1,8 +1,8 @@
 import { GameEntry } from "@/components/GameEntry";
-import { CollectionTrack } from "@/components/track/CollectionTrack";
+import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
-import { ThemedText } from "@/components/interface/ThemedText";
+import { CollectionTrack } from "@/components/track/CollectionTrack";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useState } from "react";
@@ -26,9 +26,6 @@ const GameMeta = styled.View`
 `;
 
 export default function CollectionScreen() {
-  // Same context journal.jsx reads from (provided once, in the tab layout)
-  // — games/entries and tags are the shared live store, not a static import,
-  // so a journal edit shows up here without a reload.
   const { state } = useApp();
   const games = state.games;
 
@@ -38,9 +35,6 @@ export default function CollectionScreen() {
   const [addMode, setAddMode] = useState(false);
 
   const activeGame = games.find((g) => g.gameId === activeGameId);
-  // A game's page shows every entry ever written for it, oldest first —
-  // distinct from the journal view, which only ever shows the one entry
-  // made on that particular day.
   const orderedEntries = activeGame
     ? [...activeGame.entries].sort((a, b) => a.entryId - b.entryId)
     : [];
@@ -69,14 +63,7 @@ export default function CollectionScreen() {
         </InfoColumn>
       </PageHeader>
 
-      <PageScroll
-        resetKey={addMode ? "new-game" : activeGameId}
-        contentContainerStyle={{
-          paddingTop: 70,
-          paddingBottom: 130,
-          paddingHorizontal: 20,
-        }}
-      >
+      <PageScroll resetKey={addMode ? "new-game" : activeGameId}>
         {!addMode &&
           orderedEntries.map((entry) => (
             <GameEntry

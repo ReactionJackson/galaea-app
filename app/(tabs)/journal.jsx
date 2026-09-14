@@ -172,14 +172,7 @@ function JournalScreen() {
         </EntryInfo>
       </PageHeader>
 
-      <PageScroll
-        resetKey={activeEntry.dayId}
-        contentContainerStyle={{
-          paddingTop: 70,
-          paddingBottom: 110,
-          paddingHorizontal: 20,
-        }}
-      >
+      <PageScroll resetKey={activeEntry.dayId}>
         <AnimateHeight visible={textVisible}>
           <ThemedText
             isInput
