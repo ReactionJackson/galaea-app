@@ -1,13 +1,16 @@
-import { AnimateHeight, AnimatedSpacer } from "@/components/interface/AnimateHeight";
 import { GameEntry } from "@/components/GameEntry";
-import { JournalTrack } from "@/components/track/JournalTrack";
+import {
+  AnimateHeight,
+  AnimatedSpacer,
+} from "@/components/interface/AnimateHeight";
+import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
 import { Tags } from "@/components/Tags";
-import { ThemedText } from "@/components/interface/ThemedText";
+import { JournalTrack } from "@/components/track/JournalTrack";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
-import { Fragment, useEffect, useMemo, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -52,33 +55,17 @@ const Button = styled.Pressable`
 
 function JournalScreen() {
   const { state, activeEntry, dispatch } = useApp();
-  const { entries, editMode, cancelling } = state;
-  const committed = state.committed;
+  const { editMode, cancelling, committed } = state;
   const cancelTimerRef = useRef(null);
 
   // Derived state:
 
-  // During the cancel animation window we use committed as the visibility
-  // source — this ensures content that only existed in the draft (typed text,
-  // added tags) starts closing immediately rather than snapping away after the
-  // timer fires.
   const textVisible = cancelling
     ? !!committed.text
     : !!(activeEntry.text || editMode);
   const tagsVisible = cancelling
     ? !!committed.tags.length
     : !!(activeEntry.tags.length || editMode);
-
-  const showAddButton = useMemo(() => {
-    if (entries.length === 0) return true;
-    const latestDate = new Date(entries[entries.length - 1].date);
-    const today = new Date();
-    return (
-      latestDate.getFullYear() !== today.getFullYear() ||
-      latestDate.getMonth() !== today.getMonth() ||
-      latestDate.getDate() !== today.getDate()
-    );
-  }, [entries]);
 
   // Helpers:
 
@@ -102,16 +89,7 @@ function JournalScreen() {
 
   // Handlers:
 
-  const handleChangeDay = (dayId) => dispatch({ type: "CHANGE_DAY", dayId });
-  const handleAdd = () => dispatch({ type: "ADD_DAY" });
-  const handleSave = () => dispatch({ type: "SAVE_EDIT" });
   const handleToggleTag = (tagId) => dispatch({ type: "TOGGLE_TAG", tagId });
-  const handleAddTag = (name, color) =>
-    dispatch({ type: "ADD_TAG", name, color });
-  const handleUpdateTagColor = (tagId, color) =>
-    dispatch({ type: "UPDATE_TAG_COLOR", tagId, color });
-  const handleReplaceTag = (tagId, name, color) =>
-    dispatch({ type: "REPLACE_TAG", tagId, name, color });
 
   const handleEnterEdit = () => {
     // If a cancel is already in flight, abort it and go straight to edit.
@@ -187,59 +165,24 @@ function JournalScreen() {
 
         <Tags
           tagIds={activeEntry.tags}
-          tags={state.tags}
           editMode={editMode}
           onToggleTag={handleToggleTag}
-          onAddTag={handleAddTag}
-          onUpdateTagColor={handleUpdateTagColor}
-          onReplaceTag={handleReplaceTag}
         />
         <AnimatedSpacer visible={tagsVisible} />
 
         {activeEntry.games.map(
           ({ gameId, entryId, isNew, text, tags, gallery }, i) => {
-            // New entries with no content collapse away on cancel — an empty card
-            // animating shut looks intentional. New entries that already have
-            // content (user typed something) stay visible until COMPLETE_CANCEL
-            // removes them from the list, because squishing real content looks wrong.
-            // Existing (committed) entries are always visible.
             const gameVisible = !cancelling || !isNew || !!text;
             return (
               <Fragment key={`${gameId}-${String(entryId)}-${i}`}>
                 <AnimateHeight visible={gameVisible} animateOnMount={!!isNew}>
                   <GameEntry
-                    games={state.games}
                     gameId={gameId}
                     entryId={entryId}
-                    editMode={editMode}
+                    index={i}
                     text={text}
                     tagIds={tags}
-                    tags={state.tags}
                     gallery={gallery}
-                    onChangeText={(t) =>
-                      dispatch({
-                        type: "UPDATE_GAME",
-                        index: i,
-                        changes: { text: t },
-                      })
-                    }
-                    onChangeTags={(newTags) =>
-                      dispatch({
-                        type: "UPDATE_GAME",
-                        index: i,
-                        changes: { tags: newTags },
-                      })
-                    }
-                    onChangeGallery={(newGallery) =>
-                      dispatch({
-                        type: "UPDATE_GAME",
-                        index: i,
-                        changes: { gallery: newGallery },
-                      })
-                    }
-                    onAddTag={handleAddTag}
-                    onUpdateTagColor={handleUpdateTagColor}
-                    onReplaceTag={handleReplaceTag}
                   />
                 </AnimateHeight>
                 <AnimatedSpacer
@@ -261,14 +204,8 @@ function JournalScreen() {
       </PageScroll>
 
       <JournalTrack
-        entries={entries}
-        showAddButton={showAddButton}
-        onChangeDay={handleChangeDay}
-        onAdd={handleAdd}
-        onSave={handleSave}
         onEnterEdit={handleEnterEdit}
         onCancelEdit={handleCancelEdit}
-        editMode={editMode}
       />
     </Container>
   );

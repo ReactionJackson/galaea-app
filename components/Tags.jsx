@@ -2,53 +2,20 @@ import {
   AnimateHeight,
   AnimatedSpacer,
 } from "@/components/interface/AnimateHeight";
+import { FadeTrack } from "@/components/interface/FadeTrack";
 import { ThemedText } from "@/components/interface/ThemedText";
+import { TagEditRow } from "@/components/TagEditRow";
 import { Colors, Fonts } from "@/constants/theme";
-import { LinearGradient } from "expo-linear-gradient";
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
-import { Pressable, ScrollView, TextInput, View } from "react-native";
-import Animated, {
-  Easing,
-  interpolateColor,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import { useApp } from "@/context/AppContext";
+import { useEffect, useRef, useState } from "react";
+import { Pressable, View } from "react-native";
+import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
-
-const PICKER_COLORS = [
-  "default",
-  "green",
-  "blue",
-  "yellow",
-  "purple",
-  "red",
-  "orange",
-  "pink",
-  "teal",
-  "lime",
-];
-const MAX_CHARS = 24;
-const FADE_DURATION = 150;
-const FADE_EASING = Easing.out(Easing.quad);
-const COLOR_DURATION = 200;
 
 const Row = styled.View`
   flex-direction: row;
   align-items: center;
   gap: 8px;
-`;
-
-const TrackOuter = styled.View`
-  flex: 1;
-  position: relative;
-  overflow: hidden;
 `;
 
 const ActiveTags = styled.View`
@@ -86,204 +53,38 @@ const PlusCircle = styled(CircleButton)`
   background-color: ${Colors.tags.default.secondary};
 `;
 
-const CancelCircle = styled(CircleButton)`
-  border-color: ${Colors.dateBorder};
+const PlusGlyph = styled(Animated.Text)`
+  font-family: ${Fonts.bold};
+  font-size: 14px;
+  line-height: 16px;
+  color: ${Colors.tags.default.primary};
 `;
-
-const SaveCircle = styled(CircleButton)`
-  border-color: ${Colors.accent};
-  background-color: ${Colors.accent};
-`;
-
-const ColorDot = styled.View`
-  width: 22px;
-  height: 22px;
-  border-radius: 11px;
-  ${({ color }) =>
-    `background-color: ${Colors.tags[color]?.primary ?? Colors.tags.default.primary};`}
-  ${({ selected }) =>
-    selected ? "border-width: 2px; border-color: rgba(255,255,255,0.85);" : ""}
-`;
-
-const FadeTrack = forwardRef(function FadeTrack(
-  { children, contentContainerStyle },
-  ref,
-) {
-  const leftOpacity = useSharedValue(0);
-  const rightOpacity = useSharedValue(0);
-  const scrollXRef = useRef(0);
-  const contentWidthRef = useRef(0);
-  const containerWidthRef = useRef(0);
-  const scrollRef = useRef(null);
-
-  useImperativeHandle(ref, () => ({
-    scrollToStart: () => scrollRef.current?.scrollTo({ x: 0, animated: true }),
-  }));
-
-  const recompute = (scrollX) => {
-    scrollXRef.current = scrollX;
-    const maxScroll = contentWidthRef.current - containerWidthRef.current;
-    const t = (val) =>
-      withTiming(val, { duration: FADE_DURATION, easing: FADE_EASING });
-
-    if (maxScroll <= 2) {
-      leftOpacity.value = t(0);
-      rightOpacity.value = t(0);
-    } else {
-      leftOpacity.value = t(scrollX > 2 ? 1 : 0);
-      rightOpacity.value = t(scrollX < maxScroll - 2 ? 1 : 0);
-    }
-  };
-
-  const leftStyle = useAnimatedStyle(() => ({ opacity: leftOpacity.value }));
-  const rightStyle = useAnimatedStyle(() => ({ opacity: rightOpacity.value }));
-
-  const FADE_WHITE = "rgba(255,255,255,1)";
-  const FADE_CLEAR = "rgba(255,255,255,0)";
-
-  return (
-    <TrackOuter>
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        decelerationRate="fast"
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={contentContainerStyle}
-        style={{ width: "100%", height: 26 }}
-        scrollEventThrottle={16}
-        onScroll={(e) => recompute(e.nativeEvent.contentOffset.x)}
-        onContentSizeChange={(w) => {
-          contentWidthRef.current = w;
-          recompute(scrollXRef.current);
-        }}
-        onLayout={(e) => {
-          containerWidthRef.current = e.nativeEvent.layout.width;
-          recompute(scrollXRef.current);
-        }}
-      >
-        {children}
-      </ScrollView>
-
-      <Animated.View
-        style={[
-          {
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: 0,
-            width: 24,
-            pointerEvents: "none",
-          },
-          leftStyle,
-        ]}
-      >
-        <LinearGradient
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          colors={[FADE_WHITE, FADE_CLEAR]}
-          style={{ flex: 1 }}
-        />
-      </Animated.View>
-
-      <Animated.View
-        style={[
-          {
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            right: 0,
-            width: 24,
-            pointerEvents: "none",
-          },
-          rightStyle,
-        ]}
-      >
-        <LinearGradient
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          colors={[FADE_CLEAR, FADE_WHITE]}
-          style={{ flex: 1 }}
-        />
-      </Animated.View>
-    </TrackOuter>
-  );
-});
-
-function resolveTagPrimary(key) {
-  return Colors.tags[key]?.primary ?? Colors.tags.default.primary;
-}
-function resolveTagSecondary(key) {
-  return Colors.tags[key]?.secondary ?? Colors.tags.default.secondary;
-}
-
-function useTagColorTransition(draftColor) {
-  const progress = useSharedValue(1);
-  const fromBorder = useSharedValue(resolveTagPrimary(draftColor));
-  const toBorder = useSharedValue(resolveTagPrimary(draftColor));
-  const fromBg = useSharedValue(resolveTagSecondary(draftColor));
-  const toBg = useSharedValue(resolveTagSecondary(draftColor));
-
-  useEffect(() => {
-    // Snapshot current "to" as the new "from", then update target colours.
-    fromBorder.value = toBorder.value;
-    fromBg.value = toBg.value;
-    toBorder.value = resolveTagPrimary(draftColor);
-    toBg.value = resolveTagSecondary(draftColor);
-    progress.value = 0;
-    progress.value = withTiming(1, {
-      duration: COLOR_DURATION,
-      easing: FADE_EASING,
-    });
-  }, [draftColor]);
-
-  // Worklets only read shared values and call interpolateColor — no plain JS
-  // function calls, which is a hard Reanimated constraint.
-  const borderStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(
-      progress.value,
-      [0, 1],
-      [fromBorder.value, toBorder.value],
-    ),
-    backgroundColor: interpolateColor(
-      progress.value,
-      [0, 1],
-      [fromBg.value, toBg.value],
-    ),
-  }));
-
-  const textStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(
-      progress.value,
-      [0, 1],
-      [fromBorder.value, toBorder.value],
-    ),
-  }));
-
-  return { borderStyle, textStyle };
-}
 
 export function Tags({
   tagIds = [],
-  tags = [],
   editMode = false,
   onToggleTag = () => {},
-  onAddTag = () => {},
-  onUpdateTagColor = () => {},
-  onReplaceTag = () => {},
 }) {
+  const { state, dispatch } = useApp();
+  const tags = state.tags;
+  const onAddTag = (name, color) => dispatch({ type: "ADD_TAG", name, color });
+  const onUpdateTagColor = (tagId, color) =>
+    dispatch({ type: "UPDATE_TAG_COLOR", tagId, color });
+  const onReplaceTag = (tagId, name, color) =>
+    dispatch({ type: "REPLACE_TAG", tagId, name, color });
+
   const [editRowOpen, setEditRowOpen] = useState(false);
   const [editingTagId, setEditingTagId] = useState(null);
   const [draftName, setDraftName] = useState("");
   const [draftColor, setDraftColor] = useState("default");
-  const inputRef = useRef(null);
-  const collectionTrackRef = useRef(null);
+  const editRowRef = useRef(null);
+  const tagPickerRef = useRef(null);
 
-  const { borderStyle, textStyle } = useTagColorTransition(draftColor);
   const activeTags = tags.filter((t) => !t.archived);
 
   useEffect(() => {
     if (!editMode) {
-      inputRef.current?.blur();
+      editRowRef.current?.blur();
       setEditRowOpen(false);
       setEditingTagId(null);
       setDraftName("");
@@ -303,11 +104,11 @@ export function Tags({
       setDraftColor("default");
     }
     setEditRowOpen(true);
-    setTimeout(() => inputRef.current?.focus(), 300);
+    setTimeout(() => editRowRef.current?.focus(), 300);
   };
 
   const handleCancelEditRow = () => {
-    inputRef.current?.blur();
+    editRowRef.current?.blur();
     setEditRowOpen(false);
     setEditingTagId(null);
     setDraftName("");
@@ -320,7 +121,7 @@ export function Tags({
 
     if (editingTagId === null) {
       onAddTag(trimmedName, draftColor);
-      setTimeout(() => collectionTrackRef.current?.scrollToStart(), 80);
+      setTimeout(() => tagPickerRef.current?.scrollToStart(), 80);
     } else {
       const original = tags.find((t) => t.tagId === editingTagId);
       if (original.name !== trimmedName) {
@@ -330,7 +131,7 @@ export function Tags({
       }
     }
 
-    inputRef.current?.blur();
+    editRowRef.current?.blur();
     setEditRowOpen(false);
     setEditingTagId(null);
     setDraftName("");
@@ -343,23 +144,11 @@ export function Tags({
         <Row>
           <Pressable onPress={() => openEditRow(null)}>
             <PlusCircle>
-              <Animated.Text
-                style={{
-                  fontFamily: Fonts.bold,
-                  fontSize: 14,
-                  lineHeight: 16,
-                  color: Colors.tags.default.primary,
-                }}
-              >
-                +
-              </Animated.Text>
+              <PlusGlyph>+</PlusGlyph>
             </PlusCircle>
           </Pressable>
 
-          <FadeTrack
-            ref={collectionTrackRef}
-            contentContainerStyle={{ gap: 10 }}
-          >
+          <FadeTrack ref={tagPickerRef} contentContainerStyle={{ gap: 10 }}>
             {activeTags.map(({ tagId, name, color }, i) => {
               const active = tagIds.includes(tagId);
               const tagColor = active ? "disabled" : color;
@@ -383,95 +172,15 @@ export function Tags({
       </AnimateHeight>
 
       <AnimateHeight visible={editRowOpen && editMode}>
-        <View style={{ paddingTop: 8 }}>
-          <Row>
-            <TextInput
-              ref={inputRef}
-              style={{ position: "absolute", opacity: 0, width: 1, height: 1 }}
-              value={draftName}
-              onChangeText={(text) => setDraftName(text.slice(0, MAX_CHARS))}
-              returnKeyType="done"
-              onSubmitEditing={handleSave}
-              blurOnSubmit={false}
-            />
-
-            <Pressable
-              onPress={() => inputRef.current?.focus()}
-              style={{ flexShrink: 0 }}
-            >
-              <Animated.View
-                style={[
-                  {
-                    alignItems: "center",
-                    justifyContent: "center",
-                    height: 26,
-                    borderRadius: 13,
-                    paddingHorizontal: 10,
-                    borderWidth: 2,
-                  },
-                  borderStyle,
-                ]}
-              >
-                <Animated.Text
-                  style={[
-                    {
-                      fontFamily: Fonts.bold,
-                      fontSize: 12,
-                      opacity: draftName ? 1 : 0.45,
-                    },
-                    textStyle,
-                  ]}
-                >
-                  {draftName || "Tag name"}
-                </Animated.Text>
-              </Animated.View>
-            </Pressable>
-
-            <FadeTrack
-              contentContainerStyle={{
-                gap: 8,
-                alignItems: "center",
-                paddingVertical: 2,
-              }}
-            >
-              {PICKER_COLORS.map((color) => (
-                <Pressable key={color} onPress={() => setDraftColor(color)}>
-                  <ColorDot color={color} selected={draftColor === color} />
-                </Pressable>
-              ))}
-            </FadeTrack>
-
-            <Pressable onPress={handleCancelEditRow}>
-              <CancelCircle>
-                <Animated.Text
-                  style={{
-                    fontFamily: Fonts.bold,
-                    fontSize: 14,
-                    lineHeight: 16,
-                    color: Colors.faded,
-                  }}
-                >
-                  ×
-                </Animated.Text>
-              </CancelCircle>
-            </Pressable>
-
-            <Pressable onPress={handleSave}>
-              <SaveCircle>
-                <Animated.Text
-                  style={{
-                    fontFamily: Fonts.bold,
-                    fontSize: 12,
-                    lineHeight: 14,
-                    color: Colors.white,
-                  }}
-                >
-                  ✓
-                </Animated.Text>
-              </SaveCircle>
-            </Pressable>
-          </Row>
-        </View>
+        <TagEditRow
+          ref={editRowRef}
+          name={draftName}
+          color={draftColor}
+          onChangeName={setDraftName}
+          onChangeColor={setDraftColor}
+          onCancel={handleCancelEditRow}
+          onSave={handleSave}
+        />
       </AnimateHeight>
 
       <AnimatedSpacer visible={!!tagIds.length && editMode} height={10} />

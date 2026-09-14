@@ -3,6 +3,7 @@ import {
   AnimateHeight,
 } from "@/components/interface/AnimateHeight";
 import { Colors } from "@/constants/theme";
+import { useApp } from "@/context/AppContext";
 import { Image as ExpoImage } from "expo-image";
 import { memo } from "react";
 import { View } from "react-native";
@@ -76,25 +77,20 @@ function formatEntryDate(dateString) {
 }
 
 export const GameEntry = memo(function GameEntry({
-  games = [],
   gameId = 1,
   entryId = null,
-  editMode = false,
+  index,
   isMinimal = false,
   date,
   text: textProp,
   tagIds: tagIdsProp,
-  tags: allTags = [],
   gallery: galleryProp,
-  onChangeText,
-  onChangeTags,
-  onChangeGallery,
-  onAddTag,
-  onUpdateTagColor,
-  onReplaceTag,
 }) {
+  const { state, dispatch } = useApp();
+  const editMode = isMinimal ? false : state.editMode;
+
   const { title, platform, genre, cover, entries } =
-    games.find((game) => game.gameId === gameId) ?? {};
+    state.games.find((game) => game.gameId === gameId) ?? {};
 
   const entryNumber = entryId ?? (entries?.length ?? 0) + 1;
 
@@ -107,6 +103,9 @@ export const GameEntry = memo(function GameEntry({
   const text = textProp ?? dataText;
   const tagIds = tagIdsProp ?? dataTagIds;
   const gallery = galleryProp ?? dataGallery;
+
+  const updateGame = (changes) =>
+    dispatch({ type: "UPDATE_GAME", index, changes });
 
   const { datePart, timePart } = date ? formatEntryDate(date) : {};
   const label =
@@ -128,21 +127,21 @@ export const GameEntry = memo(function GameEntry({
     const next = tagIds.includes(tagId)
       ? tagIds.filter((id) => id !== tagId)
       : [...tagIds, tagId];
-    onChangeTags?.(next);
+    updateGame({ tags: next });
   };
 
   const handleAddImage = (item) => {
-    onChangeGallery?.([...gallery, item]);
+    updateGame({ gallery: [...gallery, item] });
   };
 
-  const handleUpdateImage = (index, focus) => {
-    onChangeGallery?.(
-      gallery.map((item, i) => {
-        if (i !== index) return item;
+  const handleUpdateImage = (imageIndex, focus) => {
+    updateGame({
+      gallery: gallery.map((item, i) => {
+        if (i !== imageIndex) return item;
         const uri = getImageUri(item);
         return focus ? { uri, focus } : uri;
       }),
-    );
+    });
   };
 
   return (
@@ -184,19 +183,15 @@ export const GameEntry = memo(function GameEntry({
             multiline={true}
             value={text}
             placeholder="Write something about this game..."
-            onChangeText={onChangeText}
+            onChangeText={(t) => updateGame({ text: t })}
             editable={editMode}
           />
         </AnimateHeight>
         <AnimatedSpacer visible={!!(text || editMode)} />
         <Tags
           tagIds={tagIds}
-          tags={allTags}
           editMode={editMode}
           onToggleTag={handleToggleTag}
-          onAddTag={onAddTag}
-          onUpdateTagColor={onUpdateTagColor}
-          onReplaceTag={onReplaceTag}
         />
         <AnimatedSpacer visible={!!(tagIds.length || editMode)} />
       </Content>

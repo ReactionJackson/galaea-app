@@ -73,14 +73,12 @@ export default function CollectionScreen() {
               date={entry.date}
               text={entry.text}
               tagIds={entry.tags}
-              tags={state.tags}
               gallery={entry.gallery}
             />
           ))}
       </PageScroll>
 
       <CollectionTrack
-        games={games}
         editMode={addMode}
         onChangeGame={setActiveGameId}
         onAddGame={() => setAddMode(true)}

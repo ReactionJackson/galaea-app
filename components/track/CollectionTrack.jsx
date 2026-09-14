@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
+import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import { Image as ExpoImage } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
@@ -17,9 +18,6 @@ const ITEM_HEIGHT = 70;
 const ITEM_SPACING = 10;
 
 // Styled Components:
-// Ordinary styles (size, border-radius, etc) live in these templates as
-// normal — only opacity needs to be animated, so that alone comes in via a
-// style prop (see useFadeStyle) rather than the template.
 
 const ScrollContainer = styled(Animated.ScrollView)`
   flex: 1;
@@ -44,11 +42,6 @@ const AddButtonBox = styled(Animated.View)`
   align-items: center;
 `;
 
-// Fades between full and half opacity off a single plain boolean — no shared
-// values or index comparisons needed, reanimated re-runs this whenever
-// `active` itself changes (passed as a dependency, same as useMemo). Still
-// has to be its own hook call per item though: React won't allow a variable
-// number of hook calls inside the list below.
 function useFadeStyle(active) {
   return useAnimatedStyle(
     () => ({ opacity: withTiming(active ? 1 : 0.25, { duration: 200 }) }),
@@ -86,7 +79,6 @@ function CollectionAddButton({ active, onPress, disabled }) {
 // Component:
 
 export function CollectionTrack({
-  games = [],
   editMode = false,
   onChangeGame = () => {},
   onPressActiveGame = () => {},
@@ -94,9 +86,9 @@ export function CollectionTrack({
   onCancelAddGame = () => {},
   onSave = () => {},
 }) {
-  // One aspect ratio per game, resolved on demand via RNImage.getSize — same
-  // approach as the gallery lightbox, since box art dimensions aren't stored
-  // anywhere in the data. Starts square (1:1) until the real value loads.
+  const { state } = useApp();
+  const games = state.games;
+
   const [aspectRatios, setAspectRatios] = useState(() => games.map(() => 1));
 
   const gameKey = useMemo(() => games.map((g) => g.gameId).join(","), [games]);

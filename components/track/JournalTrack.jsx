@@ -1,6 +1,6 @@
-import { StickyLabel } from "./StickyLabel";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
+import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
 import { useEffect, useMemo } from "react";
@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import styled from "styled-components/native";
+import { StickyLabel } from "./StickyLabel";
 import { Track } from "./Track";
 
 // Constants:
@@ -65,18 +66,23 @@ const DateCircle = styled.Pressable`
 // Component:
 
 export function JournalTrack({
-  entries = [],
-  showAddButton = true,
-  onChangeDay = () => {},
-  onAdd = () => {},
-  onSave = () => {},
   onEnterEdit = () => {},
   onCancelEdit = () => {},
-  editMode = false,
 }) {
-  // All items are the same width here, but the shared snap-track engine
-  // works off a widths array regardless (see CollectionTrack for the
-  // irregular-width case) — this just gives it a uniform one.
+  const { state, dispatch } = useApp();
+  const { entries, editMode } = state;
+
+  const showAddButton = useMemo(() => {
+    if (entries.length === 0) return true;
+    const latestDate = new Date(entries[entries.length - 1].date);
+    const today = new Date();
+    return (
+      latestDate.getFullYear() !== today.getFullYear() ||
+      latestDate.getMonth() !== today.getMonth() ||
+      latestDate.getDate() !== today.getDate()
+    );
+  }, [entries]);
+
   const itemWidths = useMemo(
     () => entries.map(() => ITEM_WIDTH),
     [entries.length],
@@ -131,10 +137,6 @@ export function JournalTrack({
     return Object.values(groups);
   }, [entries]);
 
-  // Shared snap/centre-load engine — see useSnapTrack for the scroll math and
-  // the "+" gating; everything below this is specific to how a date-circle
-  // track presents that (sticky year/month labels, the red indicator).
-
   const {
     ADD_INDEX,
     activeIndex,
@@ -153,14 +155,9 @@ export function JournalTrack({
     itemWidths,
     itemSpacing: ITEM_SPACING,
     showAddButton,
-    // Explicit rather than relying on the hook's itemWidths[0] fallback —
-    // that fallback breaks if entries is ever empty (no item 0 to fall back
-    // to), whereas the + button's size should never depend on entry count.
     addButtonWidth: ITEM_WIDTH,
     onSettle: (index, { alreadyActive }) => {
       if (alreadyActive) {
-        // Pressing the already-active circle toggles edit mode for it,
-        // rather than moving anywhere.
         if (editMode) {
           onCancelEdit();
           if (process.env.EXPO_OS === "ios") {
@@ -174,17 +171,12 @@ export function JournalTrack({
         }
         return;
       }
-      if (entries[index]) onChangeDay(entries[index].dayId);
+      if (entries[index])
+        dispatch({ type: "CHANGE_DAY", dayId: entries[index].dayId });
     },
-    onAdd,
+    onAdd: () => dispatch({ type: "ADD_DAY" }),
     onCancelAdd: onCancelEdit,
   });
-
-  // Sticky-label plumbing: scrollX (continuous) and the two layout shared
-  // values StickyLabel needs — mirrors of the hook's own basePadding/track
-  // width, kept as shared values since StickyLabel reads them on the UI
-  // thread. The centring/snapping math itself all still lives in the hook;
-  // this is just wiring for a Journal-only decoration.
 
   const scrollX = useSharedValue(0);
   const halfTrackWidth = useSharedValue(0);
@@ -204,9 +196,6 @@ export function JournalTrack({
     handleTrackLayout(event);
     halfTrackWidth.value = event.nativeEvent.layout.width / 2;
   };
-
-  // Red indicator — purely decorative, animates out while scrolling and back
-  // in once settled.
 
   const indicatorScale = useSharedValue(1);
   const indicatorOpacity = useSharedValue(1);
@@ -235,7 +224,7 @@ export function JournalTrack({
       trackHeight={90}
       trackPaddingTop={25}
       onCancel={() => goToIndex(activeIndex)}
-      onSave={onSave}
+      onSave={() => dispatch({ type: "SAVE_EDIT" })}
     >
       <>
         <YearLabels>
