@@ -81,15 +81,17 @@ export const GameEntry = memo(function GameEntry({
   entryId = null,
   index,
   isMinimal = false,
+  editable,
   date,
   text: textProp,
   tagIds: tagIdsProp,
   gallery: galleryProp,
+  onUpdate,
 }) {
   const { state, dispatch } = useApp();
-  const editMode = isMinimal ? false : state.editMode;
+  const editMode = editable ?? (isMinimal ? false : state.editMode);
 
-  const { title, platform, genre, cover, entries } =
+  const { title, cover, entries } =
     state.games.find((game) => game.gameId === gameId) ?? {};
 
   const entryNumber = entryId ?? (entries?.length ?? 0) + 1;
@@ -105,7 +107,9 @@ export const GameEntry = memo(function GameEntry({
   const gallery = galleryProp ?? dataGallery;
 
   const updateGame = (changes) =>
-    dispatch({ type: "UPDATE_GAME", index, changes });
+    onUpdate
+      ? onUpdate(changes)
+      : dispatch({ type: "UPDATE_GAME", index, changes });
 
   const { datePart, timePart } = date ? formatEntryDate(date) : {};
   const label =
@@ -156,9 +160,6 @@ export const GameEntry = memo(function GameEntry({
           />
           <ThemedText type="title-small" color="white">
             {title}
-          </ThemedText>
-          <ThemedText type="subtitle" color="white" style={{ opacity: 1 }}>
-            {platform} / {genre}
           </ThemedText>
         </Header>
       )}

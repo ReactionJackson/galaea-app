@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
+import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, Image as RNImage } from "react-native";
@@ -147,8 +148,18 @@ export function CollectionTrack({
     onSettle: (index, { alreadyActive }) => {
       const game = games[index];
       if (!game) return;
-      if (alreadyActive) onPressActiveGame(game.gameId);
-      else onChangeGame(game.gameId);
+      if (alreadyActive) {
+        onPressActiveGame(game.gameId);
+        if (process.env.EXPO_OS === "ios") {
+          Haptics.impactAsync(
+            editMode
+              ? Haptics.ImpactFeedbackStyle.Light
+              : Haptics.ImpactFeedbackStyle.Heavy,
+          );
+        }
+      } else {
+        onChangeGame(game.gameId);
+      }
     },
     onAdd: onAddGame,
     onCancelAdd: onCancelAddGame,

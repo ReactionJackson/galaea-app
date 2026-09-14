@@ -8,7 +8,6 @@ const ScrollContainer = styled.ScrollView`
 `;
 
 const DEFAULT_CONTENT_CONTAINER_STYLE = {
-  paddingTop: 70,
   paddingBottom: 110,
   paddingHorizontal: 20,
 };
@@ -34,6 +33,7 @@ export function PageScroll({
       contentContainerStyle={
         contentContainerStyle ?? DEFAULT_CONTENT_CONTAINER_STYLE
       }
+      contentInsetAdjustmentBehavior="never"
       {...props}
     >
       {children}

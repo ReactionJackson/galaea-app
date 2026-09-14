@@ -124,33 +124,33 @@ function JournalScreen() {
 
   return (
     <Container>
-      <PageHeader>
-        <EntryNumber>
-          <ThemedText type="date-number">{formatDate("day")}</ThemedText>
-        </EntryNumber>
-        <EntryInfo>
-          <EntryDate>
-            <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
-            <ThemedText type="subtitle" color="faded">
-              {formatDate("time")}
-            </ThemedText>
-          </EntryDate>
-          <ThemedText
-            type="title"
-            isInput
-            value={
-              !editMode && !activeEntry.title
-                ? formatDate("weekday")
-                : activeEntry.title
-            }
-            placeholder={formatDate("weekday")}
-            onChangeText={(title) => dispatch({ type: "UPDATE_TITLE", title })}
-            editable={editMode}
-          />
-        </EntryInfo>
-      </PageHeader>
+      <PageScroll resetKey={activeEntry.dayId} stickyHeaderIndices={[0]}>
+        <PageHeader>
+          <EntryNumber>
+            <ThemedText type="date-number">{formatDate("day")}</ThemedText>
+          </EntryNumber>
+          <EntryInfo>
+            <EntryDate>
+              <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
+              <ThemedText type="subtitle" color="faded">
+                {formatDate("time")}
+              </ThemedText>
+            </EntryDate>
+            <ThemedText
+              type="title"
+              isInput
+              value={
+                !editMode && !activeEntry.title
+                  ? formatDate("weekday")
+                  : activeEntry.title
+              }
+              placeholder={formatDate("weekday")}
+              onChangeText={(title) => dispatch({ type: "UPDATE_TITLE", title })}
+              editable={editMode}
+            />
+          </EntryInfo>
+        </PageHeader>
 
-      <PageScroll resetKey={activeEntry.dayId}>
         <AnimateHeight visible={textVisible}>
           <ThemedText
             isInput

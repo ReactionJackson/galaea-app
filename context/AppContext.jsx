@@ -97,6 +97,13 @@ const initialState = {
   // only ever hold { gameId, entryId } references into this — see SAVE_EDIT,
   // which is responsible for keeping that split intact.
   games: deepClone(gamesData),
+  // Collection's own edit cycle — the same draft/committed shape as the
+  // journal day above, just scoped to a single game record (including its
+  // own entries) instead of a day. editingGameId is null while creating a
+  // brand-new game, or the id of whichever existing game gameDraft was
+  // cloned from. See ENTER_GAME_EDIT / SAVE_GAME_EDIT below.
+  gameDraft: null,
+  editingGameId: null,
 };
 
 function appReducer(state, action) {
@@ -207,6 +214,55 @@ function appReducer(state, action) {
           ],
         },
       };
+
+    // Collection's own edit cycle — mirrors ENTER_EDIT/SAVE_EDIT above, just
+    // for a single game record instead of a day. A null gameId (or one that
+    // isn't found) starts a blank draft, i.e. adding a new game; otherwise
+    // gameDraft is a deep clone of that existing game, entries included, so
+    // its own entries become editable the same way a journal day's do.
+    case "ENTER_GAME_EDIT": {
+      const existing = state.games.find((g) => g.gameId === action.gameId);
+      return {
+        ...state,
+        gameDraft: existing
+          ? deepClone(existing)
+          : { title: "", boxArt: null, cover: null, entries: [] },
+        editingGameId: existing ? existing.gameId : null,
+      };
+    }
+
+    case "CANCEL_GAME_EDIT":
+      return { ...state, gameDraft: null, editingGameId: null };
+
+    case "UPDATE_GAME_DRAFT":
+      return { ...state, gameDraft: { ...state.gameDraft, ...action.changes } };
+
+    case "UPDATE_GAME_DRAFT_ENTRY":
+      return {
+        ...state,
+        gameDraft: {
+          ...state.gameDraft,
+          entries: state.gameDraft.entries.map((e) =>
+            e.entryId === action.entryId ? { ...e, ...action.changes } : e,
+          ),
+        },
+      };
+
+    // Save: promote gameDraft into the games store. A brand-new game is
+    // appended as the new last item (ahead of the add slot, rather than
+    // consuming it the way a journal day does); an existing one is replaced
+    // in place. gameId is supplied by the caller for a new game (Collection
+    // already needs to know it, to land the track on the right item), not
+    // generated here.
+    case "SAVE_GAME_EDIT": {
+      const isNew = state.editingGameId == null;
+      const gameId = isNew ? action.gameId : state.editingGameId;
+      const savedGame = { ...state.gameDraft, gameId };
+      const games = isNew
+        ? [...state.games, savedGame]
+        : state.games.map((g) => (g.gameId === gameId ? savedGame : g));
+      return { ...state, games, gameDraft: null, editingGameId: null };
+    }
 
     // Tag mutations — these write to state.tags (global), not just the draft.
 

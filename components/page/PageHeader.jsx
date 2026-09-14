@@ -1,21 +1,10 @@
 import { BlurView } from "@/components/interface/BlurView";
+import { useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PageHeader
-//
-// The fixed, blurred strip pinned to the top of a screen while its content
-// scrolls underneath — shared by Journal (date circle + editable title) and
-// Collection (active game's title). Journal originally owned this inline;
-// this is the reusable extraction, content supplied by the caller.
-// ─────────────────────────────────────────────────────────────────────────────
 
 const Header = styled(BlurView)`
   z-index: 100;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  margin: 0 -20px;
   gap: 10px;
   height: ${({ headerHeight }) => headerHeight}px;
   padding: 15px 20px;
@@ -24,8 +13,9 @@ const Header = styled(BlurView)`
 `;
 
 export function PageHeader({ height = 70, tint = "light", children }) {
+  const { width: screenWidth } = useWindowDimensions();
   return (
-    <Header tint={tint} headerHeight={height}>
+    <Header tint={tint} headerHeight={height} style={{ width: screenWidth }}>
       {children}
     </Header>
   );

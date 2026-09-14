@@ -72,8 +72,6 @@ export const gamesData = [
   {
     gameId: 1,
     title: "Xenoblade Chronicles 2",
-    platform: "Nintendo Switch",
-    genre: "JRPG",
     cover:
       "https://images.launchbox-app.com/b7a444fc-f6b3-415c-b270-55b9aab05756.jpg",
     boxArt:
@@ -113,8 +111,6 @@ export const gamesData = [
   {
     gameId: 2,
     title: "Astral Chain",
-    platform: "Nintendo Switch",
-    genre: "Action",
     cover:
       "https://images.launchbox-app.com/df8e26e5-c114-4774-8d98-d76d6602df87.jpg",
     boxArt:
@@ -135,8 +131,6 @@ export const gamesData = [
   {
     gameId: 3,
     title: "Xenogears",
-    platform: "PS1",
-    genre: "JRPG",
     cover:
       "https://images.launchbox-app.com/ef51e342-83bf-4eaf-a36d-8b6c3bf48c2f.png",
     boxArt:
@@ -165,10 +159,8 @@ export const gamesData = [
   {
     gameId: 4,
     title: "Parasite Eve",
-    platform: "PS1",
-    genre: "Action",
     cover:
-      "https://images.launchbox-app.com/853c8013-5985-4f25-ab12-29808d192781.jpg",
+      "https://i.pinimg.com/736x/48/27/93/482793fc1fa254378ba3a51a3cef6974.jpg",
     boxArt:
       "https://images.launchbox-app.com/r2_7234b4db-0032-4eb3-83d6-a3595c55193e.jpg",
     entries: [
@@ -189,25 +181,6 @@ export const gamesData = [
           "https://images.launchbox-app.com//7c180d3f-3426-4ec6-bcad-03e2d89cea57.jpg",
           "https://images.launchbox-app.com//14b11046-ef42-4ae6-9d70-5b0708460078.jpg",
         ],
-      },
-    ],
-  },
-  {
-    gameId: 5,
-    title: "Final Fantasy: Crystal Chronicles - The Crystal Bearers",
-    platform: "Wii",
-    genre: "RPG",
-    cover:
-      "https://images.launchbox-app.com/f935c18a-b025-4e76-9edf-954bf6e384b9.png",
-    boxArt:
-      "https://images.launchbox-app.com/774593f8-3c54-4567-8086-962731f49ed1.jpg",
-    entries: [
-      {
-        entryId: 1,
-        date: "2026-01-24T21:30:00.000Z",
-        text: "Started Crystal Bearers tonight. It's not really like the other Crystal Chronicles games, it's more of a traditional Final Fantasy game. The story is interesting but I'm not sure I'm hooked yet — the pacing is a bit slow and I'm not sure I understand the point of the game yet.",
-        tags: [3],
-        gallery: [],
       },
     ],
   },
@@ -300,10 +273,7 @@ export const daysData = [
     title: "",
     text: "Astral Chain case file 7 done. The game keeps escalating in interesting ways — the chimeras are getting properly unsettling now. Found a few of the hidden items in the files that I'd completely missed on first pass. The investigation sections reward thoroughness in a way that doesn't feel tedious. Also dug out Crystal Bearers on the Wii for an hour before bed — hadn't touched it in years and was curious if it holds up.",
     tags: [5, 3],
-    games: [
-      { gameId: 2, entryId: 1 },
-      { gameId: 5, entryId: 1 },
-    ],
+    games: [{ gameId: 2, entryId: 1 }],
   },
   {
     dayId: 11,
