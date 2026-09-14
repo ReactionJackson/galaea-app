@@ -2,6 +2,7 @@ import { BlurView } from "@/components/interface/BlurView";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
+import * as Haptics from "expo-haptics";
 import { View } from "react-native";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
@@ -76,7 +77,14 @@ export function Track({
             <Button onPress={onCancel}>
               <ThemedText color="black">Cancel</ThemedText>
             </Button>
-            <SaveButton onPress={onSave}>
+            <SaveButton
+              onPress={() => {
+                if (process.env.EXPO_OS === "ios") {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                }
+                onSave?.();
+              }}
+            >
               <ThemedText color="white">Save</ThemedText>
             </SaveButton>
           </View>

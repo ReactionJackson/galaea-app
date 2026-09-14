@@ -148,6 +148,10 @@ export const GameEntry = memo(function GameEntry({
     });
   };
 
+  const handleDeleteImage = (imageIndex) => {
+    updateGame({ gallery: gallery.filter((_, i) => i !== imageIndex) });
+  };
+
   return (
     <Container isMinimal={isMinimal}>
       {!isMinimal && (
@@ -173,6 +177,7 @@ export const GameEntry = memo(function GameEntry({
             editMode={editMode}
             onAddImage={handleAddImage}
             onUpdateImage={handleUpdateImage}
+            onDeleteImage={handleDeleteImage}
             horizontalPadding={isMinimal ? 40 : undefined}
           />
         </AnimateHeight>

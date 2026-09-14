@@ -154,7 +154,7 @@ export function GameArt({
       {editable && (
         <EditButton
           onPress={onPressCover}
-          style={{ position: "absolute", top: 20, right: 20 }}
+          style={{ position: "absolute", top: 10, right: 10 }}
         />
       )}
     </ArtContainer>

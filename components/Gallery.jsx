@@ -1,5 +1,6 @@
 import { Colors } from "@/constants/theme";
 import { Image as ExpoImage } from "expo-image";
+import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
 import { memo, useState } from "react";
 import {
@@ -8,6 +9,7 @@ import {
   ScrollView,
   useWindowDimensions,
 } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { Lightbox } from "./Lightbox";
 import { ThemedText } from "./interface/ThemedText";
@@ -35,6 +37,44 @@ const EditableView = styled.View`
   transform: scale(0.99);
 `;
 
+// Duplicate: same size/border/fade recipe as GameArt's own edit-circle
+// button, just filled solid with the accent colour for a destructive action.
+const DeleteCircle = styled.View`
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  border: 2px solid ${Colors.dateBorder};
+  background-color: ${Colors.accent};
+  justify-content: center;
+  align-items: center;
+`;
+
+function DeleteButton({ onPress, style }) {
+  const handlePress = () => {
+    if (process.env.EXPO_OS === "ios") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    }
+    onPress?.();
+  };
+
+  return (
+    <Animated.View
+      entering={FadeIn.duration(200)}
+      exiting={FadeOut.duration(200)}
+      style={style}
+    >
+      <Pressable onPress={handlePress}>
+        <DeleteCircle>
+          <ThemedText type="date-number" color="white">
+            X
+          </ThemedText>
+        </DeleteCircle>
+      </Pressable>
+    </Animated.View>
+  );
+}
+// End Duplicate
+
 const GALLERY_ITEM_GAP = 10;
 const DEFAULT_HORIZONTAL_PADDING = 80;
 
@@ -50,6 +90,7 @@ export const Gallery = memo(function Gallery({
   editMode = false,
   onAddImage,
   onUpdateImage,
+  onDeleteImage,
   horizontalPadding = DEFAULT_HORIZONTAL_PADDING,
 }) {
   const { width: screenWidth } = useWindowDimensions();
@@ -146,6 +187,12 @@ export const Gallery = memo(function Gallery({
                   source={{ uri }}
                 />
               </Pressable>
+              {editMode && (
+                <DeleteButton
+                  onPress={() => onDeleteImage?.(i)}
+                  style={{ position: "absolute", top: 10, right: 10 }}
+                />
+              )}
             </Item>
           );
         })}
