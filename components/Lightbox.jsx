@@ -30,10 +30,13 @@ const CropBox = styled.View`
 `;
 
 const ControlsRow = styled.View`
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
   flex-direction: row;
   justify-content: flex-end;
   gap: 10px;
-  padding-top: 20px;
 `;
 
 const GhostButton = styled.Pressable`
