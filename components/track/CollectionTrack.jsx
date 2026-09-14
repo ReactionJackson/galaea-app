@@ -43,15 +43,25 @@ const AddButtonBox = styled(Animated.View)`
   align-items: center;
 `;
 
-function useFadeStyle(active) {
+function useFadeStyle(active, editMode) {
+  const inactiveOpacity = editMode ? 0.1 : 0.4;
   return useAnimatedStyle(
-    () => ({ opacity: withTiming(active ? 1 : 0.25, { duration: 200 }) }),
-    [active],
+    () => ({
+      opacity: withTiming(active ? 1 : inactiveOpacity, { duration: 200 }),
+    }),
+    [active, inactiveOpacity],
   );
 }
 
-function CollectionBoxArt({ boxArt, itemWidth, active, onPress, disabled }) {
-  const style = useFadeStyle(active);
+function CollectionBoxArt({
+  boxArt,
+  itemWidth,
+  active,
+  editMode,
+  onPress,
+  disabled,
+}) {
+  const style = useFadeStyle(active, editMode);
   return (
     <Pressable onPress={onPress} disabled={disabled}>
       <BoxArt
@@ -64,8 +74,8 @@ function CollectionBoxArt({ boxArt, itemWidth, active, onPress, disabled }) {
   );
 }
 
-function CollectionAddButton({ active, onPress, disabled }) {
-  const style = useFadeStyle(active);
+function CollectionAddButton({ active, editMode, onPress, disabled }) {
+  const style = useFadeStyle(active, editMode);
   return (
     <Pressable onPress={onPress} disabled={disabled}>
       <AddButtonBox style={style}>
@@ -198,12 +208,14 @@ export function CollectionTrack({
             boxArt={game.boxArt}
             itemWidth={itemWidths[i]}
             active={isScrolling || activeIndex === i}
+            editMode={editMode}
             onPress={() => goToIndex(i)}
             disabled={editMode && activeIndex !== i}
           />
         ))}
         <CollectionAddButton
           active={isScrolling || activeIndex === ADD_INDEX}
+          editMode={editMode}
           onPress={() => goToIndex(ADD_INDEX)}
           disabled={editMode && activeIndex !== ADD_INDEX}
         />
