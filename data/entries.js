@@ -68,7 +68,7 @@ export const tagsData = [
 // entryId field on the entry object. "Entry XX" display numbers match entryId.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const itemsData = [
+export const sampleItemsData = [
   {
     itemId: 9,
     title: "Final Fantasy VIII",
@@ -407,7 +407,7 @@ export const itemsData = [
 // full item record and its entry by joining against the items list above.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const daysData = [
+export const sampleDaysData = [
   {
     dayId: 1,
     date: "2025-11-04T21:00:00.000Z",
@@ -632,3 +632,18 @@ export const daysData = [
     ],
   },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Toggle: sample content vs. a genuinely blank start
+//
+// AppContext's initialState (and its HYDRATE fallback) run whatever comes
+// out of daysData/itemsData through ensureSeedData, which seeds one blank
+// day and one blank item whenever it's handed empty arrays. So switching
+// between the bundled sample content above and a real blank start is just
+// this one line each: point at sample*Data to bring it back, or [] to start
+// blank.
+
+// export const daysData = sampleDaysData;
+// export const itemsData = sampleItemsData;
+export const daysData = [];
+export const itemsData = [];

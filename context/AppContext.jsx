@@ -1,5 +1,13 @@
 import { daysData, itemsData, tagsData } from "@/data/entries";
-import { createContext, useContext, useReducer } from "react";
+import { loadPersistedState, savePersistedState } from "@/utils/storage";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -17,6 +25,41 @@ function buildNewEntry() {
     text: "",
     tags: [],
     items: [],
+  };
+}
+
+// A blank day/item to fall back on whenever entries or items would
+// otherwise be empty — first-ever launch (no bundled seed data left in
+// data/entries.js), or a persisted store that's been emptied out. Without
+// this, an empty entries array has no "last" day for committed to point at,
+// and an empty items array leaves the collection track with nothing to
+// show. dayId/itemId of 1 is safe here precisely because it's only ever
+// used when there's nothing else already occupying that id.
+function buildDefaultDay() {
+  return {
+    dayId: 1,
+    date: new Date().toISOString(),
+    title: "",
+    text: "",
+    tags: [],
+    items: [],
+  };
+}
+
+function buildDefaultItem() {
+  return {
+    itemId: 1,
+    title: "",
+    coverImage: null,
+    cardImage: null,
+    entries: [],
+  };
+}
+
+function ensureSeedData(entries, items) {
+  return {
+    entries: entries.length ? entries : [buildDefaultDay()],
+    items: items.length ? items : [buildDefaultItem()],
   };
 }
 
@@ -137,9 +180,11 @@ function stripRemovedItemEntries(day, itemId, removedEntryIds) {
 // Reducer
 // ---------------------------------------------------------------------------
 
+const seeded = ensureSeedData([...daysData], deepClone(itemsData));
+
 const initialState = {
-  entries: [...daysData],
-  committed: daysData[daysData.length - 1],
+  entries: seeded.entries,
+  committed: seeded.entries[seeded.entries.length - 1],
   draft: null,
   editMode: false,
   cancelling: false,
@@ -147,7 +192,7 @@ const initialState = {
   // The single source of truth for every collection item and its entries.
   // Journal days only ever hold { itemId, entryId } references into this —
   // see SAVE_EDIT, which is responsible for keeping that split intact.
-  items: deepClone(itemsData),
+  items: seeded.items,
   // Collection's own edit cycle — the same draft/committed shape as the
   // journal day above, just scoped to a single item record (including its
   // own entries) instead of a day. editingItemId is null while creating a
@@ -403,6 +448,22 @@ function appReducer(state, action) {
       };
     }
 
+    // Loaded from AsyncStorage on launch (see AppProvider below) — swaps in
+    // whatever was actually saved last time in place of the bundled seed
+    // data, keeping every other field (editMode, drafts, etc.) at its
+    // normal fresh-launch default.
+    case "HYDRATE": {
+      const { entries, items, tags } = action.persisted;
+      const seeded = ensureSeedData(entries ?? [], items ?? []);
+      return {
+        ...state,
+        entries: seeded.entries,
+        items: seeded.items,
+        tags,
+        committed: seeded.entries[seeded.entries.length - 1],
+      };
+    }
+
     default:
       return state;
   }
@@ -416,9 +477,49 @@ const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  // Starts false so we never render a frame of the bundled seed data before
+  // checking whether there's real, previously-saved content to show instead.
+  const [ready, setReady] = useState(false);
+  const persistTimerRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadPersistedState().then((persisted) => {
+      if (cancelled) return;
+      if (persisted) dispatch({ type: "HYDRATE", persisted });
+      setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Persists the actual content whenever it changes — not on every keystroke
+  // of an in-progress edit, since drafts aren't part of what's saved anyway
+  // (see loadPersistedState/savePersistedState) — debounced a little so a
+  // burst of edits (typing, adding several images) doesn't hit AsyncStorage
+  // on every single change.
+  useEffect(() => {
+    if (!ready) return;
+    if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+    persistTimerRef.current = setTimeout(() => {
+      persistTimerRef.current = null;
+      savePersistedState({
+        entries: state.entries,
+        items: state.items,
+        tags: state.tags,
+      });
+    }, 400);
+    return () => {
+      if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+    };
+  }, [ready, state.entries, state.items, state.tags]);
 
   // The entry the UI always reads from — draft while editing, committed otherwise.
   const activeEntry = state.draft ?? state.committed;
+
+  // Nothing to show yet — still checking AsyncStorage for real content.
+  if (!ready) return null;
 
   return (
     <AppContext.Provider value={{ state, activeEntry, dispatch }}>
