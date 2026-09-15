@@ -70,6 +70,104 @@ export const tagsData = [
 
 export const gamesData = [
   {
+    gameId: 9,
+    title: "Final Fantasy VIII",
+    cover:
+      "https://scontent-man2-1.xx.fbcdn.net/v/t39.30808-6/498668182_24248751934725854_1547251855375356738_n.jpg?stp=dst-jpg_tt6&cstp=mx2048x1502&ctp=s2048x1502&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=oTQ9UgWrJjcQ7kNvwHr2Lps&_nc_oc=Adr_Rp1OJ3aeD8TydCTBTnqOFEYAgBHnQfg5A9rjuMrWPsBOiFwnJrFH6dj_dr-Gv-GAVSqPXVUCcE-L2DbNeY59&_nc_zt=23&_nc_ht=scontent-man2-1.xx&_nc_gid=ZItUcqnxPKp_SYTHHzFzYg&_nc_ss=7b2a8&oh=00_AQJfoVXVgZ1X7WfSxlo7HoHBELirDr13RKOU9tr-4OzAwg&oe=6AAE50E1",
+    boxArt:
+      "https://storage.googleapis.com/images.pricecharting.com/827ad98ce4b57f459a021c364ec66247de62fdf72fbb22ad42a0894cb3af6da0/240.jpg",
+    entries: [
+      {
+        entryId: 1,
+        date: "2025-11-04T21:00:00.000Z",
+        text: "Dug out Final Fantasy VIII to replay for what must be the tenth time. Doesn't matter how many times I've done the opening at Balamb Garden, the training centre and the Squall/Seifer duel still hit the same way. Junction system is going to take some re-learning since I always forget the specifics between playthroughs, but drawing magic from the T-Rexaur in the training centre brought it all back fast. Feels like coming home.",
+        tags: [4, 3],
+        gallery: [],
+      },
+      {
+        entryId: 2,
+        date: "2025-11-11T20:30:00.000Z",
+        text: "Dollet mission done, passed the SeeD exam first go which never gets old. The Iron Giant on the parade route always throws me even knowing it's coming. Rinoa's introduction at the end of the mission remains one of my favourite character intros in the whole series, that scene does so much with so little dialogue. Officially a SeeD now, onwards to the Garden festival stuff.",
+        tags: [4, 5],
+        gallery: [
+          "https://images.launchbox-app.com/2c4aa667-9cef-4ae7-b674-e172edcf17d3.png",
+        ],
+      },
+      {
+        entryId: 3,
+        date: "2025-11-19T19:15:00.000Z",
+        text: "Pushed on into the Timber mission with Zell and Selphie. The train heist sequence is still one of the best set pieces in the game, the tension of timing everything against Fujin and Raijin chasing you down never gets old. Also spent a while messing about with the Chocobo World download mechanic on the memory card just for nostalgia, even though I don't think I'll actually play much of it this time.",
+        tags: [4, 10],
+        gallery: [],
+      },
+      {
+        entryId: 4,
+        date: "2025-12-28T16:00:00.000Z",
+        text: "Galbadia Garden arc going well. Quistis and Irvine both back in the party which rounds out the core cast nicely. The sniping sequence with Irvine at the parade is a genuine highlight, the tension of the countdown always gets me even knowing how it plays out. President Deling's assassination attempt going sideways is such a strong turning point for the story.",
+        tags: [4, 3],
+        gallery: [],
+      },
+      {
+        entryId: 5,
+        date: "2026-01-03T20:45:00.000Z",
+        text: "Completely derailed by Triple Triad again, exactly like every single playthrough. Spent almost the entire session just hunting down new opponents around Balamb Garden and Dollet for cards instead of touching the main story. Finally got a Quezacotl card off one of the students in the quad and I'm disproportionately pleased about it. The Random rule spreading to different regions is going to make this an actual project this time round rather than just a side distraction.",
+        tags: [3, 10],
+        gallery: [
+          "https://static.wikia.nocookie.net/finalfantasy/images/9/9c/Tripletriad2.jpg/revision/latest?cb=20191114190808",
+          "https://static.wikia.nocookie.net/finalfantasy/images/6/6a/Triple_triad_choose.png/revision/latest?cb=20191019024704",
+          "https://upload.wikimedia.org/wikipedia/en/6/69/Triple_Triad_gameplay_screenshot.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original",
+        ],
+      },
+      {
+        entryId: 6,
+        date: "2026-01-07T21:00:00.000Z",
+        text: "The Garden vs Garden battle happened and it's still unbelievable how ambitious that sequence is for a PS1 game, two entire school buildings duking it out mid-flight. Edea's reveal as the sorceress recontextualises a big chunk of what's happened so far. Also finally got round to actually reading some of the Timber Maniacs magazines I'd been ignoring, some good lore nuggets buried in the flavour text.",
+        tags: [4, 9],
+        gallery: [
+          "https://images.launchbox-app.com/45b6fe15-6613-40dc-a252-daba3fc9dc4a.png",
+          "https://images.launchbox-app.com/eba60d94-ed0a-4d92-aabc-ef4ee5e7cda0.png",
+        ],
+      },
+      {
+        entryId: 7,
+        date: "2026-01-18T20:00:00.000Z",
+        text: "Big story chunk tonight — Balamb Garden turning into a mobile fortress mid-game still gets me every time, such a strange and brilliant idea for a school setting. Rinoa and Squall's dynamic is developing nicely, the ball scene flashback stuff lands better as an adult than it ever did as a teenager playing this originally. Disc 2 pacing is relentless once it gets going.",
+        tags: [4, 5],
+        gallery: [],
+      },
+      {
+        entryId: 8,
+        date: "2026-01-24T21:30:00.000Z",
+        text: "Junction Machine Ind went down after a rough couple of attempts — kept underestimating how much its attacks scale with your own average level, classic FF8 level-scaling trap that catches me out basically every playthrough despite knowing better. Adjusted a few junctions before the rematch and it was night and day. Rinoa's Angelo Sword limit break carrying a lot of the damage right now.",
+        tags: [9, 5],
+        gallery: [],
+      },
+      {
+        entryId: 9,
+        date: "2026-02-09T19:00:00.000Z",
+        text: "Deep into the Esthar section now, the sudden jump in scale and technology after three discs of Garden politics is a great tonal shift. Spent a while theorising with an old FAQ open about how the whole time compression plot actually threads together, which I remember being divisive back in the day but I've always found it more coherent than people give it credit for. Adel's capsule design is properly unsettling.",
+        tags: [4, 6],
+        gallery: [],
+      },
+      {
+        entryId: 10,
+        date: "2026-02-15T21:00:00.000Z",
+        text: "Got the Ragnarok, which might be my favourite vehicle in any Final Fantasy game just for how it looks and moves. The Lunar Cry event chapter playing as Laguna's squad again is a nice structural swap, always forget how much I enjoy controlling that trio until I'm back in it. Properly excited for the endgame stretch now.",
+        tags: [4, 3],
+        gallery: [
+          "https://images.launchbox-app.com/r2_40b7a05c-25f3-4211-aab2-f4c7abd6305f.jpg",
+        ],
+      },
+      {
+        entryId: 11,
+        date: "2026-02-22T20:00:00.000Z",
+        text: "Ultimecia's Castle done and the credits rolled again. The final stretch through the castle puzzles into the boss rush against past bosses is still a great send-off, and Ultimecia herself remains one of the more visually striking final bosses in the series even by today's standards. That ending montage gets me every single time no matter how many playthroughs deep I am. Already itching to start the next one over, which is exactly the FF8 curse.",
+        tags: [4, 5, 9],
+        gallery: [],
+      },
+    ],
+  },
+  {
     gameId: 1,
     title: "Xenoblade Chronicles 2",
     cover:
@@ -184,6 +282,121 @@ export const gamesData = [
       },
     ],
   },
+  {
+    gameId: 5,
+    title: "Elden Ring",
+    cover:
+      "https://images.launchbox-app.com/01a7a6ba-14ea-4232-a741-59b12ee05a29.jpg",
+    boxArt:
+      "https://images.launchbox-app.com/f4cf7db9-c812-4a36-a5eb-1e9bcd6b6c37.jpg",
+    entries: [
+      {
+        entryId: 1,
+        date: "2026-01-11T19:00:00.000Z",
+        text: "Finally started Elden Ring after putting it off for way too long. Spent the whole session just wandering Limgrave without really following any direction, which I think is exactly how you're supposed to play it. Found Stormveil Castle in the distance early and immediately regretted going near it — got absolutely folded by the tutorial boss on the bridge, then found out there was a whole different way in round the side. The scale of the map from up on those cliffs is something else, can already tell this is going to eat a huge chunk of the year.",
+        tags: [10, 3],
+        gallery: [
+          "https://images.launchbox-app.com/f0b1a59c-a7b7-496a-bb0e-32f47a9044fc.jpg",
+          "https://images.launchbox-app.com/2e737110-f626-492f-af15-bd155dbea4d0.jpg",
+        ],
+      },
+      {
+        entryId: 2,
+        date: "2026-02-04T20:30:00.000Z",
+        text: "Margit finally went down tonight after more attempts than I want to admit. Ended up going away and levelling up Vigor and grabbing a couple of Sacred Tears before coming back, which made a bigger difference than any amount of pure practice. The relief when he actually stayed down was ridiculous for what is apparently just an early boss. Pushing into Stormveil properly now, the Grafted Scion fight at the very start makes a lot more sense in hindsight as a warning shot.",
+        tags: [9, 5],
+        gallery: [],
+      },
+    ],
+  },
+  {
+    gameId: 6,
+    title: "Stellar Blade",
+    cover:
+      "https://images.launchbox-app.com/r2_82127371-19db-4a53-98ed-fbcff731c893.jpg",
+    boxArt:
+      "https://images.launchbox-app.com/53aad796-f159-4423-92ae-b6ee0ac533a6.jpg",
+    entries: [
+      {
+        entryId: 1,
+        date: "2026-01-30T22:15:00.000Z",
+        text: "Picked up Stellar Blade on a whim after seeing it on sale. Only had time for an hour but the combat already feels great — parry timing is tight without being unfair, and EVE moves with a real weight to her. Naytiba designs are properly unsettling in a good way. Going to need a proper controller session rather than picking it up in short bursts, some of the dodge windows feel like they need full attention.",
+        tags: [3, 5],
+        gallery: [],
+      },
+    ],
+  },
+  {
+    gameId: 7,
+    title: "Octopath Traveler II",
+    cover:
+      "https://images.launchbox-app.com/9370191c-f9ef-4832-bfa2-901afe8ac00e.jpg",
+    boxArt:
+      "https://images.launchbox-app.com/7dc45366-b0fc-4500-b739-b5e69502a4cb.jpg",
+    entries: [
+      {
+        entryId: 1,
+        date: "2026-03-16T19:30:00.000Z",
+        text: "Started Octopath Traveler II after hearing so many people call it the best HD-2D game yet. Picked Castti as my lead since the medicine-mixing angle looked interesting on paper, and the travel banter with Partitio joining second is already really likeable. The day/night path action system is a nice evolution over the first game, having different options depending on when you approach an NPC opens up a lot of small character moments. Pixel art and lighting are stunning as always from this team.",
+        tags: [4, 3],
+        gallery: [
+          "https://images.launchbox-app.com/e1f4f403-dff7-4bae-9f3d-25441008aad5.jpg",
+          "https://images.launchbox-app.com/901d4853-bd7a-411c-a8d5-9c567f98b09f.jpg",
+        ],
+      },
+    ],
+  },
+  {
+    gameId: 8,
+    title: "Granblue Fantasy: Relink",
+    cover:
+      "https://images.launchbox-app.com/7b952348-ca25-4a6c-aefd-c994ecdd1dcc.jpg",
+    boxArt:
+      "https://images.launchbox-app.com/0df5e096-afa2-4cf6-8424-99036a4a538d.jpg",
+    entries: [
+      {
+        entryId: 1,
+        date: "2025-12-22T22:00:00.000Z",
+        text: "Christmas break project sorted — finally installed Granblue Fantasy Relink after hearing so much about it from Phil. The intro dump of lore is a lot to take in if you've never touched the mobile game, but the combat clicked almost instantly. Playing as Gran with Katalina and Rackam rounding out the party for now. The set pieces are doing a lot of heavy lifting visually, properly cinematic stuff. Already eyeing up how deep the character roster goes.",
+        tags: [4, 3],
+        gallery: [
+          "https://images.launchbox-app.com/5fbccd91-f194-4bb9-a36e-ff93c4776a37.jpg",
+          "https://images.launchbox-app.com/fc091c6a-4f96-4d4e-8002-03e4a7db8102.jpg",
+        ],
+      },
+      {
+        entryId: 2,
+        date: "2026-02-28T21:30:00.000Z",
+        text: "Deep into the post-game grind now, mostly just running Proto Bahamut over and over for drops — the guild calls it the 'endless ragnarok' loop and it's honestly exactly that. Same fight on repeat but the timing window for the final phase still gets my heart going every run. Finally got the last sigil piece I needed after what felt like the fiftieth attempt. Might actually be done with this one properly now, which feels strange after how much time's gone into it.",
+        tags: [1, 9],
+        gallery: [],
+      },
+    ],
+  },
+  {
+    gameId: 10,
+    title: "Pragmata",
+    cover: "https://images8.alphacoders.com/140/thumb-1920-1407112.jpg",
+    boxArt: "https://media.gamestop.com/i/gamestop/20006550-be099b16",
+    entries: [
+      {
+        entryId: 1,
+        date: "2026-03-16T19:30:00.000Z",
+        text: "Started Pragmata on the new Switch 2 tonight after seeing it running well in the docked previews. The lunar base setting is gorgeous and properly unsettling in that quiet sci-fi way. The hacking puzzle layer bolted onto the third-person shooting is a strange combo on paper but it's clicking faster than expected — Diana solving the grid puzzles while you handle enemies in real time is a neat division of labour. Very early days but the atmosphere alone has me hooked.",
+        tags: [4, 3],
+        gallery: [
+          "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/9699288b90d0aad320e998f107b59edd27e9ea61/ss_9699288b90d0aad320e998f107b59edd27e9ea61.1920x1080.jpg",
+        ],
+      },
+      {
+        entryId: 2,
+        date: "2026-03-20T10:00:00.000Z",
+        text: "More Pragmata this morning before getting into anything else. The difficulty curve on the puzzle side is ramping up quicker than the combat side, had to properly stop and think through a couple of the hacking grids rather than solving them on reflex. Started piecing together some theories about what's actually going on with the moon base given how much the environmental storytelling is hinting at. Genuinely impressed by how it runs on Switch 2 docked, no obvious compromises so far.",
+        tags: [5, 6],
+        gallery: [],
+      },
+    ],
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -201,7 +414,10 @@ export const daysData = [
     title: "",
     text: "First proper evening with Xenoblade 2. Been meaning to start this for ages and finally made the leap. The opening is a lot — characters, lore, names all thrown at you at once. But the world design is immediately striking, the cloud sea concept is unlike anything I've seen. Combat is completely opaque right now but I'm told it takes a few hours to click.",
     tags: [1, 4],
-    games: [{ gameId: 1, entryId: 1 }],
+    games: [
+      { gameId: 1, entryId: 1 },
+      { gameId: 9, entryId: 1 },
+    ],
   },
   {
     dayId: 2,
@@ -209,7 +425,10 @@ export const daysData = [
     title: "",
     text: "Good few hours on Xenoblade tonight. Combat is starting to make more sense — the flow arts and blade specials are clicking now. Got Nia in the party which is a big deal, she's immediately the most interesting character so far. The Mor Ardain section has been a highlight, the industrial aesthetic is a nice contrast to the organic stuff before it.",
     tags: [5],
-    games: [{ gameId: 1, entryId: 1 }],
+    games: [
+      { gameId: 1, entryId: 1 },
+      { gameId: 9, entryId: 2 },
+    ],
   },
   {
     dayId: 3,
@@ -217,7 +436,10 @@ export const daysData = [
     title: "",
     text: "Picked up Astral Chain in the sale. Haven't started it yet but wanted to log that it's in the queue. Spent most of tonight finishing off a few sidequests in Xenoblade instead — the Uraya region has some good ones. Bana is a brilliant villain, completely ridiculous in exactly the right way.",
     tags: [2],
-    games: [{ gameId: 1, entryId: 1 }],
+    games: [
+      { gameId: 1, entryId: 1 },
+      { gameId: 9, entryId: 3 },
+    ],
   },
   {
     dayId: 4,
@@ -225,7 +447,10 @@ export const daysData = [
     title: "Christmas break starts",
     text: "Off work now until January which means actual gaming time. Sat down with Xenoblade for a long session tonight — made it through the end of Chapter 4 which ended on a proper gut-punch moment. Didn't see it coming at all. The story is doing things I didn't expect from the opening hours. Good time to be playing this.",
     tags: [2, 4],
-    games: [{ gameId: 1, entryId: 2 }],
+    games: [
+      { gameId: 1, entryId: 2 },
+      { gameId: 8, entryId: 1 },
+    ],
   },
   {
     dayId: 5,
@@ -233,7 +458,10 @@ export const daysData = [
     title: "",
     text: "Lazy Sunday between Christmas and new year. Finally put a few hours into Astral Chain. The tone is completely different to what I expected — way more anime and stylised than the trailers suggested. Combat is satisfying once the Legion system clicks. The city hub sections have a nice investigative feel, reminds me a bit of Nier in how it builds the world quietly.",
     tags: [3],
-    games: [{ gameId: 2, entryId: 1 }],
+    games: [
+      { gameId: 2, entryId: 1 },
+      { gameId: 9, entryId: 4 },
+    ],
   },
   {
     dayId: 6,
@@ -241,7 +469,10 @@ export const daysData = [
     title: "Back to it",
     text: "New year, back to gaming properly. Spent the session on Xenoblade grinding some affinity with the Ursula blade — the trust system is slow but rewarding. Also did a bit of exploring in Leftheria which I'd been rushing through. The environmental variety in this game is genuinely impressive, every region feels distinct.",
     tags: [1, 5],
-    games: [{ gameId: 1, entryId: 1 }],
+    games: [
+      { gameId: 1, entryId: 1 },
+      { gameId: 9, entryId: 5 },
+    ],
   },
   {
     dayId: 7,
@@ -249,7 +480,10 @@ export const daysData = [
     title: "",
     text: "Chipped away at Astral Chain for a couple of hours. The combat is really opening up now — the chimera designs are getting more creative and the fights are starting to feel like puzzles. The sync attack system when you line up correctly with your legion is incredibly satisfying. This might be Platinum's best looking game.",
     tags: [3],
-    games: [{ gameId: 2, entryId: 1 }],
+    games: [
+      { gameId: 2, entryId: 1 },
+      { gameId: 9, entryId: 6 },
+    ],
   },
   {
     dayId: 8,
@@ -257,7 +491,7 @@ export const daysData = [
     title: "",
     text: "Ordered a PS1 and some games off eBay tonight. Been thinking about it for a while — there's a whole library I've never touched and emulation isn't the same. Got Xenogears, Parasite Eve and Vagrant Story in the lot. No RGB cable yet so I'll hold off starting any of them until it arrives.",
     tags: [3, 2],
-    games: [],
+    games: [{ gameId: 5, entryId: 1 }],
   },
   {
     dayId: 9,
@@ -265,7 +499,10 @@ export const daysData = [
     title: "",
     text: "Big session on Xenoblade. Finished Chapter 5 and pushed into 6. The tone has shifted noticeably — things are getting darker and the stakes feel real now. Rex's development has been gradual but it's paying off. Poppi QT Pi has completely replaced KOS-MOS in my main team composition, the customisation options are just better.",
     tags: [5, 4],
-    games: [{ gameId: 1, entryId: 2 }],
+    games: [
+      { gameId: 1, entryId: 2 },
+      { gameId: 9, entryId: 7 },
+    ],
   },
   {
     dayId: 10,
@@ -273,7 +510,10 @@ export const daysData = [
     title: "",
     text: "Astral Chain case file 7 done. The game keeps escalating in interesting ways — the chimeras are getting properly unsettling now. Found a few of the hidden items in the files that I'd completely missed on first pass. The investigation sections reward thoroughness in a way that doesn't feel tedious. Also dug out Crystal Bearers on the Wii for an hour before bed — hadn't touched it in years and was curious if it holds up.",
     tags: [5, 3],
-    games: [{ gameId: 2, entryId: 1 }],
+    games: [
+      { gameId: 2, entryId: 1 },
+      { gameId: 9, entryId: 8 },
+    ],
   },
   {
     dayId: 11,
@@ -281,7 +521,7 @@ export const daysData = [
     title: "",
     text: "PS1 arrived. Composite cables only for now so I can't start any of the NTSC games yet, the rainbow shimmer is too distracting. Had a look at the menus and tested it was working though. RGB cable is on order — apparently back in stock in February. Impatient but it's worth waiting for.",
     tags: [7, 3],
-    games: [],
+    games: [{ gameId: 6, entryId: 1 }],
   },
   {
     dayId: 12,
@@ -289,7 +529,10 @@ export const daysData = [
     title: "",
     text: "Finished Astral Chain. The final act goes completely off the rails in the best possible way — Platinum clearly saved the wildest ideas for the end. Credits rolled at about 30 hours. Not sure I'll go back for S ranks but I'm satisfied with where I ended up. Back to focusing on Xenoblade as the main game now.",
     tags: [5, 3],
-    games: [{ gameId: 2, entryId: 1 }],
+    games: [
+      { gameId: 2, entryId: 1 },
+      { gameId: 5, entryId: 2 },
+    ],
   },
   {
     dayId: 13,
@@ -297,7 +540,10 @@ export const daysData = [
     title: "",
     text: "Heavy Xenoblade session. Deep into the affinity charts now — this is the part everyone warns you about. Some of the field skill requirements are annoying but the blade content attached to them is genuinely good, lots of small stories you'd completely miss otherwise. Running the Switch Family Collective with a mate helps a lot for getting rare blades.",
     tags: [1, 2],
-    games: [{ gameId: 1, entryId: 1 }],
+    games: [
+      { gameId: 1, entryId: 1 },
+      { gameId: 9, entryId: 9 },
+    ],
   },
   {
     dayId: 14,
@@ -305,7 +551,10 @@ export const daysData = [
     title: "",
     text: "Started thinking seriously about what's next after Xenoblade. The queue is getting long — Xenogears obviously, then probably Vagrant Story or Parasite Eve. Also want to go back to something shorter and action-focused at some point, maybe Bayonetta or Devil May Cry 5. For now still very much in the middle of Xenoblade though.",
     tags: [3],
-    games: [{ gameId: 1, entryId: 3 }],
+    games: [
+      { gameId: 1, entryId: 3 },
+      { gameId: 9, entryId: 10 },
+    ],
   },
   {
     dayId: 15,
@@ -313,7 +562,10 @@ export const daysData = [
     title: "",
     text: "Made serious progress on the affinity charts tonight. Rex, Pyra, and Nia are all done. The endgame feels close — maybe five or six sessions away. Starting to feel bittersweet about finishing it, I've had this as my main game for months. Going to miss the routine of it.",
     tags: [5, 1],
-    games: [{ gameId: 1, entryId: 3 }],
+    games: [
+      { gameId: 1, entryId: 3 },
+      { gameId: 9, entryId: 11 },
+    ],
   },
   {
     dayId: 16,
@@ -321,7 +573,10 @@ export const daysData = [
     title: "",
     text: "RGB cable for the PS1 shipped — tracking says Tuesday. Almost done with the Xenoblade affinity work, just Zeke and Pandoria left which should be quick. Might line it up so I finish Xenoblade around the same time the cable arrives and I can start Xenogears as a clean handoff. That would be a good week.",
     tags: [3, 4],
-    games: [{ gameId: 1, entryId: 3 }],
+    games: [
+      { gameId: 1, entryId: 3 },
+      { gameId: 8, entryId: 2 },
+    ],
   },
   {
     dayId: 17,
@@ -359,6 +614,8 @@ export const daysData = [
     games: [
       { gameId: 3, entryId: 2 },
       { gameId: 4, entryId: 1 },
+      { gameId: 7, entryId: 1 },
+      { gameId: 10, entryId: 1 },
     ],
   },
   {
@@ -371,6 +628,7 @@ export const daysData = [
       { gameId: 1, entryId: 3 },
       { gameId: 3, entryId: 1 },
       { gameId: 4, entryId: 2 },
+      { gameId: 10, entryId: 2 },
     ],
   },
 ];

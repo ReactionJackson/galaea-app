@@ -210,7 +210,7 @@ function appReducer(state, action) {
           ...state.draft,
           games: [
             ...state.draft.games,
-            { gameId: 1, entryId: null, isNew: true },
+            { gameId: action.gameId, entryId: null, isNew: true },
           ],
         },
       };

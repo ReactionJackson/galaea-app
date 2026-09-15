@@ -1,11 +1,11 @@
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
+import { useGameBoxArtSizes } from "@/hooks/useGameBoxArtSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
-import { useEffect, useMemo, useState } from "react";
-import { Pressable, Image as RNImage } from "react-native";
+import { Pressable } from "react-native";
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -15,7 +15,7 @@ import { Track } from "./Track";
 
 // Constants:
 
-const ITEM_HEIGHT = 70;
+export const ITEM_HEIGHT = 105;
 const ITEM_SPACING = 10;
 
 // Styled Components:
@@ -28,7 +28,7 @@ const ScrollContainer = styled(Animated.ScrollView)`
 
 const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 
-const BoxArt = styled(AnimatedImage).attrs({ transition: 200 })`
+export const BoxArt = styled(AnimatedImage).attrs({ transition: 200 })`
   width: ${({ itemWidth }) => itemWidth}px;
   height: ${ITEM_HEIGHT}px;
   border-radius: 4px;
@@ -43,8 +43,10 @@ const AddButtonBox = styled(Animated.View)`
   align-items: center;
 `;
 
-function useFadeStyle(active, editMode) {
-  const inactiveOpacity = editMode ? 0.1 : 0.4;
+// Shared with GamePickerTrack: an item fades to inactiveOpacity unless
+// active, in which case it's always fully opaque. Callers work out what
+// "active" and "inactiveOpacity" mean for their own context.
+export function useFadeStyle(active, inactiveOpacity) {
   return useAnimatedStyle(
     () => ({
       opacity: withTiming(active ? 1 : inactiveOpacity, { duration: 200 }),
@@ -61,7 +63,7 @@ function CollectionBoxArt({
   onPress,
   disabled,
 }) {
-  const style = useFadeStyle(active, editMode);
+  const style = useFadeStyle(active, editMode ? 0.1 : 0.5);
   return (
     <Pressable onPress={onPress} disabled={disabled}>
       <BoxArt
@@ -75,7 +77,7 @@ function CollectionBoxArt({
 }
 
 function CollectionAddButton({ active, editMode, onPress, disabled }) {
-  const style = useFadeStyle(active, editMode);
+  const style = useFadeStyle(active, editMode ? 0.1 : 0.5);
   return (
     <Pressable onPress={onPress} disabled={disabled}>
       <AddButtonBox style={style}>
@@ -100,41 +102,7 @@ export function CollectionTrack({
   const { state } = useApp();
   const games = state.games;
 
-  const [aspectRatios, setAspectRatios] = useState(() => games.map(() => 1));
-
-  const gameKey = useMemo(() => games.map((g) => g.gameId).join(","), [games]);
-
-  useEffect(() => {
-    let cancelled = false;
-    games.forEach((game, i) => {
-      if (!game.boxArt) return;
-      RNImage.getSize(
-        game.boxArt,
-        (w, h) => {
-          if (cancelled) return;
-          const ratio = w / h;
-          setAspectRatios((prev) => {
-            if (prev[i] === ratio) return prev;
-            const next = [...prev];
-            next[i] = ratio;
-            return next;
-          });
-        },
-        () => {
-          // Leave the square fallback in place on failure.
-        },
-      );
-    });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameKey]);
-
-  const itemWidths = useMemo(
-    () => aspectRatios.map((ratio) => ITEM_HEIGHT * ratio),
-    [aspectRatios],
-  );
+  const itemWidths = useGameBoxArtSizes(games, ITEM_HEIGHT);
 
   const {
     ADD_INDEX,
@@ -155,6 +123,7 @@ export function CollectionTrack({
     itemSpacing: ITEM_SPACING,
     showAddButton: true,
     addButtonWidth: ITEM_HEIGHT,
+    startAtEnd: false,
     onSettle: (index, { alreadyActive }) => {
       const game = games[index];
       if (!game) return;

@@ -1,5 +1,6 @@
 import { GameArt } from "@/components/GameArt";
 import { GameEntry } from "@/components/GameEntry";
+import { AnimatedSpacer } from "@/components/interface/AnimateHeight";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
@@ -46,9 +47,7 @@ export default function CollectionScreen() {
   const { games, gameDraft, editingGameId } = state;
   const editMode = !!gameDraft;
 
-  const [activeGameId, setActiveGameId] = useState(
-    games[games.length - 1]?.gameId,
-  );
+  const [activeGameId, setActiveGameId] = useState(games[0]?.gameId);
 
   const activeGame = games.find((g) => g.gameId === activeGameId);
   const displayGame = gameDraft ?? activeGame;
@@ -99,7 +98,7 @@ export default function CollectionScreen() {
       <PageScroll
         resetKey={editMode ? (editingGameId ?? "new-game") : activeGameId}
         stickyHeaderIndices={[1]}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 110 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
       >
         <GameArt
           boxArt={displayGame.boxArt}
@@ -152,6 +151,8 @@ export default function CollectionScreen() {
             }
           />
         ))}
+
+        <AnimatedSpacer visible={editMode} height={50} />
       </PageScroll>
 
       <CollectionTrack

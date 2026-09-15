@@ -20,6 +20,7 @@ export function useSnapTrack({
   itemSpacing = 10,
   showAddButton = true,
   addButtonWidth,
+  startAtEnd = true,
   onSettle = () => {},
   onAdd = () => {},
   onCancelAdd = () => {},
@@ -28,7 +29,9 @@ export function useSnapTrack({
   const ADD_INDEX = itemCount;
   const resolvedAddWidth = addButtonWidth ?? itemWidths[0] ?? 0;
 
-  const [activeIndex, setActiveIndex] = useState(Math.max(0, itemCount - 1));
+  const [activeIndex, setActiveIndex] = useState(
+    startAtEnd ? Math.max(0, itemCount - 1) : 0,
+  );
   const [isScrolling, setIsScrolling] = useState(false);
   const [halfTrackWidth, setHalfTrackWidth] = useState(0);
   const [addActive, setAddActive] = useState(false);
@@ -203,12 +206,12 @@ export function useSnapTrack({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemCount]);
 
-  // Land on the last real item once the track has laid out (basePadding
-  // available) and offsets are computable.
+  // Land on the last (or first, per startAtEnd) real item once the track
+  // has laid out (basePadding available) and offsets are computable.
   useEffect(() => {
     if (!hasScrolledToInitial.current && basePadding > 0 && trackRef.current) {
       hasScrolledToInitial.current = true;
-      scrollToIndex(itemCount - 1, false);
+      scrollToIndex(startAtEnd ? itemCount - 1 : 0, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [basePadding]);

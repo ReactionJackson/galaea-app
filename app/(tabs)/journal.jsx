@@ -7,11 +7,12 @@ import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
 import { Tags } from "@/components/Tags";
+import { GamePickerTrack } from "@/components/track/GamePickerTrack";
 import { JournalTrack } from "@/components/track/JournalTrack";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
-import { Fragment, useEffect, useRef } from "react";
-import styled from "styled-components/native";
+import { Fragment, useEffect, useRef, useState } from "react";
+import styled, { css } from "styled-components/native";
 
 const Container = styled.View`
   flex: 1;
@@ -46,10 +47,16 @@ const EntryDate = styled.View`
 const Button = styled.Pressable`
   height: 36px;
   align-self: center;
+  margin-top: 20px;
   padding: 4px 14px;
   border-radius: 20px;
   border: 2px solid ${Colors.dateBorder};
   background-color: ${Colors.accent};
+  ${({ secondary }) =>
+    secondary &&
+    css`
+      background-color: transparent;
+    `}
 `;
 // End Duplicate
 
@@ -57,6 +64,7 @@ function JournalScreen() {
   const { state, activeEntry, dispatch } = useApp();
   const { editMode, cancelling, committed } = state;
   const cancelTimerRef = useRef(null);
+  const [pickingGame, setPickingGame] = useState(false);
 
   // Derived state:
 
@@ -98,12 +106,14 @@ function JournalScreen() {
       cancelTimerRef.current = null;
       dispatch({ type: "COMPLETE_CANCEL" });
     }
+    setPickingGame(false);
     dispatch({ type: "ENTER_EDIT" });
   };
 
   const handleCancelEdit = () => {
     // Phase 1: exit edit mode so animations start (controls slide away,
     // new game entries collapse, draft-only text closes, etc.)
+    setPickingGame(false);
     dispatch({ type: "BEGIN_CANCEL" });
     // Phase 2: once animations have had time to finish, clear the draft.
     // The delay matches the AnimateHeight duration with a small buffer.
@@ -113,12 +123,22 @@ function JournalScreen() {
     }, 350);
   };
 
+  const handleSelectGame = (gameId) => {
+    dispatch({ type: "ADD_GAME", gameId });
+    setPickingGame(false);
+  };
+
   // Clean up any pending cancel timer if the component unmounts mid-animation.
   useEffect(() => {
     return () => {
       if (cancelTimerRef.current) clearTimeout(cancelTimerRef.current);
     };
   }, []);
+
+  // A fresh day never opens with the picker mid-flight.
+  useEffect(() => {
+    setPickingGame(false);
+  }, [activeEntry.dayId]);
 
   // Render:
 
@@ -193,11 +213,29 @@ function JournalScreen() {
             );
           },
         )}
-        <AnimatedSpacer visible={activeEntry.games.length > 0} height={10} />
+        <AnimatedSpacer
+          visible={activeEntry.games.length > 0}
+          height={pickingGame ? 20 : 10}
+        />
+
+        <AnimateHeight
+          visible={pickingGame && editMode}
+          style={{ marginHorizontal: -20 }}
+        >
+          <GamePickerTrack
+            attachedGameIds={activeEntry.games.map((g) => g.gameId)}
+            onSelect={handleSelectGame}
+          />
+        </AnimateHeight>
 
         <AnimateHeight visible={editMode}>
-          <Button onPress={() => dispatch({ type: "ADD_GAME" })}>
-            <ThemedText color="white">Add Game</ThemedText>
+          <Button
+            secondary={pickingGame}
+            onPress={() => setPickingGame((prev) => !prev)}
+          >
+            <ThemedText color={pickingGame ? "black" : "white"}>
+              {pickingGame ? "Close" : "Add Game"}
+            </ThemedText>
           </Button>
         </AnimateHeight>
         <AnimatedSpacer visible={editMode} height={70} />
