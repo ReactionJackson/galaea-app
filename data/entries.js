@@ -7,7 +7,7 @@
 // app will have tags as a purely static piece of information.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const tagsData = [
+export const sampleTagsData = [
   {
     tagId: 1,
     name: "Grinding",
@@ -638,12 +638,15 @@ export const sampleDaysData = [
 //
 // AppContext's initialState (and its HYDRATE fallback) run whatever comes
 // out of daysData/itemsData through ensureSeedData, which seeds one blank
-// day and one blank item whenever it's handed empty arrays. So switching
-// between the bundled sample content above and a real blank start is just
-// this one line each: point at sample*Data to bring it back, or [] to start
-// blank.
+// day and one blank item whenever it's handed empty arrays (tagsData has no
+// such fallback — an empty tag list is just a genuinely empty tag list, no
+// seeding needed). Switching between the bundled sample content above and a
+// real blank start is just one line each: point at sample*Data to bring it
+// back, or [] to start blank.
 
 // export const daysData = sampleDaysData;
 // export const itemsData = sampleItemsData;
+// export const tagsData = sampleTagsData;
 export const daysData = [];
 export const itemsData = [];
+export const tagsData = [];
