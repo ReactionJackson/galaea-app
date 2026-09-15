@@ -38,46 +38,75 @@ function buildNewEntry() {
 // dayDate is the day this save is happening on — only used to stamp a
 // brand-new entry's creation date; an existing entry keeps the date it
 // already has.
+//
+// A touched entry that ends up with no text and no gallery images (tags
+// alone don't count) is dropped rather than written: an attached-but-never-
+// filled-in item entry, or an existing one edited down to nothing, isn't a
+// real entry. A brand-new one is simply never written to the item's
+// entries; an existing one that got emptied out this way is removed from
+// them entirely, not left behind as a blank record. Either way it's left out
+// of cleanItems too, so the day stops referencing it.
 function reconcileItemEdits(items, draftItems, dayDate) {
   let nextItems = items;
 
-  const cleanItems = draftItems.map((it) => {
-    const { itemId, entryId, isNew, text, tags, gallery } = it;
-    const wasEdited =
-      isNew || text !== undefined || tags !== undefined || gallery !== undefined;
-    if (!wasEdited) return { itemId, entryId };
+  const cleanItems = draftItems
+    .map((it) => {
+      const { itemId, entryId, isNew, text, tags, gallery } = it;
+      const wasEdited =
+        isNew || text !== undefined || tags !== undefined || gallery !== undefined;
+      if (!wasEdited) return { itemId, entryId };
 
-    const itemIndex = nextItems.findIndex((item) => item.itemId === itemId);
-    if (itemIndex === -1) return { itemId, entryId };
-    const item = nextItems[itemIndex];
+      const itemIndex = nextItems.findIndex((item) => item.itemId === itemId);
+      if (itemIndex === -1) return { itemId, entryId };
+      const item = nextItems[itemIndex];
 
-    const resolvedEntryId =
-      isNew || entryId == null
-        ? Math.max(0, ...item.entries.map((e) => e.entryId)) + 1
-        : entryId;
+      const resolvedEntryId =
+        isNew || entryId == null
+          ? Math.max(0, ...item.entries.map((e) => e.entryId)) + 1
+          : entryId;
 
-    const existingEntry = item.entries.find((e) => e.entryId === resolvedEntryId);
-    // date is the entry's original creation date — stamped once, from the
-    // day it was first written on, and never touched again on later edits
-    // (even if that edit happens to be made from a different day that also
-    // references this same entry).
-    const nextEntry = {
-      entryId: resolvedEntryId,
-      date: existingEntry?.date ?? dayDate,
-      text: text !== undefined ? text : (existingEntry?.text ?? ""),
-      tags: tags !== undefined ? tags : (existingEntry?.tags ?? []),
-      gallery: gallery !== undefined ? gallery : (existingEntry?.gallery ?? []),
-    };
-    const nextEntries = existingEntry
-      ? item.entries.map((e) => (e.entryId === resolvedEntryId ? nextEntry : e))
-      : [...item.entries, nextEntry];
+      const existingEntry = item.entries.find((e) => e.entryId === resolvedEntryId);
+      // date is the entry's original creation date — stamped once, from the
+      // day it was first written on, and never touched again on later edits
+      // (even if that edit happens to be made from a different day that also
+      // references this same entry).
+      const nextEntry = {
+        entryId: resolvedEntryId,
+        date: existingEntry?.date ?? dayDate,
+        text: text !== undefined ? text : (existingEntry?.text ?? ""),
+        tags: tags !== undefined ? tags : (existingEntry?.tags ?? []),
+        gallery: gallery !== undefined ? gallery : (existingEntry?.gallery ?? []),
+      };
 
-    nextItems = nextItems.map((it2, i) =>
-      i === itemIndex ? { ...it2, entries: nextEntries } : it2,
-    );
+      const hasContent =
+        !!nextEntry.text.trim() || nextEntry.gallery.length > 0;
+      if (!hasContent) {
+        if (existingEntry) {
+          nextItems = nextItems.map((it2, i) =>
+            i === itemIndex
+              ? {
+                  ...it2,
+                  entries: it2.entries.filter(
+                    (e) => e.entryId !== resolvedEntryId,
+                  ),
+                }
+              : it2,
+          );
+        }
+        return null;
+      }
 
-    return { itemId, entryId: resolvedEntryId };
-  });
+      const nextEntries = existingEntry
+        ? item.entries.map((e) => (e.entryId === resolvedEntryId ? nextEntry : e))
+        : [...item.entries, nextEntry];
+
+      nextItems = nextItems.map((it2, i) =>
+        i === itemIndex ? { ...it2, entries: nextEntries } : it2,
+      );
+
+      return { itemId, entryId: resolvedEntryId };
+    })
+    .filter(Boolean);
 
   return { items: nextItems, cleanItems };
 }
