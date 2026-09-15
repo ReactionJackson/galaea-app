@@ -36,8 +36,17 @@ export default function CollectionScreen() {
 
   const activeItem = items.find((it) => it.itemId === activeItemId);
   const displayItem = itemDraft ?? activeItem;
+  // Read as a history of this item, in the order things actually happened
+  // to it — not the order you happened to write them down in, which matters
+  // once you go back and attach a new entry to an old journal day: it
+  // should slot in among entries from around that time, not land at the
+  // bottom just because it was saved most recently. entryId itself still
+  // only ever climbs, and is never reused, so it stays a stable internal
+  // identifier — this is purely how the list reads.
   const orderedEntries = displayItem
-    ? [...displayItem.entries].sort((a, b) => a.entryId - b.entryId)
+    ? [...displayItem.entries].sort(
+        (a, b) => new Date(a.date) - new Date(b.date),
+      )
     : [];
 
   const updateDraft = (changes) =>

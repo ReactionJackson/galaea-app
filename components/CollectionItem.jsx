@@ -6,7 +6,6 @@ import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { Image as ExpoImage } from "expo-image";
 import { memo } from "react";
-import { View } from "react-native";
 import styled, { css } from "styled-components/native";
 import { Gallery, getImageUri } from "./Gallery";
 import { Tags } from "./Tags";
@@ -49,11 +48,12 @@ const HeaderBackground = styled(ExpoImage)`
 `;
 
 const Content = styled.View`
+  margin-bottom: 30px;
   ${({ isMinimal }) =>
     !isMinimal &&
     css`
       padding: 20px;
-      padding-bottom: 0px;
+      margin-bottom: 0px;
       border: 1px solid ${Colors.border};
       border-top-width: 0px;
       border-bottom-left-radius: 15px;
@@ -94,7 +94,21 @@ export const CollectionItem = memo(function CollectionItem({
   const { title, coverImage, entries } =
     state.items.find((item) => item.itemId === itemId) ?? {};
 
-  const entryNumber = entryId ?? (entries?.length ?? 0) + 1;
+  // Purely a display ordinal — "the Nth thing written about this item" —
+  // computed fresh from current entries every render rather than stored, so
+  // it can never drift out of sync. entryId itself just keeps incrementing
+  // and is never reused/shown, so a gap left by a removed entry elsewhere
+  // never surfaces here: this entry simply becomes "number 3" instead of
+  // "number 4" once whatever was in front of it in creation order is gone.
+  const sortedEntries = entries
+    ? [...entries].sort((a, b) => a.entryId - b.entryId)
+    : [];
+  const entryIndex =
+    entryId != null
+      ? sortedEntries.findIndex((entry) => entry.entryId === entryId)
+      : -1;
+  const entryNumber =
+    entryIndex !== -1 ? entryIndex + 1 : sortedEntries.length + 1;
 
   const {
     text: dataText = "",
@@ -112,20 +126,6 @@ export const CollectionItem = memo(function CollectionItem({
       : dispatch({ type: "UPDATE_ITEM", index, changes });
 
   const { datePart, timePart } = date ? formatEntryDate(date) : {};
-  const label =
-    isMinimal && date ? (
-      <ThemedText type="subtitle">
-        {datePart}
-        <ThemedText type="subtitle" color="faded">
-          {" "}
-          {timePart}
-        </ThemedText>
-      </ThemedText>
-    ) : (
-      <ThemedText type="subtitle" color="text">
-        Entry {String(entryNumber).padStart(2, "0")}
-      </ThemedText>
-    );
 
   const handleToggleTag = (tagId) => {
     const next = tagIds.includes(tagId)
@@ -168,6 +168,19 @@ export const CollectionItem = memo(function CollectionItem({
         </Header>
       )}
       <Content isMinimal={isMinimal}>
+        {Boolean(isMinimal && date) && (
+          <ThemedText type="subtitle" style={{ marginBottom: 5 }}>
+            {datePart}
+            <ThemedText type="subtitle" color="faded">
+              {" "}
+              {timePart}
+            </ThemedText>
+          </ThemedText>
+        )}
+        <AnimatedSpacer
+          height={isMinimal ? 10 : 0}
+          visible={!!(gallery.length || editMode)}
+        />
         <AnimateHeight
           visible={!!(gallery.length || editMode)}
           style={{ marginHorizontal: -20 }}
@@ -181,9 +194,19 @@ export const CollectionItem = memo(function CollectionItem({
             horizontalPadding={isMinimal ? 40 : undefined}
           />
         </AnimateHeight>
-        <AnimatedSpacer visible={!!(gallery.length || editMode)} />
+        <AnimatedSpacer
+          height={!isMinimal ? 20 : 10}
+          visible={!!(gallery.length || editMode)}
+        />
+        {!isMinimal && (
+          <ThemedText type="subtitle" color="text">
+            Entry {String(entryNumber).padStart(2, "0")}
+          </ThemedText>
+        )}
         <AnimateHeight visible={!!(text || editMode)}>
-          <View style={{ marginBottom: 10 }}>{label}</View>
+          {!isMinimal && (
+            <AnimatedSpacer height={5} visible={!!(text || editMode)} />
+          )}
           <ThemedText
             isInput
             multiline={true}
@@ -193,13 +216,12 @@ export const CollectionItem = memo(function CollectionItem({
             editable={editMode}
           />
         </AnimateHeight>
-        <AnimatedSpacer visible={!!(text || editMode)} />
+        <AnimatedSpacer height={15} visible={!!(text || editMode)} />
         <Tags
           tagIds={tagIds}
           editMode={editMode}
           onToggleTag={handleToggleTag}
         />
-        <AnimatedSpacer visible={!!(tagIds.length || editMode)} />
       </Content>
     </Container>
   );

@@ -206,7 +206,7 @@ function JournalScreen() {
             editable={editMode}
           />
         </AnimateHeight>
-        <AnimatedSpacer visible={textVisible} />
+        <AnimatedSpacer height={15} visible={textVisible} />
 
         <Tags
           tagIds={activeEntry.tags}

@@ -111,6 +111,28 @@ function reconcileItemEdits(items, draftItems, dayDate) {
   return { items: nextItems, cleanItems };
 }
 
+// Used when an item's own entries are edited to remove content down to
+// nothing (see SAVE_ITEM_EDIT) — a day only ever holds a plain
+// { itemId, entryId } reference into an entry it doesn't otherwise own, so
+// deleting the entry from the item side leaves that reference dangling
+// unless something also strips it back out of whichever day it came from.
+// Filters (rather than assumes a single match) since day.items may briefly
+// carry extra scratch fields mid-edit — this only ever removes matching
+// refs, never touches anything else.
+function stripRemovedItemEntries(day, itemId, removedEntryIds) {
+  if (!day || removedEntryIds.length === 0) return day;
+  const hasMatch = day.items.some(
+    (ref) => ref.itemId === itemId && removedEntryIds.includes(ref.entryId),
+  );
+  if (!hasMatch) return day;
+  return {
+    ...day,
+    items: day.items.filter(
+      (ref) => !(ref.itemId === itemId && removedEntryIds.includes(ref.entryId)),
+    ),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Reducer
 // ---------------------------------------------------------------------------
@@ -286,11 +308,55 @@ function appReducer(state, action) {
     case "SAVE_ITEM_EDIT": {
       const isNew = state.editingItemId == null;
       const itemId = isNew ? action.itemId : state.editingItemId;
-      const savedItem = { ...state.itemDraft, itemId };
+
+      // Same validity rule as a journal day's own entries (see
+      // reconcileItemEdits above): no text and no gallery images — a tag
+      // alone doesn't count — means it isn't a real entry, so it's dropped
+      // here rather than saved.
+      const keptEntries = [];
+      const removedEntryIds = [];
+      for (const entry of state.itemDraft.entries) {
+        const hasContent =
+          !!entry.text?.trim() || (entry.gallery?.length ?? 0) > 0;
+        if (hasContent) {
+          keptEntries.push(entry);
+        } else {
+          removedEntryIds.push(entry.entryId);
+        }
+      }
+
+      const savedItem = { ...state.itemDraft, itemId, entries: keptEntries };
       const items = isNew
         ? [...state.items, savedItem]
         : state.items.map((it) => (it.itemId === itemId ? savedItem : it));
-      return { ...state, items, itemDraft: null, editingItemId: null };
+
+      // A day only holds a { itemId, entryId } reference, not the entry
+      // itself — if any dropped entries were already real (i.e. this isn't
+      // a brand-new item), whichever day originally held that reference
+      // needs it stripped out too, or it's left pointing at nothing.
+      const entries = state.entries.map((day) =>
+        stripRemovedItemEntries(day, itemId, removedEntryIds),
+      );
+      const committed = stripRemovedItemEntries(
+        state.committed,
+        itemId,
+        removedEntryIds,
+      );
+      const draft = stripRemovedItemEntries(
+        state.draft,
+        itemId,
+        removedEntryIds,
+      );
+
+      return {
+        ...state,
+        items,
+        entries,
+        committed,
+        draft,
+        itemDraft: null,
+        editingItemId: null,
+      };
     }
 
     // Tag mutations — these write to state.tags (global), not just the draft.
