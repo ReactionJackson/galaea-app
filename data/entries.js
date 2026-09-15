@@ -61,20 +61,20 @@ export const tagsData = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Games
+// Items
 //
-// Each game owns its own entries array. An entry is a piece of writing about
-// that game on a specific date. entryId in daysData references the actual
+// Each item owns its own entries array. An entry is a piece of writing about
+// that item on a specific date. entryId in daysData references the actual
 // entryId field on the entry object. "Entry XX" display numbers match entryId.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const gamesData = [
+export const itemsData = [
   {
-    gameId: 9,
+    itemId: 9,
     title: "Final Fantasy VIII",
-    cover:
+    coverImage:
       "https://scontent-man2-1.xx.fbcdn.net/v/t39.30808-6/498668182_24248751934725854_1547251855375356738_n.jpg?stp=dst-jpg_tt6&cstp=mx2048x1502&ctp=s2048x1502&_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=oTQ9UgWrJjcQ7kNvwHr2Lps&_nc_oc=Adr_Rp1OJ3aeD8TydCTBTnqOFEYAgBHnQfg5A9rjuMrWPsBOiFwnJrFH6dj_dr-Gv-GAVSqPXVUCcE-L2DbNeY59&_nc_zt=23&_nc_ht=scontent-man2-1.xx&_nc_gid=ZItUcqnxPKp_SYTHHzFzYg&_nc_ss=7b2a8&oh=00_AQJfoVXVgZ1X7WfSxlo7HoHBELirDr13RKOU9tr-4OzAwg&oe=6AAE50E1",
-    boxArt:
+    cardImage:
       "https://storage.googleapis.com/images.pricecharting.com/827ad98ce4b57f459a021c364ec66247de62fdf72fbb22ad42a0894cb3af6da0/240.jpg",
     entries: [
       {
@@ -168,11 +168,11 @@ export const gamesData = [
     ],
   },
   {
-    gameId: 1,
+    itemId: 1,
     title: "Xenoblade Chronicles 2",
-    cover:
+    coverImage:
       "https://images.launchbox-app.com/b7a444fc-f6b3-415c-b270-55b9aab05756.jpg",
-    boxArt:
+    cardImage:
       "https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg",
     entries: [
       {
@@ -207,11 +207,11 @@ export const gamesData = [
     ],
   },
   {
-    gameId: 2,
+    itemId: 2,
     title: "Astral Chain",
-    cover:
+    coverImage:
       "https://images.launchbox-app.com/df8e26e5-c114-4774-8d98-d76d6602df87.jpg",
-    boxArt:
+    cardImage:
       "https://images.launchbox-app.com/43d7a157-3cf4-4926-8976-1d19aa03457e.jpg",
     entries: [
       {
@@ -227,11 +227,11 @@ export const gamesData = [
     ],
   },
   {
-    gameId: 3,
+    itemId: 3,
     title: "Xenogears",
-    cover:
+    coverImage:
       "https://images.launchbox-app.com/ef51e342-83bf-4eaf-a36d-8b6c3bf48c2f.png",
-    boxArt:
+    cardImage:
       "https://images.launchbox-app.com/r2_9f7ecc57-3c83-49a1-9691-8b6a9dcb3b09.jpg",
     entries: [
       {
@@ -255,11 +255,11 @@ export const gamesData = [
     ],
   },
   {
-    gameId: 4,
+    itemId: 4,
     title: "Parasite Eve",
-    cover:
+    coverImage:
       "https://i.pinimg.com/736x/48/27/93/482793fc1fa254378ba3a51a3cef6974.jpg",
-    boxArt:
+    cardImage:
       "https://images.launchbox-app.com/r2_7234b4db-0032-4eb3-83d6-a3595c55193e.jpg",
     entries: [
       {
@@ -283,11 +283,11 @@ export const gamesData = [
     ],
   },
   {
-    gameId: 5,
+    itemId: 5,
     title: "Elden Ring",
-    cover:
+    coverImage:
       "https://images.launchbox-app.com/01a7a6ba-14ea-4232-a741-59b12ee05a29.jpg",
-    boxArt:
+    cardImage:
       "https://images.launchbox-app.com/f4cf7db9-c812-4a36-a5eb-1e9bcd6b6c37.jpg",
     entries: [
       {
@@ -310,11 +310,11 @@ export const gamesData = [
     ],
   },
   {
-    gameId: 6,
+    itemId: 6,
     title: "Stellar Blade",
-    cover:
+    coverImage:
       "https://images.launchbox-app.com/r2_82127371-19db-4a53-98ed-fbcff731c893.jpg",
-    boxArt:
+    cardImage:
       "https://images.launchbox-app.com/53aad796-f159-4423-92ae-b6ee0ac533a6.jpg",
     entries: [
       {
@@ -327,11 +327,11 @@ export const gamesData = [
     ],
   },
   {
-    gameId: 7,
+    itemId: 7,
     title: "Octopath Traveler II",
-    cover:
+    coverImage:
       "https://images.launchbox-app.com/9370191c-f9ef-4832-bfa2-901afe8ac00e.jpg",
-    boxArt:
+    cardImage:
       "https://images.launchbox-app.com/7dc45366-b0fc-4500-b739-b5e69502a4cb.jpg",
     entries: [
       {
@@ -347,11 +347,11 @@ export const gamesData = [
     ],
   },
   {
-    gameId: 8,
+    itemId: 8,
     title: "Granblue Fantasy: Relink",
-    cover:
+    coverImage:
       "https://images.launchbox-app.com/7b952348-ca25-4a6c-aefd-c994ecdd1dcc.jpg",
-    boxArt:
+    cardImage:
       "https://images.launchbox-app.com/0df5e096-afa2-4cf6-8424-99036a4a538d.jpg",
     entries: [
       {
@@ -374,10 +374,10 @@ export const gamesData = [
     ],
   },
   {
-    gameId: 10,
+    itemId: 10,
     title: "Pragmata",
-    cover: "https://images8.alphacoders.com/140/thumb-1920-1407112.jpg",
-    boxArt: "https://media.gamestop.com/i/gamestop/20006550-be099b16",
+    coverImage: "https://images8.alphacoders.com/140/thumb-1920-1407112.jpg",
+    cardImage: "https://media.gamestop.com/i/gamestop/20006550-be099b16",
     entries: [
       {
         entryId: 1,
@@ -403,8 +403,8 @@ export const gamesData = [
 // Days
 //
 // Sorted oldest → newest. Track relies on this order for its circles.
-// games[] here contains only { gameId, entryId } references — look up the
-// full game record and its entry by joining against the games list above.
+// items[] here contains only { itemId, entryId } references — look up the
+// full item record and its entry by joining against the items list above.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const daysData = [
@@ -414,9 +414,9 @@ export const daysData = [
     title: "",
     text: "First proper evening with Xenoblade 2. Been meaning to start this for ages and finally made the leap. The opening is a lot — characters, lore, names all thrown at you at once. But the world design is immediately striking, the cloud sea concept is unlike anything I've seen. Combat is completely opaque right now but I'm told it takes a few hours to click.",
     tags: [1, 4],
-    games: [
-      { gameId: 1, entryId: 1 },
-      { gameId: 9, entryId: 1 },
+    items: [
+      { itemId: 1, entryId: 1 },
+      { itemId: 9, entryId: 1 },
     ],
   },
   {
@@ -425,9 +425,9 @@ export const daysData = [
     title: "",
     text: "Good few hours on Xenoblade tonight. Combat is starting to make more sense — the flow arts and blade specials are clicking now. Got Nia in the party which is a big deal, she's immediately the most interesting character so far. The Mor Ardain section has been a highlight, the industrial aesthetic is a nice contrast to the organic stuff before it.",
     tags: [5],
-    games: [
-      { gameId: 1, entryId: 1 },
-      { gameId: 9, entryId: 2 },
+    items: [
+      { itemId: 1, entryId: 1 },
+      { itemId: 9, entryId: 2 },
     ],
   },
   {
@@ -436,9 +436,9 @@ export const daysData = [
     title: "",
     text: "Picked up Astral Chain in the sale. Haven't started it yet but wanted to log that it's in the queue. Spent most of tonight finishing off a few sidequests in Xenoblade instead — the Uraya region has some good ones. Bana is a brilliant villain, completely ridiculous in exactly the right way.",
     tags: [2],
-    games: [
-      { gameId: 1, entryId: 1 },
-      { gameId: 9, entryId: 3 },
+    items: [
+      { itemId: 1, entryId: 1 },
+      { itemId: 9, entryId: 3 },
     ],
   },
   {
@@ -447,9 +447,9 @@ export const daysData = [
     title: "Christmas break starts",
     text: "Off work now until January which means actual gaming time. Sat down with Xenoblade for a long session tonight — made it through the end of Chapter 4 which ended on a proper gut-punch moment. Didn't see it coming at all. The story is doing things I didn't expect from the opening hours. Good time to be playing this.",
     tags: [2, 4],
-    games: [
-      { gameId: 1, entryId: 2 },
-      { gameId: 8, entryId: 1 },
+    items: [
+      { itemId: 1, entryId: 2 },
+      { itemId: 8, entryId: 1 },
     ],
   },
   {
@@ -458,9 +458,9 @@ export const daysData = [
     title: "",
     text: "Lazy Sunday between Christmas and new year. Finally put a few hours into Astral Chain. The tone is completely different to what I expected — way more anime and stylised than the trailers suggested. Combat is satisfying once the Legion system clicks. The city hub sections have a nice investigative feel, reminds me a bit of Nier in how it builds the world quietly.",
     tags: [3],
-    games: [
-      { gameId: 2, entryId: 1 },
-      { gameId: 9, entryId: 4 },
+    items: [
+      { itemId: 2, entryId: 1 },
+      { itemId: 9, entryId: 4 },
     ],
   },
   {
@@ -469,9 +469,9 @@ export const daysData = [
     title: "Back to it",
     text: "New year, back to gaming properly. Spent the session on Xenoblade grinding some affinity with the Ursula blade — the trust system is slow but rewarding. Also did a bit of exploring in Leftheria which I'd been rushing through. The environmental variety in this game is genuinely impressive, every region feels distinct.",
     tags: [1, 5],
-    games: [
-      { gameId: 1, entryId: 1 },
-      { gameId: 9, entryId: 5 },
+    items: [
+      { itemId: 1, entryId: 1 },
+      { itemId: 9, entryId: 5 },
     ],
   },
   {
@@ -480,9 +480,9 @@ export const daysData = [
     title: "",
     text: "Chipped away at Astral Chain for a couple of hours. The combat is really opening up now — the chimera designs are getting more creative and the fights are starting to feel like puzzles. The sync attack system when you line up correctly with your legion is incredibly satisfying. This might be Platinum's best looking game.",
     tags: [3],
-    games: [
-      { gameId: 2, entryId: 1 },
-      { gameId: 9, entryId: 6 },
+    items: [
+      { itemId: 2, entryId: 1 },
+      { itemId: 9, entryId: 6 },
     ],
   },
   {
@@ -491,7 +491,7 @@ export const daysData = [
     title: "",
     text: "Ordered a PS1 and some games off eBay tonight. Been thinking about it for a while — there's a whole library I've never touched and emulation isn't the same. Got Xenogears, Parasite Eve and Vagrant Story in the lot. No RGB cable yet so I'll hold off starting any of them until it arrives.",
     tags: [3, 2],
-    games: [{ gameId: 5, entryId: 1 }],
+    items: [{ itemId: 5, entryId: 1 }],
   },
   {
     dayId: 9,
@@ -499,9 +499,9 @@ export const daysData = [
     title: "",
     text: "Big session on Xenoblade. Finished Chapter 5 and pushed into 6. The tone has shifted noticeably — things are getting darker and the stakes feel real now. Rex's development has been gradual but it's paying off. Poppi QT Pi has completely replaced KOS-MOS in my main team composition, the customisation options are just better.",
     tags: [5, 4],
-    games: [
-      { gameId: 1, entryId: 2 },
-      { gameId: 9, entryId: 7 },
+    items: [
+      { itemId: 1, entryId: 2 },
+      { itemId: 9, entryId: 7 },
     ],
   },
   {
@@ -510,9 +510,9 @@ export const daysData = [
     title: "",
     text: "Astral Chain case file 7 done. The game keeps escalating in interesting ways — the chimeras are getting properly unsettling now. Found a few of the hidden items in the files that I'd completely missed on first pass. The investigation sections reward thoroughness in a way that doesn't feel tedious. Also dug out Crystal Bearers on the Wii for an hour before bed — hadn't touched it in years and was curious if it holds up.",
     tags: [5, 3],
-    games: [
-      { gameId: 2, entryId: 1 },
-      { gameId: 9, entryId: 8 },
+    items: [
+      { itemId: 2, entryId: 1 },
+      { itemId: 9, entryId: 8 },
     ],
   },
   {
@@ -521,7 +521,7 @@ export const daysData = [
     title: "",
     text: "PS1 arrived. Composite cables only for now so I can't start any of the NTSC games yet, the rainbow shimmer is too distracting. Had a look at the menus and tested it was working though. RGB cable is on order — apparently back in stock in February. Impatient but it's worth waiting for.",
     tags: [7, 3],
-    games: [{ gameId: 6, entryId: 1 }],
+    items: [{ itemId: 6, entryId: 1 }],
   },
   {
     dayId: 12,
@@ -529,9 +529,9 @@ export const daysData = [
     title: "",
     text: "Finished Astral Chain. The final act goes completely off the rails in the best possible way — Platinum clearly saved the wildest ideas for the end. Credits rolled at about 30 hours. Not sure I'll go back for S ranks but I'm satisfied with where I ended up. Back to focusing on Xenoblade as the main game now.",
     tags: [5, 3],
-    games: [
-      { gameId: 2, entryId: 1 },
-      { gameId: 5, entryId: 2 },
+    items: [
+      { itemId: 2, entryId: 1 },
+      { itemId: 5, entryId: 2 },
     ],
   },
   {
@@ -540,9 +540,9 @@ export const daysData = [
     title: "",
     text: "Heavy Xenoblade session. Deep into the affinity charts now — this is the part everyone warns you about. Some of the field skill requirements are annoying but the blade content attached to them is genuinely good, lots of small stories you'd completely miss otherwise. Running the Switch Family Collective with a mate helps a lot for getting rare blades.",
     tags: [1, 2],
-    games: [
-      { gameId: 1, entryId: 1 },
-      { gameId: 9, entryId: 9 },
+    items: [
+      { itemId: 1, entryId: 1 },
+      { itemId: 9, entryId: 9 },
     ],
   },
   {
@@ -551,9 +551,9 @@ export const daysData = [
     title: "",
     text: "Started thinking seriously about what's next after Xenoblade. The queue is getting long — Xenogears obviously, then probably Vagrant Story or Parasite Eve. Also want to go back to something shorter and action-focused at some point, maybe Bayonetta or Devil May Cry 5. For now still very much in the middle of Xenoblade though.",
     tags: [3],
-    games: [
-      { gameId: 1, entryId: 3 },
-      { gameId: 9, entryId: 10 },
+    items: [
+      { itemId: 1, entryId: 3 },
+      { itemId: 9, entryId: 10 },
     ],
   },
   {
@@ -562,9 +562,9 @@ export const daysData = [
     title: "",
     text: "Made serious progress on the affinity charts tonight. Rex, Pyra, and Nia are all done. The endgame feels close — maybe five or six sessions away. Starting to feel bittersweet about finishing it, I've had this as my main game for months. Going to miss the routine of it.",
     tags: [5, 1],
-    games: [
-      { gameId: 1, entryId: 3 },
-      { gameId: 9, entryId: 11 },
+    items: [
+      { itemId: 1, entryId: 3 },
+      { itemId: 9, entryId: 11 },
     ],
   },
   {
@@ -573,9 +573,9 @@ export const daysData = [
     title: "",
     text: "RGB cable for the PS1 shipped — tracking says Tuesday. Almost done with the Xenoblade affinity work, just Zeke and Pandoria left which should be quick. Might line it up so I finish Xenoblade around the same time the cable arrives and I can start Xenogears as a clean handoff. That would be a good week.",
     tags: [3, 4],
-    games: [
-      { gameId: 1, entryId: 3 },
-      { gameId: 8, entryId: 2 },
+    items: [
+      { itemId: 1, entryId: 3 },
+      { itemId: 8, entryId: 2 },
     ],
   },
   {
@@ -584,9 +584,9 @@ export const daysData = [
     title: "Leeds Gaming Market",
     text: "Phil and Marc came over today for the gaming market downstairs. Finally bought my original PlayStation, got a chipped region-unlocked one so I can play Parasite Eve, Xenogears and all that. I'm gonna have to spend a bit to get them good quality but I've always wanted to play them. I need to get an RGB cable as well as the NTSC games have a mad rainbow looking filter on top, but I've found somewhere that does them and they're back in stock next month. Banging day anyway today, finished off with a Bundo as well 🤌",
     tags: [3, 8],
-    games: [
-      { gameId: 1, entryId: 1 },
-      { gameId: 2, entryId: 1 },
+    items: [
+      { itemId: 1, entryId: 1 },
+      { itemId: 2, entryId: 1 },
     ],
   },
   {
@@ -595,7 +595,7 @@ export const daysData = [
     title: "",
     text: "Quiet Sunday. Didn't do much today, cooked a big pasta in the afternoon and then just ended up on Xenoblade for most of the evening. Exactly the kind of day you need sometimes — no plans, no pressure, just the game. Chapter 7 delivered.",
     tags: [3, 4],
-    games: [{ gameId: 1, entryId: 2 }],
+    items: [{ itemId: 1, entryId: 2 }],
   },
   {
     dayId: 19,
@@ -603,7 +603,7 @@ export const daysData = [
     title: "RGB cable arrived",
     text: "The RGB cable for the PS1 came almost a week early, wasn't expecting it until the weekend. Plugged it straight in and the difference is night and day — the rainbow interference is completely gone and everything looks sharp and saturated, exactly how it should look. Can't believe I nearly just put up with composite. Fired up Xenogears straight away and played for about two hours.",
     tags: [7, 2],
-    games: [{ gameId: 3, entryId: 1 }],
+    items: [{ itemId: 3, entryId: 1 }],
   },
   {
     dayId: 20,
@@ -611,11 +611,11 @@ export const daysData = [
     title: "",
     text: "",
     tags: [],
-    games: [
-      { gameId: 3, entryId: 2 },
-      { gameId: 4, entryId: 1 },
-      { gameId: 7, entryId: 1 },
-      { gameId: 10, entryId: 1 },
+    items: [
+      { itemId: 3, entryId: 2 },
+      { itemId: 4, entryId: 1 },
+      { itemId: 7, entryId: 1 },
+      { itemId: 10, entryId: 1 },
     ],
   },
   {
@@ -624,11 +624,11 @@ export const daysData = [
     title: "Morning gaming, then dev",
     text: "Started the morning with some Xenoblade before doing anything else, which is always a good sign for the day. Spent the afternoon doing some work on the journal app — got the PWA manifest set up so it can be saved to the home screen properly and opens without the Safari bar. Feels way more like a real app now. Small detail but it matters.",
     tags: [3, 2],
-    games: [
-      { gameId: 1, entryId: 3 },
-      { gameId: 3, entryId: 1 },
-      { gameId: 4, entryId: 2 },
-      { gameId: 10, entryId: 2 },
+    items: [
+      { itemId: 1, entryId: 3 },
+      { itemId: 3, entryId: 1 },
+      { itemId: 4, entryId: 2 },
+      { itemId: 10, entryId: 2 },
     ],
   },
 ];

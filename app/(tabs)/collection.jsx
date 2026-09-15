@@ -1,5 +1,5 @@
-import { GameArt } from "@/components/GameArt";
-import { GameEntry } from "@/components/GameEntry";
+import { CollectionItem } from "@/components/CollectionItem";
+import { ItemHero } from "@/components/ItemHero";
 import { AnimatedSpacer } from "@/components/interface/AnimateHeight";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
@@ -16,21 +16,6 @@ const Container = styled.View`
   background-color: ${Colors.background};
 `;
 
-const InfoColumn = styled.View`
-  flex: 1;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  margin-top: -4px;
-  margin-bottom: 10px;
-`;
-
-const GameMeta = styled.View`
-  flex-direction: row;
-  gap: 5px;
-  margin-top: 3px;
-`;
-
 async function pickImage() {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) return null;
@@ -44,96 +29,91 @@ async function pickImage() {
 
 export default function CollectionScreen() {
   const { state, dispatch } = useApp();
-  const { games, gameDraft, editingGameId } = state;
-  const editMode = !!gameDraft;
+  const { items, itemDraft, editingItemId } = state;
+  const editMode = !!itemDraft;
 
-  const [activeGameId, setActiveGameId] = useState(games[0]?.gameId);
+  const [activeItemId, setActiveItemId] = useState(items[0]?.itemId);
 
-  const activeGame = games.find((g) => g.gameId === activeGameId);
-  const displayGame = gameDraft ?? activeGame;
-  const orderedEntries = displayGame
-    ? [...displayGame.entries].sort((a, b) => a.entryId - b.entryId)
+  const activeItem = items.find((it) => it.itemId === activeItemId);
+  const displayItem = itemDraft ?? activeItem;
+  const orderedEntries = displayItem
+    ? [...displayItem.entries].sort((a, b) => a.entryId - b.entryId)
     : [];
 
   const updateDraft = (changes) =>
-    dispatch({ type: "UPDATE_GAME_DRAFT", changes });
+    dispatch({ type: "UPDATE_ITEM_DRAFT", changes });
 
-  const handleAddGame = () =>
-    dispatch({ type: "ENTER_GAME_EDIT", gameId: null });
+  const handleAddItem = () =>
+    dispatch({ type: "ENTER_ITEM_EDIT", itemId: null });
 
-  const handleCancelAddGame = () => dispatch({ type: "CANCEL_GAME_EDIT" });
+  const handleCancelAddItem = () => dispatch({ type: "CANCEL_ITEM_EDIT" });
 
-  const handlePressActiveGame = (gameId) => {
-    if (editMode && editingGameId === gameId) {
-      dispatch({ type: "CANCEL_GAME_EDIT" });
+  const handlePressActiveItem = (itemId) => {
+    if (editMode && editingItemId === itemId) {
+      dispatch({ type: "CANCEL_ITEM_EDIT" });
     } else {
-      dispatch({ type: "ENTER_GAME_EDIT", gameId });
+      dispatch({ type: "ENTER_ITEM_EDIT", itemId });
     }
   };
 
   const handleSave = () => {
     if (!editMode) return;
-    const isNew = editingGameId == null;
-    const gameId = isNew
-      ? Math.max(0, ...games.map((g) => g.gameId)) + 1
-      : editingGameId;
-    dispatch({ type: "SAVE_GAME_EDIT", gameId });
-    if (isNew) setActiveGameId(gameId);
+    const isNew = editingItemId == null;
+    const itemId = isNew
+      ? Math.max(0, ...items.map((it) => it.itemId)) + 1
+      : editingItemId;
+    dispatch({ type: "SAVE_ITEM_EDIT", itemId });
+    if (isNew) setActiveItemId(itemId);
   };
 
-  const handlePickBoxArt = async () => {
+  const handlePickCard = async () => {
     const uri = await pickImage();
-    if (uri) updateDraft({ boxArt: uri });
+    if (uri) updateDraft({ cardImage: uri });
   };
 
   const handlePickCover = async () => {
     const uri = await pickImage();
-    if (uri) updateDraft({ cover: uri });
+    if (uri) updateDraft({ coverImage: uri });
   };
 
-  if (!displayGame) return <Container />;
+  if (!displayItem) return <Container />;
 
   return (
     <Container>
       <PageScroll
-        resetKey={editMode ? (editingGameId ?? "new-game") : activeGameId}
-        stickyHeaderIndices={[1]}
+        resetKey={editMode ? (editingItemId ?? "new-item") : activeItemId}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
       >
-        <GameArt
-          boxArt={displayGame.boxArt}
-          cover={displayGame.cover}
+        <ItemHero
+          cardImage={displayItem.cardImage}
+          coverImage={displayItem.coverImage}
           editable={editMode}
-          onPressBoxArt={handlePickBoxArt}
+          onPressCard={handlePickCard}
           onPressCover={handlePickCover}
         />
 
-        <PageHeader>
-          <InfoColumn>
+        <PageHeader gap={7}>
+          <PageHeader.Title
+            value={displayItem.title}
+            placeholder="New Item"
+            onChangeText={(title) => updateDraft({ title })}
+            editable={editMode}
+          />
+          <PageHeader.Meta>
             <ThemedText
-              type="title"
-              isInput
-              value={displayGame.title}
-              placeholder="New Game"
-              onChangeText={(title) => updateDraft({ title })}
-              editable={editMode}
-            />
-            <GameMeta>
-              <ThemedText
-                type="subtitle"
-                color={displayGame.entries.length === 0 ? "faded" : ""}
-              >
-                {displayGame.entries.length === 0
-                  ? "No"
-                  : String(displayGame.entries.length).padStart(2, "0")}{" "}
-                {displayGame.entries.length === 1 ? "Entry" : "Entries"}
-              </ThemedText>
-            </GameMeta>
-          </InfoColumn>
+              type="subtitle"
+              color={displayItem.entries.length === 0 ? "faded" : ""}
+            >
+              {displayItem.entries.length === 0
+                ? "No"
+                : String(displayItem.entries.length).padStart(2, "0")}{" "}
+              {displayItem.entries.length === 1 ? "Entry" : "Entries"}
+            </ThemedText>
+          </PageHeader.Meta>
         </PageHeader>
 
         {orderedEntries.map((entry) => (
-          <GameEntry
+          <CollectionItem
             key={entry.entryId}
             isMinimal
             editable={editMode}
@@ -144,7 +124,7 @@ export default function CollectionScreen() {
             gallery={entry.gallery}
             onUpdate={(changes) =>
               dispatch({
-                type: "UPDATE_GAME_DRAFT_ENTRY",
+                type: "UPDATE_ITEM_DRAFT_ENTRY",
                 entryId: entry.entryId,
                 changes,
               })
@@ -157,10 +137,10 @@ export default function CollectionScreen() {
 
       <CollectionTrack
         editMode={editMode}
-        onChangeGame={setActiveGameId}
-        onPressActiveGame={handlePressActiveGame}
-        onAddGame={handleAddGame}
-        onCancelAddGame={handleCancelAddGame}
+        onChangeItem={setActiveItemId}
+        onPressActiveItem={handlePressActiveItem}
+        onAddItem={handleAddItem}
+        onCancelAddItem={handleCancelAddItem}
         onSave={handleSave}
       />
     </Container>

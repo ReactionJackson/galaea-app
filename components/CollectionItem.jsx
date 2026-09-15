@@ -32,7 +32,7 @@ const Header = styled.View`
   align-items: center;
   gap: 5px;
   width: 100%;
-  height: 80px;
+  height: 120px;
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
   background-color: ${Colors.black};
@@ -76,8 +76,8 @@ function formatEntryDate(dateString) {
   };
 }
 
-export const GameEntry = memo(function GameEntry({
-  gameId = 1,
+export const CollectionItem = memo(function CollectionItem({
+  itemId = 1,
   entryId = null,
   index,
   isMinimal = false,
@@ -91,8 +91,8 @@ export const GameEntry = memo(function GameEntry({
   const { state, dispatch } = useApp();
   const editMode = editable ?? (isMinimal ? false : state.editMode);
 
-  const { title, cover, entries } =
-    state.games.find((game) => game.gameId === gameId) ?? {};
+  const { title, coverImage, entries } =
+    state.items.find((item) => item.itemId === itemId) ?? {};
 
   const entryNumber = entryId ?? (entries?.length ?? 0) + 1;
 
@@ -106,10 +106,10 @@ export const GameEntry = memo(function GameEntry({
   const tagIds = tagIdsProp ?? dataTagIds;
   const gallery = galleryProp ?? dataGallery;
 
-  const updateGame = (changes) =>
+  const updateItem = (changes) =>
     onUpdate
       ? onUpdate(changes)
-      : dispatch({ type: "UPDATE_GAME", index, changes });
+      : dispatch({ type: "UPDATE_ITEM", index, changes });
 
   const { datePart, timePart } = date ? formatEntryDate(date) : {};
   const label =
@@ -131,15 +131,15 @@ export const GameEntry = memo(function GameEntry({
     const next = tagIds.includes(tagId)
       ? tagIds.filter((id) => id !== tagId)
       : [...tagIds, tagId];
-    updateGame({ tags: next });
+    updateItem({ tags: next });
   };
 
   const handleAddImage = (item) => {
-    updateGame({ gallery: [...gallery, item] });
+    updateItem({ gallery: [...gallery, item] });
   };
 
   const handleUpdateImage = (imageIndex, focus) => {
-    updateGame({
+    updateItem({
       gallery: gallery.map((item, i) => {
         if (i !== imageIndex) return item;
         const uri = getImageUri(item);
@@ -149,7 +149,7 @@ export const GameEntry = memo(function GameEntry({
   };
 
   const handleDeleteImage = (imageIndex) => {
-    updateGame({ gallery: gallery.filter((_, i) => i !== imageIndex) });
+    updateItem({ gallery: gallery.filter((_, i) => i !== imageIndex) });
   };
 
   return (
@@ -159,10 +159,10 @@ export const GameEntry = memo(function GameEntry({
           <HeaderBackground
             contentFit="cover"
             source={{
-              uri: cover,
+              uri: coverImage,
             }}
           />
-          <ThemedText type="title-small" color="white">
+          <ThemedText type="title" color="white">
             {title}
           </ThemedText>
         </Header>
@@ -188,8 +188,8 @@ export const GameEntry = memo(function GameEntry({
             isInput
             multiline={true}
             value={text}
-            placeholder="Write something about this game..."
-            onChangeText={(t) => updateGame({ text: t })}
+            placeholder="Write something about this..."
+            onChangeText={(t) => updateItem({ text: t })}
             editable={editMode}
           />
         </AnimateHeight>

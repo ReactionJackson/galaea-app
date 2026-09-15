@@ -1,21 +1,17 @@
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
-import { useGameBoxArtSizes } from "@/hooks/useGameBoxArtSizes";
+import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
-import { Image as ExpoImage } from "expo-image";
 import { Pressable } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
+import { ITEM_HEIGHT, ItemCard, useFadeStyle } from "./ItemCard";
 import { Track } from "./Track";
 
 // Constants:
 
-export const ITEM_HEIGHT = 105;
 const ITEM_SPACING = 10;
 
 // Styled Components:
@@ -26,14 +22,6 @@ const ScrollContainer = styled(Animated.ScrollView)`
   height: 100%;
 `;
 
-const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
-
-export const BoxArt = styled(AnimatedImage).attrs({ transition: 200 })`
-  width: ${({ itemWidth }) => itemWidth}px;
-  height: ${ITEM_HEIGHT}px;
-  border-radius: 4px;
-`;
-
 const AddButtonBox = styled(Animated.View)`
   width: ${ITEM_HEIGHT}px;
   height: ${ITEM_HEIGHT}px;
@@ -42,39 +30,6 @@ const AddButtonBox = styled(Animated.View)`
   justify-content: center;
   align-items: center;
 `;
-
-// Shared with GamePickerTrack: an item fades to inactiveOpacity unless
-// active, in which case it's always fully opaque. Callers work out what
-// "active" and "inactiveOpacity" mean for their own context.
-export function useFadeStyle(active, inactiveOpacity) {
-  return useAnimatedStyle(
-    () => ({
-      opacity: withTiming(active ? 1 : inactiveOpacity, { duration: 200 }),
-    }),
-    [active, inactiveOpacity],
-  );
-}
-
-function CollectionBoxArt({
-  boxArt,
-  itemWidth,
-  active,
-  editMode,
-  onPress,
-  disabled,
-}) {
-  const style = useFadeStyle(active, editMode ? 0.1 : 0.5);
-  return (
-    <Pressable onPress={onPress} disabled={disabled}>
-      <BoxArt
-        source={{ uri: boxArt }}
-        contentFit="cover"
-        itemWidth={itemWidth}
-        style={style}
-      />
-    </Pressable>
-  );
-}
 
 function CollectionAddButton({ active, editMode, onPress, disabled }) {
   const style = useFadeStyle(active, editMode ? 0.1 : 0.5);
@@ -93,16 +48,16 @@ function CollectionAddButton({ active, editMode, onPress, disabled }) {
 
 export function CollectionTrack({
   editMode = false,
-  onChangeGame = () => {},
-  onPressActiveGame = () => {},
-  onAddGame = () => {},
-  onCancelAddGame = () => {},
+  onChangeItem = () => {},
+  onPressActiveItem = () => {},
+  onAddItem = () => {},
+  onCancelAddItem = () => {},
   onSave = () => {},
 }) {
   const { state } = useApp();
-  const games = state.games;
+  const items = state.items;
 
-  const itemWidths = useGameBoxArtSizes(games, ITEM_HEIGHT);
+  const itemWidths = useItemCardSizes(items, ITEM_HEIGHT);
 
   const {
     ADD_INDEX,
@@ -125,10 +80,10 @@ export function CollectionTrack({
     addButtonWidth: ITEM_HEIGHT,
     startAtEnd: false,
     onSettle: (index, { alreadyActive }) => {
-      const game = games[index];
-      if (!game) return;
+      const item = items[index];
+      if (!item) return;
       if (alreadyActive) {
-        onPressActiveGame(game.gameId);
+        onPressActiveItem(item.itemId);
         if (process.env.EXPO_OS === "ios") {
           Haptics.impactAsync(
             editMode
@@ -137,11 +92,11 @@ export function CollectionTrack({
           );
         }
       } else {
-        onChangeGame(game.gameId);
+        onChangeItem(item.itemId);
       }
     },
-    onAdd: onAddGame,
-    onCancelAdd: onCancelAddGame,
+    onAdd: onAddItem,
+    onCancelAdd: onCancelAddItem,
   });
 
   return (
@@ -171,13 +126,13 @@ export function CollectionTrack({
           alignItems: "center",
         }}
       >
-        {games.map((game, i) => (
-          <CollectionBoxArt
-            key={game.gameId}
-            boxArt={game.boxArt}
+        {items.map((item, i) => (
+          <ItemCard
+            key={item.itemId}
+            cardImage={item.cardImage}
             itemWidth={itemWidths[i]}
             active={isScrolling || activeIndex === i}
-            editMode={editMode}
+            inactiveOpacity={editMode ? 0.1 : 0.5}
             onPress={() => goToIndex(i)}
             disabled={editMode && activeIndex !== i}
           />

@@ -1,23 +1,23 @@
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
-import { useGameBoxArtSizes } from "@/hooks/useGameBoxArtSizes";
+import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
-import { Pressable } from "react-native";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
-import { BoxArt, ITEM_HEIGHT, useFadeStyle } from "./CollectionTrack";
+import { ITEM_HEIGHT, ItemCard } from "./ItemCard";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GamePickerTrack
+// ItemPickerTrack
 //
 // Lives inline in the journal entry's own scrolling content (inside an
-// AnimateHeight between the last entry and the Add Game button), not in the
+// AnimateHeight between the last entry and the Add Item button), not in the
 // fixed bottom-docked Track shell CollectionTrack uses — so it gets its own
 // plain boxed treatment instead. Same item size as CollectionTrack (shares
-// ITEM_HEIGHT/BoxArt). No edit-mode locking, no add slot. A game already
-// attached to this post fades to 0.1 and stays there — it never brightens
-// even if scrolled to centre — while every other game follows the same
-// active/inactive fade CollectionTrack uses outside its own edit mode.
+// ITEM_HEIGHT and the ItemCard component). No edit-mode locking, no add slot.
+// An item already attached to this post fades to 0.1 and stays there — it
+// never brightens even if scrolled to centre — while every other item
+// follows the same active/inactive fade CollectionTrack uses outside its own
+// edit mode.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ITEM_SPACING = 10;
@@ -35,25 +35,11 @@ const ScrollContainer = styled(Animated.ScrollView)`
   height: ${ITEM_HEIGHT}px;
 `;
 
-function PickerBoxArt({ boxArt, itemWidth, active, inactiveOpacity, onPress, disabled }) {
-  const style = useFadeStyle(active, inactiveOpacity);
-  return (
-    <Pressable onPress={onPress} disabled={disabled}>
-      <BoxArt
-        source={{ uri: boxArt }}
-        contentFit="cover"
-        itemWidth={itemWidth}
-        style={style}
-      />
-    </Pressable>
-  );
-}
-
-export function GamePickerTrack({ attachedGameIds = [], onSelect = () => {} }) {
+export function ItemPickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
   const { state } = useApp();
-  const games = state.games;
+  const items = state.items;
 
-  const itemWidths = useGameBoxArtSizes(games, ITEM_HEIGHT);
+  const itemWidths = useItemCardSizes(items, ITEM_HEIGHT);
 
   const {
     activeIndex,
@@ -75,8 +61,8 @@ export function GamePickerTrack({ attachedGameIds = [], onSelect = () => {} }) {
     startAtEnd: false,
     onSettle: (index, { alreadyActive }) => {
       if (!alreadyActive) return;
-      const game = games[index];
-      if (game) onSelect(game.gameId);
+      const item = items[index];
+      if (item) onSelect(item.itemId);
     },
   });
 
@@ -100,12 +86,12 @@ export function GamePickerTrack({ attachedGameIds = [], onSelect = () => {} }) {
           alignItems: "center",
         }}
       >
-        {games.map((game, i) => {
-          const attached = attachedGameIds.includes(game.gameId);
+        {items.map((item, i) => {
+          const attached = attachedItemIds.includes(item.itemId);
           return (
-            <PickerBoxArt
-              key={game.gameId}
-              boxArt={game.boxArt}
+            <ItemCard
+              key={item.itemId}
+              cardImage={item.cardImage}
               itemWidth={itemWidths[i]}
               active={!attached && (isScrolling || activeIndex === i)}
               inactiveOpacity={attached ? 0.1 : 0.5}

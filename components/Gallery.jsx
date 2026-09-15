@@ -37,7 +37,7 @@ const EditableView = styled.View`
   transform: scale(0.99);
 `;
 
-// Duplicate: same size/border/fade recipe as GameArt's own edit-circle
+// Duplicate: same size/border/fade recipe as ItemHero's own edit-circle
 // button, just filled solid with the accent colour for a destructive action.
 const DeleteCircle = styled.View`
   width: 40px;

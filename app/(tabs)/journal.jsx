@@ -1,4 +1,4 @@
-import { GameEntry } from "@/components/GameEntry";
+import { CollectionItem } from "@/components/CollectionItem";
 import {
   AnimateHeight,
   AnimatedSpacer,
@@ -7,7 +7,7 @@ import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
 import { Tags } from "@/components/Tags";
-import { GamePickerTrack } from "@/components/track/GamePickerTrack";
+import { ItemPickerTrack } from "@/components/track/ItemPickerTrack";
 import { JournalTrack } from "@/components/track/JournalTrack";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
@@ -21,27 +21,6 @@ const Container = styled.View`
   background-color: ${Colors.background};
 `;
 
-const EntryNumber = styled.View`
-  justify-content: center;
-  align-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: ${Colors.accent};
-`;
-
-const EntryInfo = styled.View`
-  flex: 1;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-`;
-
-const EntryDate = styled.View`
-  flex-direction: row;
-  gap: 5px;
-  margin: 3px 0 -2px 0;
-`;
 
 // Duplicate:
 const Button = styled.Pressable`
@@ -64,7 +43,7 @@ function JournalScreen() {
   const { state, activeEntry, dispatch } = useApp();
   const { editMode, cancelling, committed } = state;
   const cancelTimerRef = useRef(null);
-  const [pickingGame, setPickingGame] = useState(false);
+  const [pickingItem, setPickingItem] = useState(false);
 
   // Derived state:
 
@@ -106,14 +85,14 @@ function JournalScreen() {
       cancelTimerRef.current = null;
       dispatch({ type: "COMPLETE_CANCEL" });
     }
-    setPickingGame(false);
+    setPickingItem(false);
     dispatch({ type: "ENTER_EDIT" });
   };
 
   const handleCancelEdit = () => {
     // Phase 1: exit edit mode so animations start (controls slide away,
-    // new game entries collapse, draft-only text closes, etc.)
-    setPickingGame(false);
+    // new item entries collapse, draft-only text closes, etc.)
+    setPickingItem(false);
     dispatch({ type: "BEGIN_CANCEL" });
     // Phase 2: once animations have had time to finish, clear the draft.
     // The delay matches the AnimateHeight duration with a small buffer.
@@ -123,9 +102,9 @@ function JournalScreen() {
     }, 350);
   };
 
-  const handleSelectGame = (gameId) => {
-    dispatch({ type: "ADD_GAME", gameId });
-    setPickingGame(false);
+  const handleSelectItem = (itemId) => {
+    dispatch({ type: "ADD_ITEM", itemId });
+    setPickingItem(false);
   };
 
   // Clean up any pending cancel timer if the component unmounts mid-animation.
@@ -137,42 +116,49 @@ function JournalScreen() {
 
   // A fresh day never opens with the picker mid-flight.
   useEffect(() => {
-    setPickingGame(false);
+    setPickingItem(false);
   }, [activeEntry.dayId]);
 
   // Render:
 
   return (
     <Container>
-      <PageScroll resetKey={activeEntry.dayId} stickyHeaderIndices={[0]}>
+      <PageScroll resetKey={activeEntry.dayId}>
         <PageHeader>
-          <EntryNumber>
+          <PageHeader.Badge>
             <ThemedText type="date-number">{formatDate("day")}</ThemedText>
-          </EntryNumber>
-          <EntryInfo>
-            <EntryDate>
-              <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
-              <ThemedText type="subtitle" color="faded">
-                {formatDate("time")}
-              </ThemedText>
-            </EntryDate>
-            <ThemedText
-              type="title"
-              isInput
-              value={
-                !editMode && !activeEntry.title
-                  ? formatDate("weekday")
-                  : activeEntry.title
-              }
-              placeholder={formatDate("weekday")}
-              onChangeText={(title) => dispatch({ type: "UPDATE_TITLE", title })}
-              editable={editMode}
-            />
-          </EntryInfo>
+          </PageHeader.Badge>
+          <PageHeader.Meta>
+            <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
+            <ThemedText type="subtitle" color="faded">
+              {formatDate("time")}
+            </ThemedText>
+          </PageHeader.Meta>
+          <PageHeader.Title
+            // Remounts whenever editing starts or stops, so the native text
+            // input always begins fresh from the value React just handed it.
+            // Without this, rapid controlled updates while typing can leave
+            // the native view's own text buffer slightly out of step with
+            // what React thinks it last set — harmless while still editing,
+            // but on cancel it means the revert to the committed title can
+            // silently fail to apply, since React sees no change from its
+            // point of view even though the native field is showing
+            // something else.
+            key={editMode ? "editing" : "display"}
+            value={
+              !editMode && !activeEntry.title
+                ? formatDate("weekday")
+                : activeEntry.title
+            }
+            placeholder={formatDate("weekday")}
+            onChangeText={(title) => dispatch({ type: "UPDATE_TITLE", title })}
+            editable={editMode}
+          />
         </PageHeader>
 
         <AnimateHeight visible={textVisible}>
           <ThemedText
+            key={editMode ? "editing" : "display"}
             isInput
             multiline={true}
             value={activeEntry.text}
@@ -190,14 +176,14 @@ function JournalScreen() {
         />
         <AnimatedSpacer visible={tagsVisible} />
 
-        {activeEntry.games.map(
-          ({ gameId, entryId, isNew, text, tags, gallery }, i) => {
-            const gameVisible = !cancelling || !isNew || !!text;
+        {activeEntry.items.map(
+          ({ itemId, entryId, isNew, text, tags, gallery }, i) => {
+            const itemVisible = !cancelling || !isNew || !!text;
             return (
-              <Fragment key={`${gameId}-${String(entryId)}-${i}`}>
-                <AnimateHeight visible={gameVisible} animateOnMount={!!isNew}>
-                  <GameEntry
-                    gameId={gameId}
+              <Fragment key={`${itemId}-${String(entryId)}-${i}`}>
+                <AnimateHeight visible={itemVisible} animateOnMount={!!isNew}>
+                  <CollectionItem
+                    itemId={itemId}
                     entryId={entryId}
                     index={i}
                     text={text}
@@ -206,7 +192,7 @@ function JournalScreen() {
                   />
                 </AnimateHeight>
                 <AnimatedSpacer
-                  visible={gameVisible}
+                  visible={itemVisible}
                   animateOnMount={!!isNew}
                 />
               </Fragment>
@@ -214,27 +200,27 @@ function JournalScreen() {
           },
         )}
         <AnimatedSpacer
-          visible={activeEntry.games.length > 0}
-          height={pickingGame ? 20 : 10}
+          visible={activeEntry.items.length > 0}
+          height={pickingItem ? 20 : 10}
         />
 
         <AnimateHeight
-          visible={pickingGame && editMode}
+          visible={pickingItem && editMode}
           style={{ marginHorizontal: -20 }}
         >
-          <GamePickerTrack
-            attachedGameIds={activeEntry.games.map((g) => g.gameId)}
-            onSelect={handleSelectGame}
+          <ItemPickerTrack
+            attachedItemIds={activeEntry.items.map((it) => it.itemId)}
+            onSelect={handleSelectItem}
           />
         </AnimateHeight>
 
         <AnimateHeight visible={editMode}>
           <Button
-            secondary={pickingGame}
-            onPress={() => setPickingGame((prev) => !prev)}
+            secondary={pickingItem}
+            onPress={() => setPickingItem((prev) => !prev)}
           >
-            <ThemedText color={pickingGame ? "black" : "white"}>
-              {pickingGame ? "Close" : "Add Game"}
+            <ThemedText color={pickingItem ? "black" : "white"}>
+              {pickingItem ? "Close" : "Add Item"}
             </ThemedText>
           </Button>
         </AnimateHeight>

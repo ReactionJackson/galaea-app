@@ -73,7 +73,15 @@ export function ThemedText({
       <AnimatedTextInput
         style={baseStyle}
         multiline={multiline}
-        scrollEnabled={!multiline}
+        // Single-line inputs don't need RN's own scroll-view-backed caret
+        // tracking — iOS already keeps a single-line field's caret in view
+        // natively. Leaving this true meant every controlled re-render (e.g.
+        // typing into the title, which round-trips through global state)
+        // raced against the native auto-scroll, producing a visible
+        // flash-then-correct jump. Multiline still relies on its own
+        // AnimateHeight-driven auto-grow rather than internal scrolling,
+        // so it stays disabled there too.
+        scrollEnabled={false}
         value={value}
         editable={editable}
         pointerEvents={editable ? "auto" : "none"}
@@ -116,6 +124,7 @@ const styles = StyleSheet.create({
     color: Colors.black,
     fontFamily: Fonts.semibold,
     fontSize: 9,
+    lineHeight: 9,
     textTransform: "uppercase",
     letterSpacing: 2,
     opacity: 0.6,

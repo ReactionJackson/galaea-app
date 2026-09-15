@@ -1,15 +1,16 @@
 import { Colors } from "@/constants/theme";
+import { getCachedAspectRatio, loadAspectRatio } from "@/hooks/useImageAspectRatio";
 import { Image as ExpoImage } from "expo-image";
 import { useEffect, useState } from "react";
-import { Pressable, Image as RNImage, useWindowDimensions } from "react-native";
+import { Pressable, useWindowDimensions } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { ThemedText } from "./interface/ThemedText";
 
-const BOX_HEIGHT = 180;
-const DEFAULT_BOX_WIDTH = 120;
+const CARD_HEIGHT = 180;
+const DEFAULT_CARD_WIDTH = 120;
 
-const ArtContainer = styled.View`
+const HeroContainer = styled.View`
   height: 250px;
   margin: 0 -20px;
   overflow: hidden;
@@ -40,25 +41,25 @@ const CoverOverlay = styled.View`
   background-color: ${Colors.imageOverlay};
 `;
 
-const BoxArtWrap = styled.View`
+const CardWrap = styled.View`
   position: relative;
 `;
 
-const BoxArtFrame = styled.View`
-  width: ${({ boxWidth }) => boxWidth}px;
-  height: ${BOX_HEIGHT}px;
+const CardFrame = styled.View`
+  width: ${({ cardWidth }) => cardWidth}px;
+  height: ${CARD_HEIGHT}px;
   border-radius: 4px;
   overflow: hidden;
 `;
 
-const BoxArtImage = styled(ExpoImage).attrs({ transition: 200 })`
+const CardImage = styled(ExpoImage).attrs({ transition: 200 })`
   width: 100%;
   height: 100%;
 `;
 
-const BoxArtPlaceholder = styled.View`
-  width: ${DEFAULT_BOX_WIDTH}px;
-  height: ${BOX_HEIGHT}px;
+const CardPlaceholder = styled.View`
+  width: ${DEFAULT_CARD_WIDTH}px;
+  height: ${CARD_HEIGHT}px;
   border: 2px dashed ${Colors.disabled};
   border-radius: 4px;
 `;
@@ -101,55 +102,63 @@ function EditButton({ onPress, style }) {
   );
 }
 
-export function GameArt({
-  boxArt,
-  cover,
+export function ItemHero({
+  cardImage,
+  coverImage,
   editable = false,
-  onPressBoxArt = () => {},
+  onPressCard = () => {},
   onPressCover = () => {},
 }) {
   const { width: screenWidth } = useWindowDimensions();
-  const [boxWidth, setBoxWidth] = useState(DEFAULT_BOX_WIDTH);
+  const [cardWidth, setCardWidth] = useState(() => {
+    const cachedRatio = getCachedAspectRatio(cardImage);
+    return cachedRatio ? Math.round(CARD_HEIGHT * cachedRatio) : DEFAULT_CARD_WIDTH;
+  });
 
   useEffect(() => {
-    if (!boxArt) {
-      setBoxWidth(DEFAULT_BOX_WIDTH);
+    if (!cardImage) {
+      setCardWidth(DEFAULT_CARD_WIDTH);
       return;
     }
-    let cancelled = false;
-    RNImage.getSize(
-      boxArt,
-      (w, h) => {
-        if (!cancelled) setBoxWidth(Math.round(BOX_HEIGHT * (w / h)));
-      },
-      () => {},
+    // If this image's ratio is already known (it's been shown elsewhere this
+    // session), size correctly straight away instead of flashing back to the
+    // default width and re-fetching.
+    const cachedRatio = getCachedAspectRatio(cardImage);
+    setCardWidth(
+      cachedRatio ? Math.round(CARD_HEIGHT * cachedRatio) : DEFAULT_CARD_WIDTH,
     );
+    let cancelled = false;
+    loadAspectRatio(cardImage, (ratio) => {
+      if (!cancelled) setCardWidth(Math.round(CARD_HEIGHT * ratio));
+    });
     return () => {
       cancelled = true;
     };
-  }, [boxArt]);
+  }, [cardImage]);
 
   return (
-    <ArtContainer style={{ width: screenWidth }}>
+    <HeroContainer style={{ width: screenWidth }}>
       <CoverFill>
-        {cover && <CoverImage source={{ uri: cover }} contentFit="cover" />}
+        {coverImage && (
+          <CoverImage source={{ uri: coverImage }} contentFit="cover" />
+        )}
         <CoverOverlay />
       </CoverFill>
 
-      <BoxArtWrap>
-        {boxArt ? (
-          <BoxArtFrame boxWidth={boxWidth}>
-            <BoxArtImage source={{ uri: boxArt }} contentFit="cover" />
-          </BoxArtFrame>
+      <CardWrap>
+        {cardImage ? (
+          <CardFrame cardWidth={cardWidth}>
+            <CardImage source={{ uri: cardImage }} contentFit="cover" />
+          </CardFrame>
         ) : (
-          <BoxArtPlaceholder />
+          <CardPlaceholder />
         )}
         {editable && (
           <EditOverlay>
-            <EditButton onPress={onPressBoxArt} />
+            <EditButton onPress={onPressCard} />
           </EditOverlay>
         )}
-      </BoxArtWrap>
+      </CardWrap>
 
       {editable && (
         <EditButton
@@ -157,6 +166,6 @@ export function GameArt({
           style={{ position: "absolute", top: 10, right: 10 }}
         />
       )}
-    </ArtContainer>
+    </HeroContainer>
   );
 }

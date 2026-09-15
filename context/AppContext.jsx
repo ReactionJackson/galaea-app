@@ -1,4 +1,4 @@
-import { daysData, gamesData, tagsData } from "@/data/entries";
+import { daysData, itemsData, tagsData } from "@/data/entries";
 import { createContext, useContext, useReducer } from "react";
 
 // ---------------------------------------------------------------------------
@@ -16,47 +16,47 @@ function buildNewEntry() {
     title: null,
     text: "",
     tags: [],
-    games: [],
+    items: [],
   };
 }
 
-// The one process any game-entry mutation must go through to actually reach
-// the shared games store. A day's draft.games items carry scratch
-// text/tags/gallery fields directly while being edited (see UPDATE_GAME) —
+// The one process any item-entry mutation must go through to actually reach
+// the shared items store. A day's draft.items items carry scratch
+// text/tags/gallery fields directly while being edited (see UPDATE_ITEM) —
 // fine as transient in-progress state, but it must never be committed that
-// way, or the day and the game end up with two diverging copies of the same
+// way, or the day and the item end up with two diverging copies of the same
 // content. This is the single place that split happens: called from
-// SAVE_EDIT today, and whatever commits a game-entry mutation in future
-// (an edit made directly from the game's own page, a delete, etc.) must
+// SAVE_EDIT today, and whatever commits an item-entry mutation in future
+// (an edit made directly from the item's own page, a delete, etc.) must
 // route through this same function rather than re-implementing it.
 //
 // Untouched refs pass straight through unchanged. A touched one (isNew, or
-// any of text/tags/gallery present) gets written into the matching game's
+// any of text/tags/gallery present) gets written into the matching item's
 // entries — a new entry if it is brand new, merged into the existing one
 // otherwise, with any field the edit didn't touch falling back to what's
-// already stored — and comes back out as a clean { gameId, entryId } ref.
+// already stored — and comes back out as a clean { itemId, entryId } ref.
 // dayDate is the day this save is happening on — only used to stamp a
 // brand-new entry's creation date; an existing entry keeps the date it
 // already has.
-function reconcileGameEdits(games, draftGames, dayDate) {
-  let nextGames = games;
+function reconcileItemEdits(items, draftItems, dayDate) {
+  let nextItems = items;
 
-  const cleanGames = draftGames.map((g) => {
-    const { gameId, entryId, isNew, text, tags, gallery } = g;
+  const cleanItems = draftItems.map((it) => {
+    const { itemId, entryId, isNew, text, tags, gallery } = it;
     const wasEdited =
       isNew || text !== undefined || tags !== undefined || gallery !== undefined;
-    if (!wasEdited) return { gameId, entryId };
+    if (!wasEdited) return { itemId, entryId };
 
-    const gameIndex = nextGames.findIndex((game) => game.gameId === gameId);
-    if (gameIndex === -1) return { gameId, entryId };
-    const game = nextGames[gameIndex];
+    const itemIndex = nextItems.findIndex((item) => item.itemId === itemId);
+    if (itemIndex === -1) return { itemId, entryId };
+    const item = nextItems[itemIndex];
 
     const resolvedEntryId =
       isNew || entryId == null
-        ? Math.max(0, ...game.entries.map((e) => e.entryId)) + 1
+        ? Math.max(0, ...item.entries.map((e) => e.entryId)) + 1
         : entryId;
 
-    const existingEntry = game.entries.find((e) => e.entryId === resolvedEntryId);
+    const existingEntry = item.entries.find((e) => e.entryId === resolvedEntryId);
     // date is the entry's original creation date — stamped once, from the
     // day it was first written on, and never touched again on later edits
     // (even if that edit happens to be made from a different day that also
@@ -69,17 +69,17 @@ function reconcileGameEdits(games, draftGames, dayDate) {
       gallery: gallery !== undefined ? gallery : (existingEntry?.gallery ?? []),
     };
     const nextEntries = existingEntry
-      ? game.entries.map((e) => (e.entryId === resolvedEntryId ? nextEntry : e))
-      : [...game.entries, nextEntry];
+      ? item.entries.map((e) => (e.entryId === resolvedEntryId ? nextEntry : e))
+      : [...item.entries, nextEntry];
 
-    nextGames = nextGames.map((gm, i) =>
-      i === gameIndex ? { ...gm, entries: nextEntries } : gm,
+    nextItems = nextItems.map((it2, i) =>
+      i === itemIndex ? { ...it2, entries: nextEntries } : it2,
     );
 
-    return { gameId, entryId: resolvedEntryId };
+    return { itemId, entryId: resolvedEntryId };
   });
 
-  return { games: nextGames, cleanGames };
+  return { items: nextItems, cleanItems };
 }
 
 // ---------------------------------------------------------------------------
@@ -93,17 +93,17 @@ const initialState = {
   editMode: false,
   cancelling: false,
   tags: tagsData.map((t) => ({ ...t, archived: false })),
-  // The single source of truth for every game and its entries. Journal days
-  // only ever hold { gameId, entryId } references into this — see SAVE_EDIT,
-  // which is responsible for keeping that split intact.
-  games: deepClone(gamesData),
+  // The single source of truth for every collection item and its entries.
+  // Journal days only ever hold { itemId, entryId } references into this —
+  // see SAVE_EDIT, which is responsible for keeping that split intact.
+  items: deepClone(itemsData),
   // Collection's own edit cycle — the same draft/committed shape as the
-  // journal day above, just scoped to a single game record (including its
-  // own entries) instead of a day. editingGameId is null while creating a
-  // brand-new game, or the id of whichever existing game gameDraft was
-  // cloned from. See ENTER_GAME_EDIT / SAVE_GAME_EDIT below.
-  gameDraft: null,
-  editingGameId: null,
+  // journal day above, just scoped to a single item record (including its
+  // own entries) instead of a day. editingItemId is null while creating a
+  // brand-new item, or the id of whichever existing item itemDraft was
+  // cloned from. See ENTER_ITEM_EDIT / SAVE_ITEM_EDIT below.
+  itemDraft: null,
+  editingItemId: null,
 };
 
 function appReducer(state, action) {
@@ -146,13 +146,13 @@ function appReducer(state, action) {
       };
 
     // Save: promote draft → committed and persist to the entries list.
-    // reconcileGameEdits does the actual split of edited game content out
-    // into the games store — see its comment above for why that has to be
+    // reconcileItemEdits does the actual split of edited item content out
+    // into the items store — see its comment above for why that has to be
     // one shared function rather than inline logic here.
     case "SAVE_EDIT": {
       const saved = state.draft;
-      const { games, cleanGames } = reconcileGameEdits(state.games, saved.games, saved.date);
-      const cleanedSaved = { ...saved, games: cleanGames };
+      const { items, cleanItems } = reconcileItemEdits(state.items, saved.items, saved.date);
+      const cleanedSaved = { ...saved, items: cleanItems };
       const exists = state.entries.some((e) => e.dayId === cleanedSaved.dayId);
       const entries = exists
         ? state.entries.map((e) => (e.dayId === cleanedSaved.dayId ? cleanedSaved : e))
@@ -164,7 +164,7 @@ function appReducer(state, action) {
         committed: cleanedSaved,
         draft: null,
         editMode: false,
-        games,
+        items,
       };
     }
 
@@ -192,76 +192,76 @@ function appReducer(state, action) {
       return { ...state, draft: { ...state.draft, tags } };
     }
 
-    case "UPDATE_GAME":
+    case "UPDATE_ITEM":
       return {
         ...state,
         draft: {
           ...state.draft,
-          games: state.draft.games.map((g, i) =>
-            i === action.index ? { ...g, ...action.changes } : g,
+          items: state.draft.items.map((it, i) =>
+            i === action.index ? { ...it, ...action.changes } : it,
           ),
         },
       };
 
-    case "ADD_GAME":
+    case "ADD_ITEM":
       return {
         ...state,
         draft: {
           ...state.draft,
-          games: [
-            ...state.draft.games,
-            { gameId: action.gameId, entryId: null, isNew: true },
+          items: [
+            ...state.draft.items,
+            { itemId: action.itemId, entryId: null, isNew: true },
           ],
         },
       };
 
     // Collection's own edit cycle — mirrors ENTER_EDIT/SAVE_EDIT above, just
-    // for a single game record instead of a day. A null gameId (or one that
-    // isn't found) starts a blank draft, i.e. adding a new game; otherwise
-    // gameDraft is a deep clone of that existing game, entries included, so
+    // for a single item record instead of a day. A null itemId (or one that
+    // isn't found) starts a blank draft, i.e. adding a new item; otherwise
+    // itemDraft is a deep clone of that existing item, entries included, so
     // its own entries become editable the same way a journal day's do.
-    case "ENTER_GAME_EDIT": {
-      const existing = state.games.find((g) => g.gameId === action.gameId);
+    case "ENTER_ITEM_EDIT": {
+      const existing = state.items.find((it) => it.itemId === action.itemId);
       return {
         ...state,
-        gameDraft: existing
+        itemDraft: existing
           ? deepClone(existing)
-          : { title: "", boxArt: null, cover: null, entries: [] },
-        editingGameId: existing ? existing.gameId : null,
+          : { title: "", cardImage: null, coverImage: null, entries: [] },
+        editingItemId: existing ? existing.itemId : null,
       };
     }
 
-    case "CANCEL_GAME_EDIT":
-      return { ...state, gameDraft: null, editingGameId: null };
+    case "CANCEL_ITEM_EDIT":
+      return { ...state, itemDraft: null, editingItemId: null };
 
-    case "UPDATE_GAME_DRAFT":
-      return { ...state, gameDraft: { ...state.gameDraft, ...action.changes } };
+    case "UPDATE_ITEM_DRAFT":
+      return { ...state, itemDraft: { ...state.itemDraft, ...action.changes } };
 
-    case "UPDATE_GAME_DRAFT_ENTRY":
+    case "UPDATE_ITEM_DRAFT_ENTRY":
       return {
         ...state,
-        gameDraft: {
-          ...state.gameDraft,
-          entries: state.gameDraft.entries.map((e) =>
+        itemDraft: {
+          ...state.itemDraft,
+          entries: state.itemDraft.entries.map((e) =>
             e.entryId === action.entryId ? { ...e, ...action.changes } : e,
           ),
         },
       };
 
-    // Save: promote gameDraft into the games store. A brand-new game is
+    // Save: promote itemDraft into the items store. A brand-new item is
     // appended as the new last item (ahead of the add slot, rather than
     // consuming it the way a journal day does); an existing one is replaced
-    // in place. gameId is supplied by the caller for a new game (Collection
+    // in place. itemId is supplied by the caller for a new item (Collection
     // already needs to know it, to land the track on the right item), not
     // generated here.
-    case "SAVE_GAME_EDIT": {
-      const isNew = state.editingGameId == null;
-      const gameId = isNew ? action.gameId : state.editingGameId;
-      const savedGame = { ...state.gameDraft, gameId };
-      const games = isNew
-        ? [...state.games, savedGame]
-        : state.games.map((g) => (g.gameId === gameId ? savedGame : g));
-      return { ...state, games, gameDraft: null, editingGameId: null };
+    case "SAVE_ITEM_EDIT": {
+      const isNew = state.editingItemId == null;
+      const itemId = isNew ? action.itemId : state.editingItemId;
+      const savedItem = { ...state.itemDraft, itemId };
+      const items = isNew
+        ? [...state.items, savedItem]
+        : state.items.map((it) => (it.itemId === itemId ? savedItem : it));
+      return { ...state, items, itemDraft: null, editingItemId: null };
     }
 
     // Tag mutations — these write to state.tags (global), not just the draft.
