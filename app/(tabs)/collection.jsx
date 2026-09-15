@@ -94,7 +94,12 @@ export default function CollectionScreen() {
 
         <PageHeader gap={7}>
           <PageHeader.Title
-            value={displayItem.title}
+            key={editMode ? "editing" : "display"}
+            value={
+              !editMode && !displayItem.title
+                ? "New Item"
+                : displayItem.title
+            }
             placeholder="New Item"
             onChangeText={(title) => updateDraft({ title })}
             editable={editMode}

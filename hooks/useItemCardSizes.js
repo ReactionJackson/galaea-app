@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { EMPTY_CARD_WIDTH } from "@/components/track/ItemCard";
 import { getCachedAspectRatio, loadAspectRatio } from "./useImageAspectRatio";
 
 // Loads each item's card-image aspect ratio (falling back to a 1:1 square
@@ -35,7 +36,10 @@ export function useItemCardSizes(items, itemHeight) {
   }, [itemKey]);
 
   return useMemo(
-    () => aspectRatios.map((ratio) => itemHeight * ratio),
-    [aspectRatios, itemHeight],
+    () =>
+      items.map((item, i) =>
+        item.cardImage ? itemHeight * aspectRatios[i] : EMPTY_CARD_WIDTH,
+      ),
+    [items, aspectRatios, itemHeight],
   );
 }

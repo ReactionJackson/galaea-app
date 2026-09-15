@@ -7,7 +7,7 @@ import * as Haptics from "expo-haptics";
 import { Pressable } from "react-native";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
-import { ITEM_HEIGHT, ItemCard, useFadeStyle } from "./ItemCard";
+import { EMPTY_CARD_WIDTH, ITEM_HEIGHT, ItemCard, useFadeStyle } from "./ItemCard";
 import { Track } from "./Track";
 
 // Constants:
@@ -23,7 +23,7 @@ const ScrollContainer = styled(Animated.ScrollView)`
 `;
 
 const AddButtonBox = styled(Animated.View)`
-  width: ${ITEM_HEIGHT}px;
+  width: ${EMPTY_CARD_WIDTH}px;
   height: ${ITEM_HEIGHT}px;
   border-radius: 8px;
   border: 2px solid ${Colors.dateBorder};
@@ -77,7 +77,7 @@ export function CollectionTrack({
     itemWidths,
     itemSpacing: ITEM_SPACING,
     showAddButton: true,
-    addButtonWidth: ITEM_HEIGHT,
+    addButtonWidth: EMPTY_CARD_WIDTH,
     startAtEnd: false,
     onSettle: (index, { alreadyActive }) => {
       const item = items[index];

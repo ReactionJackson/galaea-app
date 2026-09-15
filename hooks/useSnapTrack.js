@@ -216,6 +216,31 @@ export function useSnapTrack({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [basePadding]);
 
+  // Re-centre on the active item if its own centring offset shifts while
+  // it's still the active one — e.g. saving a new card image resizes it (or
+  // an earlier item, which shifts everyone after it) after we've already
+  // settled on it. Guarded to the same index so a normal navigation to a
+  // different item — already handled by goToIndex/settleAt — never
+  // double-scrolls here too.
+  const prevActiveIndexRef = useRef(activeIndex);
+  const prevActiveOffsetRef = useRef(undefined);
+  useEffect(() => {
+    const offset = offsets[activeIndex];
+    const sameIndex = prevActiveIndexRef.current === activeIndex;
+    if (
+      hasScrolledToInitial.current &&
+      sameIndex &&
+      offset != null &&
+      prevActiveOffsetRef.current != null &&
+      offset !== prevActiveOffsetRef.current
+    ) {
+      scrollToIndex(activeIndex, true);
+    }
+    prevActiveIndexRef.current = activeIndex;
+    prevActiveOffsetRef.current = offset;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offsets, activeIndex]);
+
   return {
     ADD_INDEX,
     activeIndex,
