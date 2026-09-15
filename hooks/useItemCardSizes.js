@@ -9,7 +9,10 @@ export function useItemCardSizes(items, itemHeight) {
   const [aspectRatios, setAspectRatios] = useState(() =>
     items.map((item) => getCachedAspectRatio(item.cardImage) ?? 1),
   );
-  const itemKey = useMemo(() => items.map((it) => it.itemId).join(","), [items]);
+  const itemKey = useMemo(
+    () => items.map((it) => `${it.itemId}:${it.cardImage}`).join(","),
+    [items],
+  );
 
   useEffect(() => {
     let cancelled = false;
