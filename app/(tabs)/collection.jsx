@@ -34,15 +34,8 @@ export default function CollectionScreen() {
 
   const [activeItemId, setActiveItemId] = useState(items[0]?.itemId);
 
-  const activeItem = items.find((it) => it.itemId === activeItemId);
+  const activeItem = items.find((it) => it.itemId === activeItemId) ?? items[0];
   const displayItem = itemDraft ?? activeItem;
-  // Read as a history of this item, in the order things actually happened
-  // to it — not the order you happened to write them down in, which matters
-  // once you go back and attach a new entry to an old journal day: it
-  // should slot in among entries from around that time, not land at the
-  // bottom just because it was saved most recently. entryId itself still
-  // only ever climbs, and is never reused, so it stays a stable internal
-  // identifier — this is purely how the list reads.
   const orderedEntries = displayItem
     ? [...displayItem.entries].sort(
         (a, b) => new Date(a.date) - new Date(b.date),
@@ -56,6 +49,17 @@ export default function CollectionScreen() {
     dispatch({ type: "ENTER_ITEM_EDIT", itemId: null });
 
   const handleCancelAddItem = () => dispatch({ type: "CANCEL_ITEM_EDIT" });
+
+  const handleDelete = () => {
+    if (editingItemId == null) {
+      dispatch({ type: "CANCEL_ITEM_EDIT" });
+      return;
+    }
+    const deletedIndex = items.findIndex((it) => it.itemId === editingItemId);
+    const landingItem = deletedIndex > 0 ? items[deletedIndex - 1] : items[1];
+    dispatch({ type: "DELETE_ITEM", itemId: editingItemId });
+    if (landingItem) setActiveItemId(landingItem.itemId);
+  };
 
   const handlePressActiveItem = (itemId) => {
     if (editMode && editingItemId === itemId) {
@@ -105,9 +109,7 @@ export default function CollectionScreen() {
           <PageHeader.Title
             key={editMode ? "editing" : "display"}
             value={
-              !editMode && !displayItem.title
-                ? "New Item"
-                : displayItem.title
+              !editMode && !displayItem.title ? "New Item" : displayItem.title
             }
             placeholder="New Item"
             onChangeText={(title) => updateDraft({ title })}
@@ -155,6 +157,7 @@ export default function CollectionScreen() {
         onPressActiveItem={handlePressActiveItem}
         onAddItem={handleAddItem}
         onCancelAddItem={handleCancelAddItem}
+        onDelete={handleDelete}
         onSave={handleSave}
       />
     </Container>

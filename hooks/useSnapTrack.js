@@ -191,13 +191,22 @@ export function useSnapTrack({
   // Effects:
 
   // A new real item appeared (e.g. a save completed) — exit the add slot
-  // and land on it.
+  // and land on it. An item disappeared (deleted) — land on whatever's now
+  // sitting where the item just to its left was (never jump forward), since
+  // nothing else moves the scroll position for us here — without this,
+  // the track is left scrolled wherever it happened to be while the
+  // content displayed elsewhere has already moved on.
   useEffect(() => {
     if (itemCount > prevItemCountRef.current) {
       const newIndex = itemCount - 1;
       prevItemCountRef.current = itemCount;
       onCancelAdd();
       setAddActive(false);
+      setActiveIndex(newIndex);
+      scrollToIndex(newIndex, true);
+    } else if (itemCount < prevItemCountRef.current) {
+      const newIndex = Math.max(0, Math.min(activeIndex - 1, itemCount - 1));
+      prevItemCountRef.current = itemCount;
       setActiveIndex(newIndex);
       scrollToIndex(newIndex, true);
     } else {

@@ -404,6 +404,39 @@ function appReducer(state, action) {
       };
     }
 
+    // Deletes a whole collection item — no confirmation, one shot. Every
+    // day that referenced entries belonging to it needs those refs
+    // stripped too (see stripRemovedItemEntries above), same as removing
+    // individual entries in SAVE_ITEM_EDIT, just for all of this item's
+    // entries at once rather than a dropped subset.
+    case "DELETE_ITEM": {
+      const { itemId } = action;
+      const item = state.items.find((it) => it.itemId === itemId);
+      const removedEntryIds = item ? item.entries.map((e) => e.entryId) : [];
+
+      const remainingItems = state.items.filter((it) => it.itemId !== itemId);
+      // Same safety net as initialState/HYDRATE (see ensureSeedData) —
+      // deleting the last remaining item would otherwise leave items
+      // empty, which nothing downstream is built to render.
+      const items = remainingItems.length ? remainingItems : [buildDefaultItem()];
+
+      const entries = state.entries.map((day) =>
+        stripRemovedItemEntries(day, itemId, removedEntryIds),
+      );
+      const committed = stripRemovedItemEntries(state.committed, itemId, removedEntryIds);
+      const draft = stripRemovedItemEntries(state.draft, itemId, removedEntryIds);
+
+      return {
+        ...state,
+        items,
+        entries,
+        committed,
+        draft,
+        itemDraft: null,
+        editingItemId: null,
+      };
+    }
+
     // Tag mutations — these write to state.tags (global), not just the draft.
 
     // New tag: prepend to global tags list so it appears first in the picker.

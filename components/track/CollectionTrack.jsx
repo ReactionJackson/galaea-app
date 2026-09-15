@@ -5,9 +5,14 @@ import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
 import { Pressable } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { EMPTY_CARD_WIDTH, ITEM_HEIGHT, ItemCard, useFadeStyle } from "./ItemCard";
+import {
+  EMPTY_CARD_WIDTH,
+  ITEM_HEIGHT,
+  ItemCard,
+  useFadeStyle,
+} from "./ItemCard";
 import { Track } from "./Track";
 
 // Constants:
@@ -52,6 +57,7 @@ export function CollectionTrack({
   onPressActiveItem = () => {},
   onAddItem = () => {},
   onCancelAddItem = () => {},
+  onDelete = () => {},
   onSave = () => {},
 }) {
   const { state } = useApp();
@@ -105,6 +111,7 @@ export function CollectionTrack({
       trackHeight={ITEM_HEIGHT + 20}
       trackPaddingTop={6}
       onCancel={() => goToIndex(activeIndex)}
+      onDelete={onDelete}
       onSave={onSave}
     >
       <ScrollContainer
@@ -127,22 +134,29 @@ export function CollectionTrack({
         }}
       >
         {items.map((item, i) => (
-          <ItemCard
+          <Animated.View
             key={item.itemId}
-            cardImage={item.cardImage}
-            itemWidth={itemWidths[i]}
-            active={isScrolling || activeIndex === i}
-            inactiveOpacity={editMode ? 0.1 : 0.5}
-            onPress={() => goToIndex(i)}
-            disabled={editMode && activeIndex !== i}
-          />
+            layout={LinearTransition.duration(220)}
+            entering={FadeIn.duration(220)}
+          >
+            <ItemCard
+              cardImage={item.cardImage}
+              itemWidth={itemWidths[i]}
+              active={isScrolling || activeIndex === i}
+              inactiveOpacity={editMode ? 0.1 : 0.5}
+              onPress={() => goToIndex(i)}
+              disabled={editMode && activeIndex !== i}
+            />
+          </Animated.View>
         ))}
-        <CollectionAddButton
-          active={isScrolling || activeIndex === ADD_INDEX}
-          editMode={editMode}
-          onPress={() => goToIndex(ADD_INDEX)}
-          disabled={editMode && activeIndex !== ADD_INDEX}
-        />
+        <Animated.View layout={LinearTransition.duration(220)}>
+          <CollectionAddButton
+            active={isScrolling || activeIndex === ADD_INDEX}
+            editMode={editMode}
+            onPress={() => goToIndex(ADD_INDEX)}
+            disabled={editMode && activeIndex !== ADD_INDEX}
+          />
+        </Animated.View>
       </ScrollContainer>
     </Track>
   );
