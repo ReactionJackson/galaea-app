@@ -1,5 +1,12 @@
 import { useFocusEffect } from "expo-router";
-import { Children, useCallback, useMemo, useRef } from "react";
+import {
+  Children,
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from "react";
 import styled from "styled-components/native";
 import { PageHeader } from "./PageHeader";
 
@@ -13,13 +20,17 @@ const DEFAULT_CONTENT_CONTAINER_STYLE = {
   paddingHorizontal: 20,
 };
 
-export function PageScroll({
-  resetKey,
-  contentContainerStyle,
-  children,
-  ...props
-}) {
+export const PageScroll = forwardRef(function PageScroll(
+  { resetKey, contentContainerStyle, children, ...props },
+  ref,
+) {
   const scrollRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    scrollToEnd: (animated = true) =>
+      scrollRef.current?.scrollToEnd({ animated }),
+    scrollTo: (options) => scrollRef.current?.scrollTo(options),
+  }));
 
   useFocusEffect(
     useCallback(() => {
@@ -27,8 +38,6 @@ export function PageScroll({
     }, []),
   );
 
-  // Whichever direct child is a PageHeader sticks itself automatically —
-  // callers no longer need to know or pass its numeric index by hand.
   const stickyHeaderIndices = useMemo(() => {
     const index = Children.toArray(children).findIndex(
       (child) => child?.type === PageHeader,
@@ -50,4 +59,4 @@ export function PageScroll({
       {children}
     </ScrollContainer>
   );
-}
+});

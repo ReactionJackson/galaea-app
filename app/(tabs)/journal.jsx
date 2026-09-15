@@ -21,7 +21,6 @@ const Container = styled.View`
   background-color: ${Colors.background};
 `;
 
-
 // Duplicate:
 const Button = styled.Pressable`
   height: 36px;
@@ -43,6 +42,13 @@ function JournalScreen() {
   const { state, activeEntry, dispatch } = useApp();
   const { editMode, cancelling, committed } = state;
   const cancelTimerRef = useRef(null);
+  const pageScrollRef = useRef(null);
+  // While true, every content-size change on the page (i.e. the picker's
+  // AnimateHeight growing open) re-issues scrollToEnd, so the scroll keeps
+  // pace with the growing content in real time instead of waiting for the
+  // animation to finish before scrolling at all.
+  const chasingPickerOpenRef = useRef(false);
+  const chasingPickerTimeoutRef = useRef(null);
   const [pickingItem, setPickingItem] = useState(false);
 
   // Derived state:
@@ -78,6 +84,17 @@ function JournalScreen() {
 
   const handleToggleTag = (tagId) => dispatch({ type: "TOGGLE_TAG", tagId });
 
+  // Stops chasing the picker's growth with scrollToEnd — called whenever
+  // the picker gets closed some other way (selecting an item, cancelling
+  // edit, changing day, etc.) before its open animation has finished.
+  const stopChasingPickerOpen = () => {
+    chasingPickerOpenRef.current = false;
+    if (chasingPickerTimeoutRef.current) {
+      clearTimeout(chasingPickerTimeoutRef.current);
+      chasingPickerTimeoutRef.current = null;
+    }
+  };
+
   const handleEnterEdit = () => {
     // If a cancel is already in flight, abort it and go straight to edit.
     if (cancelTimerRef.current) {
@@ -85,6 +102,7 @@ function JournalScreen() {
       cancelTimerRef.current = null;
       dispatch({ type: "COMPLETE_CANCEL" });
     }
+    stopChasingPickerOpen();
     setPickingItem(false);
     dispatch({ type: "ENTER_EDIT" });
   };
@@ -92,6 +110,7 @@ function JournalScreen() {
   const handleCancelEdit = () => {
     // Phase 1: exit edit mode so animations start (controls slide away,
     // new item entries collapse, draft-only text closes, etc.)
+    stopChasingPickerOpen();
     setPickingItem(false);
     dispatch({ type: "BEGIN_CANCEL" });
     // Phase 2: once animations have had time to finish, clear the draft.
@@ -104,18 +123,43 @@ function JournalScreen() {
 
   const handleSelectItem = (itemId) => {
     dispatch({ type: "ADD_ITEM", itemId });
+    stopChasingPickerOpen();
     setPickingItem(false);
   };
 
-  // Clean up any pending cancel timer if the component unmounts mid-animation.
+  const handleTogglePicker = () => {
+    setPickingItem((prev) => {
+      const next = !prev;
+      stopChasingPickerOpen();
+      if (next) {
+        pageScrollRef.current?.scrollToEnd(false);
+        chasingPickerOpenRef.current = true;
+        chasingPickerTimeoutRef.current = setTimeout(() => {
+          chasingPickerTimeoutRef.current = null;
+          chasingPickerOpenRef.current = false;
+        }, 300);
+      }
+      return next;
+    });
+  };
+
+  const handlePageContentSizeChange = () => {
+    if (chasingPickerOpenRef.current) {
+      pageScrollRef.current?.scrollToEnd(false);
+    }
+  };
+
+  // Clean up any pending timers if the component unmounts mid-animation.
   useEffect(() => {
     return () => {
       if (cancelTimerRef.current) clearTimeout(cancelTimerRef.current);
+      stopChasingPickerOpen();
     };
   }, []);
 
   // A fresh day never opens with the picker mid-flight.
   useEffect(() => {
+    stopChasingPickerOpen();
     setPickingItem(false);
   }, [activeEntry.dayId]);
 
@@ -123,7 +167,11 @@ function JournalScreen() {
 
   return (
     <Container>
-      <PageScroll resetKey={activeEntry.dayId}>
+      <PageScroll
+        ref={pageScrollRef}
+        resetKey={activeEntry.dayId}
+        onContentSizeChange={handlePageContentSizeChange}
+      >
         <PageHeader>
           <PageHeader.Badge>
             <ThemedText type="date-number">{formatDate("day")}</ThemedText>
@@ -135,15 +183,6 @@ function JournalScreen() {
             </ThemedText>
           </PageHeader.Meta>
           <PageHeader.Title
-            // Remounts whenever editing starts or stops, so the native text
-            // input always begins fresh from the value React just handed it.
-            // Without this, rapid controlled updates while typing can leave
-            // the native view's own text buffer slightly out of step with
-            // what React thinks it last set — harmless while still editing,
-            // but on cancel it means the revert to the committed title can
-            // silently fail to apply, since React sees no change from its
-            // point of view even though the native field is showing
-            // something else.
             key={editMode ? "editing" : "display"}
             value={
               !editMode && !activeEntry.title
@@ -191,10 +230,12 @@ function JournalScreen() {
                     gallery={gallery}
                   />
                 </AnimateHeight>
-                <AnimatedSpacer
-                  visible={itemVisible}
-                  animateOnMount={!!isNew}
-                />
+                {i !== activeEntry.items.length - 1 && (
+                  <AnimatedSpacer
+                    visible={itemVisible}
+                    animateOnMount={!!isNew}
+                  />
+                )}
               </Fragment>
             );
           },
@@ -215,10 +256,7 @@ function JournalScreen() {
         </AnimateHeight>
 
         <AnimateHeight visible={editMode}>
-          <Button
-            secondary={pickingItem}
-            onPress={() => setPickingItem((prev) => !prev)}
-          >
+          <Button secondary={pickingItem} onPress={handleTogglePicker}>
             <ThemedText color={pickingItem ? "black" : "white"}>
               {pickingItem ? "Close" : "Add Item"}
             </ThemedText>
