@@ -216,7 +216,7 @@ export const CollectionItem = memo(function CollectionItem({
             editable={editMode}
           />
         </AnimateHeight>
-        <AnimatedSpacer height={15} visible={!!(text || editMode)} />
+        <AnimatedSpacer height={15} visible={!!(tagIds.length || editMode)} />
         <Tags
           tagIds={tagIds}
           editMode={editMode}
