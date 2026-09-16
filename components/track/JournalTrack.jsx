@@ -277,7 +277,7 @@ export function JournalTrack({
             <DateCircle
               key={`day-${dayNumber}-${i}`}
               onPress={() => goToIndex(i)}
-              disabled={editMode && activeIndex !== i}
+              disabled={editMode}
             >
               <ThemedText
                 type="date-number"
@@ -298,7 +298,7 @@ export function JournalTrack({
             <DateCircle
               key="add-button"
               onPress={() => goToIndex(ADD_INDEX)}
-              disabled={editMode && activeIndex !== ADD_INDEX}
+              disabled={editMode}
             >
               <ThemedText
                 type="date-number"
