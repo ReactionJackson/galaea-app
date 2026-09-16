@@ -11,11 +11,13 @@ import styled from "styled-components/native";
 // Track
 //
 // The bottom-docked shell shared by the horizontal tracks: a blurred panel
-// that slides fully into view when editMode is on (revealing the Delete /
-// Cancel / Save controls) and mostly off-screen otherwise, leaving just the
-// scrollable track itself visible. Used by both JournalTrack and
+// that slides fully into view when editMode is on (revealing the Cancel /
+// reorder / Save controls) and mostly off-screen otherwise, leaving just
+// the scrollable track itself visible. Used by both JournalTrack and
 // CollectionTrack, which each supply their own scrollview content as
-// children (see their own local Container styled component).
+// children (see their own local Container styled component). onDelete is
+// kept as a prop for whenever the Delete button comes back (it needs a
+// confirmation step first) — nothing currently renders it.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Container = styled(Animated.View)`
@@ -89,34 +91,29 @@ export function Track({
           {children}
         </TrackContainer>
         <ControlsContainer>
-          <Button onPress={onDelete}>
-            <ThemedText color="black">Delete</ThemedText>
+          <Button onPress={onCancel}>
+            <ThemedText color="black">Cancel</ThemedText>
           </Button>
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            {onSwapLeft && onSwapRight && (
-              <>
-                <CircleButton onPress={onSwapLeft} disabled={!canSwapLeft}>
-                  <ThemedText color="black">←</ThemedText>
-                </CircleButton>
-                <CircleButton onPress={onSwapRight} disabled={!canSwapRight}>
-                  <ThemedText color="black">→</ThemedText>
-                </CircleButton>
-              </>
-            )}
-            <Button onPress={onCancel}>
-              <ThemedText color="black">Cancel</ThemedText>
-            </Button>
-            <SaveButton
-              onPress={() => {
-                if (process.env.EXPO_OS === "ios") {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                }
-                onSave?.();
-              }}
-            >
-              <ThemedText color="white">Save</ThemedText>
-            </SaveButton>
-          </View>
+          {onSwapLeft && onSwapRight && (
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <CircleButton onPress={onSwapLeft} disabled={!canSwapLeft}>
+                <ThemedText color="black">←</ThemedText>
+              </CircleButton>
+              <CircleButton onPress={onSwapRight} disabled={!canSwapRight}>
+                <ThemedText color="black">→</ThemedText>
+              </CircleButton>
+            </View>
+          )}
+          <SaveButton
+            onPress={() => {
+              if (process.env.EXPO_OS === "ios") {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              }
+              onSave?.();
+            }}
+          >
+            <ThemedText color="white">Save</ThemedText>
+          </SaveButton>
         </ControlsContainer>
       </BlurView>
     </Container>
