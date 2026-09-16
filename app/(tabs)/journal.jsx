@@ -11,7 +11,8 @@ import { ItemPickerTrack } from "@/components/track/ItemPickerTrack";
 import { JournalTrack } from "@/components/track/JournalTrack";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
-import { Fragment, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { View } from "react-native";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -21,10 +22,14 @@ const Container = styled.View`
   background-color: ${Colors.background};
 `;
 
+const STICKY_HEADER_HEIGHT = 70;
+
 function JournalScreen() {
   const { state, activeEntry, dispatch } = useApp();
   const { editMode, cancelling, committed } = state;
   const cancelTimerRef = useRef(null);
+  const pageScrollRef = useRef(null);
+  const pendingScrollItemIdRef = useRef(null);
 
   // Derived state:
 
@@ -82,7 +87,17 @@ function JournalScreen() {
   };
 
   const handleSelectItem = (itemId) => {
+    pendingScrollItemIdRef.current = itemId;
     dispatch({ type: "ADD_ITEM", itemId });
+  };
+
+  const handleItemLayout = (itemId, { y }) => {
+    if (pendingScrollItemIdRef.current !== itemId) return;
+    pendingScrollItemIdRef.current = null;
+    pageScrollRef.current?.scrollTo({
+      y: Math.max(y - STICKY_HEADER_HEIGHT, 0),
+      animated: true,
+    });
   };
 
   // Clean up any pending timer if the component unmounts mid-cancel.
@@ -96,7 +111,7 @@ function JournalScreen() {
 
   return (
     <Container>
-      <PageScroll resetKey={activeEntry.dayId}>
+      <PageScroll ref={pageScrollRef} resetKey={activeEntry.dayId}>
         <PageHeader>
           <PageHeader.Badge>
             <ThemedText type="date-number">{formatDate("day")}</ThemedText>
@@ -143,12 +158,16 @@ function JournalScreen() {
           ({ itemId, entryId, isNew, text, tags, gallery }, i) => {
             const itemVisible = !cancelling || !isNew || !!text;
             return (
-              <Fragment key={`${itemId}-${String(entryId)}-${i}`}>
+              <View
+                key={`${itemId}-${String(entryId)}-${i}`}
+                onLayout={(e) => handleItemLayout(itemId, e.nativeEvent.layout)}
+              >
                 <AnimateHeight visible={itemVisible}>
                   <CollectionItem
                     itemId={itemId}
                     entryId={entryId}
                     index={i}
+                    isNew={isNew}
                     text={text}
                     tagIds={tags}
                     gallery={gallery}
@@ -157,7 +176,7 @@ function JournalScreen() {
                 {i !== activeEntry.items.length - 1 && (
                   <AnimatedSpacer visible={itemVisible} />
                 )}
-              </Fragment>
+              </View>
             );
           },
         )}

@@ -1,4 +1,4 @@
-import { Colors } from "@/constants/theme";
+import { Colors, cardShadow } from "@/constants/theme";
 import {
   getCachedAspectRatio,
   loadAspectRatio,
@@ -11,23 +11,38 @@ import styled from "styled-components/native";
 import { ThemedText } from "./interface/ThemedText";
 
 const DEFAULT_ASPECT_RATIO = 2 / 3;
+const BLEED = 20;
 
 const HeroContainer = styled.View`
   height: ${({ height }) => height}px;
   padding: ${({ spacing }) => spacing}px 0;
-  margin: 0 -20px;
+  margin: 0 -${BLEED}px;
   overflow: hidden;
   justify-content: center;
   align-items: center;
-  background-color: ${Colors.border};
 `;
 
 const CoverFill = styled.View`
   position: absolute;
   top: 0;
+  left: ${({ nestedInCard }) => (nestedInCard ? BLEED : 0)}px;
+  right: ${({ nestedInCard }) => (nestedInCard ? BLEED : 0)}px;
+  bottom: 0;
+  border-top-left-radius: ${({ nestedInCard }) => (nestedInCard ? 30 : 0)}px;
+  border-top-right-radius: ${({ nestedInCard }) => (nestedInCard ? 30 : 0)}px;
+  overflow: hidden;
+`;
+
+const CoverBackground = styled.View`
+  position: absolute;
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+  border: 1px solid ${Colors.border};
+  border-top-left-radius: ${({ nestedInCard }) => (nestedInCard ? 30 : 0)}px;
+  border-top-right-radius: ${({ nestedInCard }) => (nestedInCard ? 30 : 0)}px;
+  background-color: ${Colors.surfaceTint};
 `;
 
 const CoverImage = styled(ExpoImage).attrs({ transition: 200 })`
@@ -48,9 +63,17 @@ const CardWrap = styled.View`
   position: relative;
 `;
 
-const CardFrame = styled.View`
+const CardShadow = styled.View`
   width: ${({ cardWidth }) => cardWidth}px;
   height: ${({ cardHeight }) => cardHeight}px;
+  border-radius: 4px;
+  ${({ shadowRadius, shadowOpacity }) =>
+    cardShadow(shadowRadius, shadowOpacity)}
+`;
+
+const CardFrame = styled.View`
+  width: 100%;
+  height: 100%;
   border-radius: 4px;
   overflow: hidden;
 `;
@@ -82,7 +105,7 @@ const EditCircle = styled.View`
   height: 40px;
   border-radius: 20px;
   border: 2px solid ${Colors.dateBorder};
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: ${Colors.editButtonBackground};
   justify-content: center;
   align-items: center;
 `;
@@ -111,11 +134,19 @@ export function ItemHero({
   cardImage,
   coverImage,
   editable = false,
+  animateCoverReveal = false,
+  nestedInCard = false,
+  shadowRadius = 20,
+  shadowOpacity = 0.5,
   onPressCard = () => {},
   onPressCover = () => {},
 }) {
   const { width: screenWidth } = useWindowDimensions();
   const cardHeight = height - spacing * 2;
+  const [coverLoaded, setCoverLoaded] = useState(!animateCoverReveal);
+  useEffect(() => {
+    if (animateCoverReveal) setCoverLoaded(false);
+  }, [coverImage, animateCoverReveal]);
 
   const [aspectRatio, setAspectRatio] = useState(
     () => getCachedAspectRatio(cardImage) ?? DEFAULT_ASPECT_RATIO,
@@ -148,18 +179,39 @@ export function ItemHero({
       spacing={spacing}
       style={{ width: screenWidth }}
     >
-      <CoverFill>
-        {coverImage && (
-          <CoverImage source={{ uri: coverImage }} contentFit="cover" />
+      <CoverFill nestedInCard={nestedInCard}>
+        <CoverBackground nestedInCard={nestedInCard} />
+        {coverImage && !coverLoaded && (
+          <CoverImage
+            source={{ uri: coverImage }}
+            contentFit="cover"
+            style={{ opacity: 0 }}
+            onLoad={() => setCoverLoaded(true)}
+          />
         )}
-        <CoverOverlay />
+        {coverImage && coverLoaded && (
+          <Animated.View
+            entering={animateCoverReveal ? FadeIn.duration(400) : undefined}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <CoverImage source={{ uri: coverImage }} contentFit="cover" />
+            <CoverOverlay />
+          </Animated.View>
+        )}
       </CoverFill>
 
       <CardWrap>
         {cardImage ? (
-          <CardFrame cardWidth={cardWidth} cardHeight={cardHeight}>
-            <CardImage source={{ uri: cardImage }} />
-          </CardFrame>
+          <CardShadow
+            cardWidth={cardWidth}
+            cardHeight={cardHeight}
+            shadowRadius={shadowRadius}
+            shadowOpacity={shadowOpacity}
+          >
+            <CardFrame>
+              <CardImage source={{ uri: cardImage }} />
+            </CardFrame>
+          </CardShadow>
         ) : (
           <CardPlaceholder cardWidth={cardWidth} cardHeight={cardHeight} />
         )}

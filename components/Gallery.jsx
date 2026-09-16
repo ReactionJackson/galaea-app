@@ -1,4 +1,5 @@
 import { Colors } from "@/constants/theme";
+import { ITEM_ASPECT_RATIO } from "@/constants/values";
 import { Image as ExpoImage } from "expo-image";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
@@ -13,8 +14,6 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { Lightbox } from "./Lightbox";
 import { ThemedText } from "./interface/ThemedText";
-
-export const ITEM_ASPECT_RATIO = 3 / 2;
 
 const Item = styled.View`
   flex-shrink: 0;

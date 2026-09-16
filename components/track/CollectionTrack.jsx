@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
+import { EMPTY_CARD_WIDTH, ITEM_HEIGHT } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
@@ -8,12 +9,7 @@ import { useMemo } from "react";
 import { Pressable } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
-import {
-  EMPTY_CARD_WIDTH,
-  ITEM_HEIGHT,
-  ItemCard,
-  useFadeStyle,
-} from "./ItemCard";
+import { ItemCard, useFadeStyle } from "./ItemCard";
 import { Track } from "./Track";
 
 // Constants:

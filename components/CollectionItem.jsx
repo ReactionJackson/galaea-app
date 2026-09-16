@@ -3,6 +3,7 @@ import {
   AnimatedSpacer,
 } from "@/components/interface/AnimateHeight";
 import { Colors } from "@/constants/theme";
+import { CARD_SHADOW_OPACITY, CARD_SHADOW_RADIUS } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { memo } from "react";
 import styled, { css } from "styled-components/native";
@@ -29,7 +30,6 @@ const Header = styled.View`
   width: 100%;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
-  background-color: ${Colors.black};
   overflow: hidden;
 `;
 
@@ -67,6 +67,7 @@ export const CollectionItem = memo(function CollectionItem({
   entryId = null,
   index,
   isMinimal = false,
+  isNew = false,
   editable,
   date,
   text: textProp,
@@ -147,6 +148,10 @@ export const CollectionItem = memo(function CollectionItem({
             spacing={15}
             cardImage={cardImage}
             coverImage={coverImage}
+            animateCoverReveal={isNew}
+            nestedInCard
+            shadowRadius={CARD_SHADOW_RADIUS}
+            shadowOpacity={CARD_SHADOW_OPACITY}
           />
         </Header>
       )}

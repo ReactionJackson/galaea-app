@@ -1,4 +1,10 @@
-import { Colors } from "@/constants/theme";
+import { Colors, cardShadow } from "@/constants/theme";
+import {
+  CARD_SHADOW_OPACITY,
+  CARD_SHADOW_RADIUS,
+  EMPTY_CARD_WIDTH,
+  ITEM_HEIGHT,
+} from "@/constants/values";
 import { Image as ExpoImage } from "expo-image";
 import { Pressable } from "react-native";
 import Animated, {
@@ -7,19 +13,20 @@ import Animated, {
 } from "react-native-reanimated";
 import styled from "styled-components/native";
 
-export const ITEM_HEIGHT = 105;
-
-// Width used for a card with no image set — matches the track's own add
-// button, so an empty item reads as "another slot like that one", not as a
-// stray sliver of nothing.
-export const EMPTY_CARD_WIDTH = 70;
-
 const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 
-export const Card = styled(AnimatedImage).attrs({ transition: 200 })`
+const CardShadow = styled(Animated.View)`
   width: ${({ itemWidth }) => itemWidth}px;
   height: ${ITEM_HEIGHT}px;
-  border-radius: 4px;
+  border-radius: 8px;
+  ${({ shadowRadius, shadowOpacity }) =>
+    cardShadow(shadowRadius, shadowOpacity)}
+`;
+
+export const Card = styled(AnimatedImage).attrs({ transition: 200 })`
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
 `;
 
 const EmptyCard = styled.View`
@@ -27,7 +34,7 @@ const EmptyCard = styled.View`
   height: ${ITEM_HEIGHT}px;
   border-radius: 8px;
   border: 2px solid ${Colors.dateBorder};
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: ${Colors.emptySlotBackground};
 `;
 
 export function useFadeStyle(active, inactiveOpacity) {
@@ -46,17 +53,21 @@ export function ItemCard({
   inactiveOpacity,
   onPress,
   disabled,
+  shadowRadius = CARD_SHADOW_RADIUS,
+  shadowOpacity = CARD_SHADOW_OPACITY,
 }) {
   const style = useFadeStyle(active, inactiveOpacity);
   return (
     <Pressable onPress={onPress} disabled={disabled}>
       {cardImage ? (
-        <Card
-          source={{ uri: cardImage }}
-          contentFit="cover"
+        <CardShadow
           itemWidth={itemWidth}
+          shadowRadius={shadowRadius}
+          shadowOpacity={shadowOpacity}
           style={style}
-        />
+        >
+          <Card source={{ uri: cardImage }} contentFit="cover" />
+        </CardShadow>
       ) : (
         <Animated.View style={style}>
           <EmptyCard />

@@ -1,3 +1,5 @@
+import { css } from "styled-components/native";
+
 export const Colors = {
   white: "#fff",
   black: "#000",
@@ -15,6 +17,10 @@ export const Colors = {
   accentFaded: "rgba(249, 97, 86, 0.2)",
   background: "#fff",
   backgroundBlurTint: "rgba(255, 255, 255, 0.4)",
+  surfaceTint: "rgba(0, 0, 0, 0.03)",
+  emptySlotBackground: "rgba(0, 0, 0, 0.02)",
+  editButtonBackground: "rgba(255, 255, 255, 0.8)",
+  selectedBorder: "rgba(255, 255, 255, 0.85)",
   tags: {
     default: {
       primary: "#777",
@@ -69,3 +75,12 @@ export const Fonts = {
   semibold: "Outfit600",
   bold: "Outfit700",
 };
+
+export function cardShadow(radius = 8, opacity = 0.12) {
+  return css`
+    shadow-color: ${Colors.black};
+    shadow-offset: 0px 0px;
+    shadow-opacity: ${opacity};
+    shadow-radius: ${radius}px;
+  `;
+}

@@ -1,4 +1,4 @@
-import { EMPTY_CARD_WIDTH } from "@/components/track/ItemCard";
+import { EMPTY_CARD_WIDTH } from "@/constants/values";
 import { useEffect, useMemo, useState } from "react";
 import { getCachedAspectRatio, loadAspectRatio } from "./useImageAspectRatio";
 

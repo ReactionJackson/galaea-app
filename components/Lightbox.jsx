@@ -1,5 +1,5 @@
-import { ITEM_ASPECT_RATIO } from "@/components/Gallery";
 import { Colors } from "@/constants/theme";
+import { ITEM_ASPECT_RATIO } from "@/constants/values";
 import { Image as ExpoImage } from "expo-image";
 import { useEffect, useRef, useState } from "react";
 import { Modal, PanResponder, Pressable, View } from "react-native";

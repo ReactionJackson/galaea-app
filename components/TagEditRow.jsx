@@ -52,7 +52,9 @@ const ColorDot = styled.View`
   ${({ color }) =>
     `background-color: ${Colors.tags[color]?.primary ?? Colors.tags.default.primary};`}
   ${({ selected }) =>
-    selected ? "border-width: 2px; border-color: rgba(255,255,255,0.85);" : ""}
+    selected
+      ? `border-width: 2px; border-color: ${Colors.selectedBorder};`
+      : ""}
 `;
 
 const EditRowWrapper = styled.View`

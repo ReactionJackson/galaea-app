@@ -1,25 +1,28 @@
 import { Colors } from "@/constants/theme";
+import { ITEM_HEIGHT } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import { useMemo } from "react";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
-import { ITEM_HEIGHT, ItemCard } from "./ItemCard";
+import { ItemCard } from "./ItemCard";
 
 const ITEM_SPACING = 10;
+const SCROLL_SLACK = 20;
+const CONTAINER_PADDING = 15 - SCROLL_SLACK / 2;
 
 const Container = styled.View`
   border-top-width: 1px;
   border-bottom-width: 1px;
   border-color: ${Colors.border};
-  background-color: rgba(0, 0, 0, 0.02);
-  padding: 15px 0;
+  background-color: ${Colors.surfaceTint};
+  padding: ${CONTAINER_PADDING}px 0;
 `;
 
 const ScrollContainer = styled(Animated.ScrollView)`
   width: 100%;
-  height: ${ITEM_HEIGHT}px;
+  height: ${ITEM_HEIGHT + SCROLL_SLACK}px;
 `;
 
 export function ItemPickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
