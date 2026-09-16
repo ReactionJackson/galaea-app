@@ -3,7 +3,6 @@ import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import * as Haptics from "expo-haptics";
-import { View } from "react-native";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
 
@@ -40,6 +39,16 @@ const ControlsContainer = styled.View`
   justify-content: space-between;
   flex-direction: row;
   align-items: center;
+`;
+
+const MoveButtonsContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
 `;
 
 export const Button = styled.Pressable`
@@ -91,19 +100,19 @@ export function Track({
           {children}
         </TrackContainer>
         <ControlsContainer>
-          <Button onPress={onCancel}>
-            <ThemedText color="black">Cancel</ThemedText>
-          </Button>
           {onSwapLeft && onSwapRight && (
-            <View style={{ flexDirection: "row", gap: 10 }}>
+            <MoveButtonsContainer>
               <CircleButton onPress={onSwapLeft} disabled={!canSwapLeft}>
                 <ThemedText color="black">←</ThemedText>
               </CircleButton>
               <CircleButton onPress={onSwapRight} disabled={!canSwapRight}>
                 <ThemedText color="black">→</ThemedText>
               </CircleButton>
-            </View>
+            </MoveButtonsContainer>
           )}
+          <Button onPress={onCancel}>
+            <ThemedText color="black">Cancel</ThemedText>
+          </Button>
           <SaveButton
             onPress={() => {
               if (process.env.EXPO_OS === "ios") {
