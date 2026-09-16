@@ -143,7 +143,7 @@ export const CollectionItem = memo(function CollectionItem({
       {!isMinimal && (
         <Header>
           <ItemHero
-            height={130}
+            height={135}
             spacing={15}
             cardImage={cardImage}
             coverImage={coverImage}
