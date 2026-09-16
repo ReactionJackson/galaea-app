@@ -1,7 +1,8 @@
 import { Colors } from "@/constants/theme";
 import { ITEM_ASPECT_RATIO } from "@/constants/values";
-import { Image as ExpoImage } from "expo-image";
+import { storePickedImage } from "@/utils/imageStorage";
 import * as Haptics from "expo-haptics";
+import { Image as ExpoImage } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { memo, useState } from "react";
 import {
@@ -36,8 +37,6 @@ const EditableView = styled.View`
   transform: scale(0.99);
 `;
 
-// Duplicate: same size/border/fade recipe as ItemHero's own edit-circle
-// button, just filled solid with the accent colour for a destructive action.
 const DeleteCircle = styled.View`
   width: 40px;
   height: 40px;
@@ -78,9 +77,11 @@ const GALLERY_ITEM_GAP = 10;
 const DEFAULT_HORIZONTAL_PADDING = 80;
 
 export function getImageUri(item) {
+  if (!item) return null;
   return typeof item === "string" ? item : item.uri;
 }
 export function getImageFocus(item) {
+  if (!item) return null;
   return typeof item === "string" ? null : (item.focus ?? null);
 }
 
@@ -114,12 +115,13 @@ export const Gallery = memo(function Gallery({
 
     const asset = result.assets?.[0];
     if (!asset?.uri) return;
+    const stored = await storePickedImage(asset);
     setLightboxIndex(null);
     setLightbox({
       mode: "edit",
-      uri: asset.uri,
-      width: asset.width,
-      height: asset.height,
+      uri: stored.uri,
+      width: stored.width,
+      height: stored.height,
       focus: null,
     });
   };
@@ -137,6 +139,14 @@ export const Gallery = memo(function Gallery({
         setLightboxIndex(index);
         setLightbox({ mode: "edit", uri, width: null, height: null, focus });
       },
+    );
+  };
+
+  const openView = (uri) => {
+    RNImage.getSize(
+      uri,
+      (width, height) => setLightbox({ mode: "view", uri, width, height }),
+      () => setLightbox({ mode: "view", uri }),
     );
   };
 
@@ -174,9 +184,7 @@ export const Gallery = memo(function Gallery({
             <Item key={`image-${i}`} style={{ width: containerWidth }}>
               <Pressable
                 onPress={() =>
-                  editMode
-                    ? openEditExisting(item, i)
-                    : setLightbox({ mode: "view", uri })
+                  editMode ? openEditExisting(item, i) : openView(uri)
                 }
                 style={{ flex: 1 }}
               >

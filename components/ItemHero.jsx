@@ -3,6 +3,7 @@ import {
   getCachedAspectRatio,
   loadAspectRatio,
 } from "@/hooks/useImageAspectRatio";
+import { useResizedImage } from "@/hooks/useResizedImage";
 import { Image as ExpoImage } from "expo-image";
 import { useEffect, useState } from "react";
 import { Pressable, useWindowDimensions } from "react-native";
@@ -133,6 +134,7 @@ export function ItemHero({
   spacing = 0,
   cardImage,
   coverImage,
+  coverFocus,
   editable = false,
   animateCoverReveal = false,
   nestedInCard = false,
@@ -173,6 +175,15 @@ export function ItemHero({
 
   const cardWidth = Math.round(cardHeight * aspectRatio);
 
+  // The box art's target box is derived from its own aspect ratio (see
+  // cardWidth above), so resizing it down to exactly that box never
+  // distorts it. The cover's target box (screenWidth x height) has no
+  // relation to the cover photo's own ratio though — pre-resizing it to
+  // that exact box would stretch it non-uniformly, so it's left to render
+  // at its already-capped stored size via contentFit="cover" instead,
+  // which crops to fill without distorting.
+  const displayCardImage = useResizedImage(cardImage, cardWidth, cardHeight);
+
   return (
     <HeroContainer
       height={height}
@@ -185,6 +196,7 @@ export function ItemHero({
           <CoverImage
             source={{ uri: coverImage }}
             contentFit="cover"
+            contentPosition={coverFocus ?? undefined}
             style={{ opacity: 0 }}
             onLoad={() => setCoverLoaded(true)}
           />
@@ -194,7 +206,11 @@ export function ItemHero({
             entering={animateCoverReveal ? FadeIn.duration(400) : undefined}
             style={{ width: "100%", height: "100%" }}
           >
-            <CoverImage source={{ uri: coverImage }} contentFit="cover" />
+            <CoverImage
+              source={{ uri: coverImage }}
+              contentFit="cover"
+              contentPosition={coverFocus ?? undefined}
+            />
             <CoverOverlay />
           </Animated.View>
         )}
@@ -209,7 +225,7 @@ export function ItemHero({
             shadowOpacity={shadowOpacity}
           >
             <CardFrame>
-              <CardImage source={{ uri: cardImage }} />
+              <CardImage source={{ uri: displayCardImage }} />
             </CardFrame>
           </CardShadow>
         ) : (

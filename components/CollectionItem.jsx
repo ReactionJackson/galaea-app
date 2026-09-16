@@ -3,11 +3,15 @@ import {
   AnimatedSpacer,
 } from "@/components/interface/AnimateHeight";
 import { Colors } from "@/constants/theme";
-import { CARD_SHADOW_OPACITY, CARD_SHADOW_RADIUS } from "@/constants/values";
+import {
+  CARD_SHADOW_OPACITY,
+  CARD_SHADOW_RADIUS,
+  HERO_HEIGHT,
+} from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { memo } from "react";
 import styled, { css } from "styled-components/native";
-import { Gallery, getImageUri } from "./Gallery";
+import { Gallery, getImageFocus, getImageUri } from "./Gallery";
 import { ItemHero } from "./ItemHero";
 import { Tags } from "./Tags";
 import { ThemedText } from "./interface/ThemedText";
@@ -144,10 +148,11 @@ export const CollectionItem = memo(function CollectionItem({
       {!isMinimal && (
         <Header>
           <ItemHero
-            height={135}
+            height={HERO_HEIGHT}
             spacing={15}
             cardImage={cardImage}
-            coverImage={coverImage}
+            coverImage={getImageUri(coverImage)}
+            coverFocus={getImageFocus(coverImage)}
             animateCoverReveal={isNew}
             nestedInCard
             shadowRadius={CARD_SHADOW_RADIUS}

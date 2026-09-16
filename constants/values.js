@@ -7,6 +7,14 @@ export const ITEM_HEIGHT = 105;
 export const EMPTY_CARD_WIDTH = 70;
 export const ITEM_ASPECT_RATIO = 3 / 2;
 
+// The hero's height when nested inside a journal entry/collection card.
+export const HERO_HEIGHT = 135;
+
+// The hero's height on the collection item's own page — where cover art is
+// actually picked and cropped, so this (not HERO_HEIGHT) is what the crop
+// picker targets (see collection.jsx).
+export const COLLECTION_HERO_HEIGHT = 250;
+
 // Default "card" drop shadow intensity, shared between ItemCard and
 // ItemHero via cardShadow() in theme.js.
 export const CARD_SHADOW_RADIUS = 3;

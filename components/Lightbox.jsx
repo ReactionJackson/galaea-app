@@ -12,9 +12,11 @@ const Backdrop = styled.View`
   background-color: ${Colors.overlay};
 `;
 
-const ImageHolder = styled.View`
-  flex: 1;
-  position: relative;
+const ImageFrame = styled.View`
+  width: 100%;
+  aspect-ratio: ${({ ratio }) => ratio};
+  border-radius: 10px;
+  overflow: hidden;
 `;
 
 const FullImage = styled(ExpoImage).attrs({ transition: 200 })`
@@ -35,7 +37,7 @@ const ControlsRow = styled.View`
   right: 20px;
   bottom: 20px;
   flex-direction: row;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 10px;
 `;
 
@@ -56,28 +58,15 @@ const PrimaryButton = styled.Pressable`
   background-color: ${Colors.accent};
 `;
 
-function getContainRect(containerW, containerH, imgW, imgH) {
-  if (!containerW || !containerH || !imgW || !imgH) return null;
-  const scale = Math.min(containerW / imgW, containerH / imgH);
-  const width = imgW * scale;
-  const height = imgH * scale;
-  return {
-    width,
-    height,
-    x: (containerW - width) / 2,
-    y: (containerH - height) / 2,
-  };
-}
-
-function getCropGeometry(rect) {
+function getCropGeometry(rect, targetAspectRatio) {
   if (!rect) return null;
   const imageRatio = rect.width / rect.height;
-  if (Math.abs(imageRatio - ITEM_ASPECT_RATIO) < 0.001) {
+  if (Math.abs(imageRatio - targetAspectRatio) < 0.001) {
     return { axis: null, width: rect.width, height: rect.height, maxOffset: 0 };
   }
-  if (imageRatio > ITEM_ASPECT_RATIO) {
+  if (imageRatio > targetAspectRatio) {
     // Image proportionally wider than the target — full height, horizontal slack.
-    const width = rect.height * ITEM_ASPECT_RATIO;
+    const width = rect.height * targetAspectRatio;
     return {
       axis: "x",
       width,
@@ -86,7 +75,7 @@ function getCropGeometry(rect) {
     };
   }
   // Image proportionally taller/narrower than the target — full width, vertical slack.
-  const height = rect.width / ITEM_ASPECT_RATIO;
+  const height = rect.width / targetAspectRatio;
   return {
     axis: "y",
     width: rect.width,
@@ -95,7 +84,6 @@ function getCropGeometry(rect) {
   };
 }
 
-// { top: "42.0%" } | { left: "63.0%" } | null -> 0-100 | null
 function parseFocus(focus) {
   if (!focus) return null;
   if (focus.left != null) return parseFloat(focus.left);
@@ -103,30 +91,28 @@ function parseFocus(focus) {
   return null;
 }
 
-export function Lightbox({ state, onClose, onSave }) {
-  const [containerSize, setContainerSize] = useState(null);
-  const [focusPercent, setFocusPercent] = useState(null); // 0-100 | null (untouched)
+export function Lightbox({
+  state,
+  onClose,
+  onSave,
+  targetAspectRatio = ITEM_ASPECT_RATIO,
+}) {
+  const [rect, setRect] = useState(null);
+  const [focusPercent, setFocusPercent] = useState(null);
 
   const isEdit = state?.mode === "edit";
   const uri = state?.uri;
+  const imageRatio =
+    state?.width && state?.height ? state.width / state.height : null;
 
   useEffect(() => {
     if (!state) return;
-    setContainerSize(null);
+    setRect(null);
     setFocusPercent(isEdit ? parseFocus(state.focus) : null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
-  const rect =
-    isEdit && containerSize
-      ? getContainRect(
-          containerSize.width,
-          containerSize.height,
-          state.width,
-          state.height,
-        )
-      : null;
-  const crop = getCropGeometry(rect);
+  const crop = getCropGeometry(rect, targetAspectRatio);
 
   const cropRef = useRef(crop);
   cropRef.current = crop;
@@ -156,9 +142,9 @@ export function Lightbox({ state, onClose, onSave }) {
     }),
   ).current;
 
-  const handleLayout = (e) => {
-    const { width, height } = e.nativeEvent.layout;
-    setContainerSize({ width, height });
+  const handleFrameLayout = (e) => {
+    const { x, y, width, height } = e.nativeEvent.layout;
+    setRect({ x, y, width, height });
   };
 
   const handleSave = () => {
@@ -190,6 +176,20 @@ export function Lightbox({ state, onClose, onSave }) {
         }
       : null;
 
+  const imageContent = uri ? (
+    imageRatio ? (
+      <ImageFrame ratio={imageRatio} onLayout={handleFrameLayout}>
+        <FullImage contentFit="cover" source={{ uri }} />
+      </ImageFrame>
+    ) : (
+      <FullImage
+        contentFit="contain"
+        source={{ uri }}
+        style={{ width: "100%", height: "100%" }}
+      />
+    )
+  ) : null;
+
   return (
     <Modal
       visible={!!state}
@@ -198,27 +198,32 @@ export function Lightbox({ state, onClose, onSave }) {
       onRequestClose={onClose}
     >
       <Backdrop>
-        <ImageHolder onLayout={handleLayout}>
-          {isEdit ? (
-            <View style={{ flex: 1 }} {...panResponder.panHandlers}>
-              {uri && <FullImage contentFit="contain" source={{ uri }} />}
-              {boxStyle && <CropBox style={boxStyle} />}
-            </View>
-          ) : (
-            <Pressable style={{ flex: 1 }} onPress={onClose}>
-              {uri && <FullImage contentFit="contain" source={{ uri }} />}
-            </Pressable>
-          )}
-        </ImageHolder>
+        {isEdit ? (
+          <View
+            style={{
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            {...panResponder.panHandlers}
+          >
+            {imageContent}
+            {boxStyle && <CropBox style={boxStyle} />}
+          </View>
+        ) : (
+          <Pressable
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+            onPress={onClose}
+          >
+            {imageContent}
+          </Pressable>
+        )}
 
         <ControlsRow>
           {isEdit ? (
             <>
               <GhostButton onPress={onClose}>
                 <ThemedText color="white">Cancel</ThemedText>
-              </GhostButton>
-              <GhostButton onPress={() => setFocusPercent(null)}>
-                <ThemedText color="white">Reset</ThemedText>
               </GhostButton>
               <PrimaryButton onPress={handleSave}>
                 <ThemedText color="white">Save</ThemedText>
