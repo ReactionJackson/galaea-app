@@ -52,6 +52,16 @@ export const SaveButton = styled(Button)`
   background-color: ${Colors.accent};
 `;
 
+const CircleButton = styled.Pressable`
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid ${Colors.dateBorder};
+  opacity: ${({ disabled }) => (disabled ? 0.3 : 1)};
+`;
+
 export function Track({
   editMode = false,
   trackHeight = 90,
@@ -59,14 +69,23 @@ export function Track({
   onDelete,
   onCancel,
   onSave,
+  onSwapLeft,
+  onSwapRight,
+  canSwapLeft = true,
+  canSwapRight = true,
   children,
 }) {
-  const containerStyle = useAnimatedTransition(editMode, { translateY: [60, 0] });
+  const containerStyle = useAnimatedTransition(editMode, {
+    translateY: [60, 0],
+  });
 
   return (
     <Container style={containerStyle}>
       <BlurView>
-        <TrackContainer trackHeight={trackHeight} trackPaddingTop={trackPaddingTop}>
+        <TrackContainer
+          trackHeight={trackHeight}
+          trackPaddingTop={trackPaddingTop}
+        >
           {children}
         </TrackContainer>
         <ControlsContainer>
@@ -74,6 +93,16 @@ export function Track({
             <ThemedText color="black">Delete</ThemedText>
           </Button>
           <View style={{ flexDirection: "row", gap: 10 }}>
+            {onSwapLeft && onSwapRight && (
+              <>
+                <CircleButton onPress={onSwapLeft} disabled={!canSwapLeft}>
+                  <ThemedText color="black">←</ThemedText>
+                </CircleButton>
+                <CircleButton onPress={onSwapRight} disabled={!canSwapRight}>
+                  <ThemedText color="black">→</ThemedText>
+                </CircleButton>
+              </>
+            )}
             <Button onPress={onCancel}>
               <ThemedText color="black">Cancel</ThemedText>
             </Button>

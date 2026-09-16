@@ -140,6 +140,7 @@ export function Tags({
 
   return (
     <View>
+      <AnimatedSpacer visible={editMode || !!tagIds.length} height={15} />
       <AnimateHeight visible={editMode}>
         <Row>
           <Pressable onPress={() => openEditRow(null)}>

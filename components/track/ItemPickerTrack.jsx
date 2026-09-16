@@ -2,23 +2,10 @@ import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
+import { useMemo } from "react";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
 import { ITEM_HEIGHT, ItemCard } from "./ItemCard";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ItemPickerTrack
-//
-// Lives inline in the journal entry's own scrolling content (inside an
-// AnimateHeight between the last entry and the Add Item button), not in the
-// fixed bottom-docked Track shell CollectionTrack uses — so it gets its own
-// plain boxed treatment instead. Same item size as CollectionTrack (shares
-// ITEM_HEIGHT and the ItemCard component). No edit-mode locking, no add slot.
-// An item already attached to this post fades to 0.1 and stays there — it
-// never brightens even if scrolled to centre — while every other item
-// follows the same active/inactive fade CollectionTrack uses outside its own
-// edit mode.
-// ─────────────────────────────────────────────────────────────────────────────
 
 const ITEM_SPACING = 10;
 
@@ -40,6 +27,8 @@ export function ItemPickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
   const items = state.items;
 
   const itemWidths = useItemCardSizes(items, ITEM_HEIGHT);
+  // Same order/length as itemWidths — see useSnapTrack's itemIds param.
+  const itemIds = useMemo(() => items.map((it) => it.itemId), [items]);
 
   const {
     activeIndex,
@@ -56,6 +45,7 @@ export function ItemPickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
     handleMomentumScrollEnd,
   } = useSnapTrack({
     itemWidths,
+    itemIds,
     itemSpacing: ITEM_SPACING,
     showAddButton: false,
     startAtEnd: false,

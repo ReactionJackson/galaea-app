@@ -96,7 +96,10 @@ function reconcileItemEdits(items, draftItems, dayDate) {
     .map((it) => {
       const { itemId, entryId, isNew, text, tags, gallery } = it;
       const wasEdited =
-        isNew || text !== undefined || tags !== undefined || gallery !== undefined;
+        isNew ||
+        text !== undefined ||
+        tags !== undefined ||
+        gallery !== undefined;
       if (!wasEdited) return { itemId, entryId };
 
       const itemIndex = nextItems.findIndex((item) => item.itemId === itemId);
@@ -108,7 +111,9 @@ function reconcileItemEdits(items, draftItems, dayDate) {
           ? Math.max(0, ...item.entries.map((e) => e.entryId)) + 1
           : entryId;
 
-      const existingEntry = item.entries.find((e) => e.entryId === resolvedEntryId);
+      const existingEntry = item.entries.find(
+        (e) => e.entryId === resolvedEntryId,
+      );
       // date is the entry's original creation date — stamped once, from the
       // day it was first written on, and never touched again on later edits
       // (even if that edit happens to be made from a different day that also
@@ -118,7 +123,8 @@ function reconcileItemEdits(items, draftItems, dayDate) {
         date: existingEntry?.date ?? dayDate,
         text: text !== undefined ? text : (existingEntry?.text ?? ""),
         tags: tags !== undefined ? tags : (existingEntry?.tags ?? []),
-        gallery: gallery !== undefined ? gallery : (existingEntry?.gallery ?? []),
+        gallery:
+          gallery !== undefined ? gallery : (existingEntry?.gallery ?? []),
       };
 
       const hasContent =
@@ -140,7 +146,9 @@ function reconcileItemEdits(items, draftItems, dayDate) {
       }
 
       const nextEntries = existingEntry
-        ? item.entries.map((e) => (e.entryId === resolvedEntryId ? nextEntry : e))
+        ? item.entries.map((e) =>
+            e.entryId === resolvedEntryId ? nextEntry : e,
+          )
         : [...item.entries, nextEntry];
 
       nextItems = nextItems.map((it2, i) =>
@@ -171,7 +179,8 @@ function stripRemovedItemEntries(day, itemId, removedEntryIds) {
   return {
     ...day,
     items: day.items.filter(
-      (ref) => !(ref.itemId === itemId && removedEntryIds.includes(ref.entryId)),
+      (ref) =>
+        !(ref.itemId === itemId && removedEntryIds.includes(ref.entryId)),
     ),
   };
 }
@@ -247,11 +256,17 @@ function appReducer(state, action) {
     // one shared function rather than inline logic here.
     case "SAVE_EDIT": {
       const saved = state.draft;
-      const { items, cleanItems } = reconcileItemEdits(state.items, saved.items, saved.date);
+      const { items, cleanItems } = reconcileItemEdits(
+        state.items,
+        saved.items,
+        saved.date,
+      );
       const cleanedSaved = { ...saved, items: cleanItems };
       const exists = state.entries.some((e) => e.dayId === cleanedSaved.dayId);
       const entries = exists
-        ? state.entries.map((e) => (e.dayId === cleanedSaved.dayId ? cleanedSaved : e))
+        ? state.entries.map((e) =>
+            e.dayId === cleanedSaved.dayId ? cleanedSaved : e,
+          )
         : [...state.entries, cleanedSaved];
 
       return {
@@ -418,13 +433,23 @@ function appReducer(state, action) {
       // Same safety net as initialState/HYDRATE (see ensureSeedData) —
       // deleting the last remaining item would otherwise leave items
       // empty, which nothing downstream is built to render.
-      const items = remainingItems.length ? remainingItems : [buildDefaultItem()];
+      const items = remainingItems.length
+        ? remainingItems
+        : [buildDefaultItem()];
 
       const entries = state.entries.map((day) =>
         stripRemovedItemEntries(day, itemId, removedEntryIds),
       );
-      const committed = stripRemovedItemEntries(state.committed, itemId, removedEntryIds);
-      const draft = stripRemovedItemEntries(state.draft, itemId, removedEntryIds);
+      const committed = stripRemovedItemEntries(
+        state.committed,
+        itemId,
+        removedEntryIds,
+      );
+      const draft = stripRemovedItemEntries(
+        state.draft,
+        itemId,
+        removedEntryIds,
+      );
 
       return {
         ...state,
@@ -437,13 +462,39 @@ function appReducer(state, action) {
       };
     }
 
+    // Swaps an item with its immediate left/right neighbour — used by both
+    // the edit panel's arrow buttons and the drag-to-reorder gesture.
+    case "SWAP_ADJACENT_ITEM": {
+      const { itemId, direction } = action;
+      const index = state.items.findIndex((it) => it.itemId === itemId);
+      const neighborIndex = index + (direction === "right" ? 1 : -1);
+      if (
+        index === -1 ||
+        neighborIndex < 0 ||
+        neighborIndex >= state.items.length
+      ) {
+        return state;
+      }
+      const items = [...state.items];
+      [items[index], items[neighborIndex]] = [
+        items[neighborIndex],
+        items[index],
+      ];
+      return { ...state, items };
+    }
+
     // Tag mutations — these write to state.tags (global), not just the draft.
 
     // New tag: prepend to global tags list so it appears first in the picker.
     // Does NOT auto-activate on the current draft — user taps it to add it.
     case "ADD_TAG": {
       const newId = Math.max(...state.tags.map((t) => t.tagId), 0) + 1;
-      const newTag = { tagId: newId, name: action.name, color: action.color, archived: false };
+      const newTag = {
+        tagId: newId,
+        name: action.name,
+        color: action.color,
+        archived: false,
+      };
       return {
         ...state,
         tags: [newTag, ...state.tags],
@@ -455,7 +506,7 @@ function appReducer(state, action) {
       return {
         ...state,
         tags: state.tags.map((t) =>
-          t.tagId === action.tagId ? { ...t, color: action.color } : t
+          t.tagId === action.tagId ? { ...t, color: action.color } : t,
         ),
       };
 
@@ -464,11 +515,16 @@ function appReducer(state, action) {
     // If the old tagId was active on the current draft, swap it for the new one.
     case "REPLACE_TAG": {
       const newId = Math.max(...state.tags.map((t) => t.tagId), 0) + 1;
-      const newTag = { tagId: newId, name: action.name, color: action.color, archived: false };
+      const newTag = {
+        tagId: newId,
+        name: action.name,
+        color: action.color,
+        archived: false,
+      };
       const oldIndex = state.tags.findIndex((t) => t.tagId === action.tagId);
       // Archive the old tag in-place, then splice the new one in at the same index.
       const newTags = state.tags.map((t) =>
-        t.tagId === action.tagId ? { ...t, archived: true } : t
+        t.tagId === action.tagId ? { ...t, archived: true } : t,
       );
       newTags.splice(oldIndex, 0, newTag);
       const draftTags = state.draft.tags.includes(action.tagId)

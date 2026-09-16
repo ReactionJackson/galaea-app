@@ -1,13 +1,13 @@
 import {
-  AnimatedSpacer,
   AnimateHeight,
+  AnimatedSpacer,
 } from "@/components/interface/AnimateHeight";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
-import { Image as ExpoImage } from "expo-image";
 import { memo } from "react";
 import styled, { css } from "styled-components/native";
 import { Gallery, getImageUri } from "./Gallery";
+import { ItemHero } from "./ItemHero";
 import { Tags } from "./Tags";
 import { ThemedText } from "./interface/ThemedText";
 
@@ -16,7 +16,7 @@ const Container = styled.View`
   ${({ isMinimal }) =>
     !isMinimal &&
     css`
-      border-radius: 15px;
+      border-radius: 30px;
       background-color: ${Colors.background};
       shadow-color: ${Colors.black};
       shadow-offset: 0px 0px;
@@ -26,25 +26,11 @@ const Container = styled.View`
 `;
 
 const Header = styled.View`
-  position: relative;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
   width: 100%;
-  height: 120px;
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
   background-color: ${Colors.black};
   overflow: hidden;
-`;
-
-const HeaderBackground = styled(ExpoImage)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  opacity: 0.65;
 `;
 
 const Content = styled.View`
@@ -56,8 +42,8 @@ const Content = styled.View`
       margin-bottom: 0px;
       border: 1px solid ${Colors.border};
       border-top-width: 0px;
-      border-bottom-left-radius: 15px;
-      border-bottom-right-radius: 15px;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
       background-color: ${Colors.background};
     `}
 `;
@@ -91,7 +77,7 @@ export const CollectionItem = memo(function CollectionItem({
   const { state, dispatch } = useApp();
   const editMode = editable ?? (isMinimal ? false : state.editMode);
 
-  const { title, coverImage, entries } =
+  const { title, cardImage, coverImage, entries } =
     state.items.find((item) => item.itemId === itemId) ?? {};
 
   // Purely a display ordinal — "the Nth thing written about this item" —
@@ -156,19 +142,29 @@ export const CollectionItem = memo(function CollectionItem({
     <Container isMinimal={isMinimal}>
       {!isMinimal && (
         <Header>
-          <HeaderBackground
-            contentFit="cover"
-            source={{
-              uri: coverImage,
-            }}
+          <ItemHero
+            height={130}
+            spacing={15}
+            cardImage={cardImage}
+            coverImage={coverImage}
           />
-          <ThemedText type="title" color="white">
-            {title}
-          </ThemedText>
         </Header>
       )}
       <Content isMinimal={isMinimal}>
-        {Boolean(isMinimal && date) && (
+        {!isMinimal ? (
+          <>
+            <ThemedText type="title" style={{ marginBottom: 10 }}>
+              {title}
+            </ThemedText>
+            <ThemedText
+              type="subtitle"
+              color="text"
+              style={{ marginBottom: 5 }}
+            >
+              Entry {String(entryNumber).padStart(2, "0")}
+            </ThemedText>
+          </>
+        ) : (
           <ThemedText type="subtitle" style={{ marginBottom: 5 }}>
             {datePart}
             <ThemedText type="subtitle" color="faded">
@@ -177,9 +173,19 @@ export const CollectionItem = memo(function CollectionItem({
             </ThemedText>
           </ThemedText>
         )}
+        <AnimateHeight visible={!!(text || editMode)}>
+          <ThemedText
+            isInput
+            multiline={true}
+            value={text}
+            placeholder="Write something about this..."
+            onChangeText={(t) => updateItem({ text: t })}
+            editable={editMode}
+          />
+        </AnimateHeight>
         <AnimatedSpacer
-          height={isMinimal ? 10 : 0}
-          visible={!!(gallery.length || editMode)}
+          height={15}
+          visible={!!((text && gallery.length) || editMode)}
         />
         <AnimateHeight
           visible={!!(gallery.length || editMode)}
@@ -194,29 +200,6 @@ export const CollectionItem = memo(function CollectionItem({
             horizontalPadding={isMinimal ? 40 : undefined}
           />
         </AnimateHeight>
-        <AnimatedSpacer
-          height={!isMinimal ? 20 : 10}
-          visible={!!(gallery.length || editMode)}
-        />
-        {!isMinimal && (
-          <ThemedText type="subtitle" color="text">
-            Entry {String(entryNumber).padStart(2, "0")}
-          </ThemedText>
-        )}
-        <AnimateHeight visible={!!(text || editMode)}>
-          {!isMinimal && (
-            <AnimatedSpacer height={5} visible={!!(text || editMode)} />
-          )}
-          <ThemedText
-            isInput
-            multiline={true}
-            value={text}
-            placeholder="Write something about this..."
-            onChangeText={(t) => updateItem({ text: t })}
-            editable={editMode}
-          />
-        </AnimateHeight>
-        <AnimatedSpacer height={15} visible={!!(tagIds.length || editMode)} />
         <Tags
           tagIds={tagIds}
           editMode={editMode}

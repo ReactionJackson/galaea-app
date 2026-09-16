@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
 import { EMPTY_CARD_WIDTH } from "@/components/track/ItemCard";
+import { useEffect, useMemo, useState } from "react";
 import { getCachedAspectRatio, loadAspectRatio } from "./useImageAspectRatio";
 
-// Loads each item's card-image aspect ratio (falling back to a 1:1 square
-// while unknown or on failure) and derives a fixed-height, aspect-correct
-// width for each — shared by CollectionTrack and the journal's item-picker
-// track so both size their cards identically.
 export function useItemCardSizes(items, itemHeight) {
-  const [aspectRatios, setAspectRatios] = useState(() =>
-    items.map((item) => getCachedAspectRatio(item.cardImage) ?? 1),
-  );
+  const [aspectRatios, setAspectRatios] = useState(() => {
+    const initial = {};
+    items.forEach((item) => {
+      initial[item.itemId] = getCachedAspectRatio(item.cardImage) ?? 1;
+    });
+    return initial;
+  });
   const itemKey = useMemo(
     () => items.map((it) => `${it.itemId}:${it.cardImage}`).join(","),
     [items],
@@ -17,15 +17,13 @@ export function useItemCardSizes(items, itemHeight) {
 
   useEffect(() => {
     let cancelled = false;
-    items.forEach((item, i) => {
+    items.forEach((item) => {
       if (!item.cardImage) return;
       loadAspectRatio(item.cardImage, (ratio) => {
         if (cancelled) return;
         setAspectRatios((prev) => {
-          if (prev[i] === ratio) return prev;
-          const next = [...prev];
-          next[i] = ratio;
-          return next;
+          if (prev[item.itemId] === ratio) return prev;
+          return { ...prev, [item.itemId]: ratio };
         });
       });
     });
@@ -37,8 +35,10 @@ export function useItemCardSizes(items, itemHeight) {
 
   return useMemo(
     () =>
-      items.map((item, i) =>
-        item.cardImage ? itemHeight * aspectRatios[i] : EMPTY_CARD_WIDTH,
+      items.map((item) =>
+        item.cardImage
+          ? itemHeight * (aspectRatios[item.itemId] ?? 1)
+          : EMPTY_CARD_WIDTH,
       ),
     [items, aspectRatios, itemHeight],
   );

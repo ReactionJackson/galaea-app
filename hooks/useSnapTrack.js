@@ -17,6 +17,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 export function useSnapTrack({
   itemWidths,
+  itemIds,
   itemSpacing = 10,
   showAddButton = true,
   addButtonWidth,
@@ -39,11 +40,11 @@ export function useSnapTrack({
   const trackRef = useRef(null);
   const scrollToAddAfterResize = useRef(false);
   const prevItemCountRef = useRef(itemCount);
+  const prevItemWidthsRef = useRef(itemWidths);
   const hasScrolledToInitial = useRef(false);
+  const activeItemIdRef = useRef(itemIds[activeIndex] ?? null);
+  const isInternalScrollRef = useRef(false);
 
-  // Left edge of each item (real items, then the add slot appended at the
-  // end), measured from the start of the content area (i.e. after
-  // basePadding — item 0's left edge is always 0).
   const leftEdges = useMemo(() => {
     const edges = [];
     let cursor = 0;
@@ -60,19 +61,12 @@ export function useSnapTrack({
     return Math.max(0, halfTrackWidth - itemWidths[0] / 2);
   }, [halfTrackWidth, itemWidths]);
 
-  // scrollX needed for each item's centre to land under the fixed viewport
-  // centre — including the add slot, appended as one extra "item".
   const offsets = useMemo(() => {
     if (!halfTrackWidth || !itemWidths.length) return [];
     const widths = [...itemWidths, resolvedAddWidth];
     return leftEdges.map((edge, i) => edge + (widths[i] - itemWidths[0]) / 2);
   }, [leftEdges, itemWidths, resolvedAddWidth, halfTrackWidth]);
 
-  // When the add slot isn't active, the physical scroll bound has to stop
-  // at "last real item centred" — but the add button (and the gap before it)
-  // is still a real rendered child taking up its own content width regardless
-  // of this padding, so that footprint has to be subtracted back out here or
-  // a hard swipe overshoots past the last item and into the add slot.
   const paddingEndCollapsed = useMemo(() => {
     if (!halfTrackWidth || !itemWidths.length) return 0;
     return Math.max(
@@ -81,18 +75,28 @@ export function useSnapTrack({
         itemWidths[itemCount - 1] / 2 -
         (showAddButton ? resolvedAddWidth + itemSpacing : 0),
     );
-  }, [halfTrackWidth, itemWidths, itemCount, showAddButton, resolvedAddWidth, itemSpacing]);
+  }, [
+    halfTrackWidth,
+    itemWidths,
+    itemCount,
+    showAddButton,
+    resolvedAddWidth,
+    itemSpacing,
+  ]);
 
   const paddingEndExpanded = useMemo(() => {
     if (!halfTrackWidth) return 0;
     return Math.max(0, halfTrackWidth - resolvedAddWidth / 2);
   }, [halfTrackWidth, resolvedAddWidth]);
 
-  const paddingEnd = !showAddButton
-    ? paddingEndCollapsed
-    : addActive
-      ? paddingEndExpanded
-      : paddingEndCollapsed;
+  const [endPaddingBoost, setEndPaddingBoost] = useState(0);
+
+  const paddingEnd =
+    (!showAddButton
+      ? paddingEndCollapsed
+      : addActive
+        ? paddingEndExpanded
+        : paddingEndCollapsed) + endPaddingBoost;
 
   // Helpers:
 
@@ -108,16 +112,9 @@ export function useSnapTrack({
     trackRef.current?.scrollTo({ x: offset, animated });
   };
 
-  // Call this from an item's onPress. Handles the "pressing the already
-  // active add slot cancels back out" case and the "pressing + expands the
-  // padding then scrolls in" case; everything else is a normal scroll-to.
   const goToIndex = (index) => {
     if (index === activeIndex) {
       if (index === ADD_INDEX) {
-        // Leave addActive (and so the expanded end-padding) alone here — it
-        // clears in settleAt once the scroll has actually arrived. Clearing
-        // it now would shrink the content mid-animation and undershoot the
-        // target, landing short of the last item instead of centred on it.
         onCancelAdd();
         setIsScrolling(true);
         hapticLight();
@@ -166,6 +163,8 @@ export function useSnapTrack({
   const settleAt = (index) => {
     if (addActive && index !== ADD_INDEX) setAddActive(false);
     setActiveIndex(index);
+    activeItemIdRef.current =
+      index === ADD_INDEX ? null : (itemIds[index] ?? null);
     setIsScrolling(false);
     if (index === ADD_INDEX) onAdd();
     else onSettle(index, { alreadyActive: false });
@@ -173,6 +172,7 @@ export function useSnapTrack({
 
   const handleScrollBeginDrag = () => {
     scrollToAddAfterResize.current = false;
+    isInternalScrollRef.current = false;
     setIsScrolling(true);
     hapticLight();
   };
@@ -185,17 +185,16 @@ export function useSnapTrack({
   };
 
   const handleMomentumScrollEnd = (event) => {
+    if (isInternalScrollRef.current) {
+      isInternalScrollRef.current = false;
+      setIsScrolling(false);
+      return;
+    }
     settleAt(getIndexFromScrollEnd(event));
   };
 
   // Effects:
 
-  // A new real item appeared (e.g. a save completed) — exit the add slot
-  // and land on it. An item disappeared (deleted) — land on whatever's now
-  // sitting where the item just to its left was (never jump forward), since
-  // nothing else moves the scroll position for us here — without this,
-  // the track is left scrolled wherever it happened to be while the
-  // content displayed elsewhere has already moved on.
   useEffect(() => {
     if (itemCount > prevItemCountRef.current) {
       const newIndex = itemCount - 1;
@@ -203,20 +202,36 @@ export function useSnapTrack({
       onCancelAdd();
       setAddActive(false);
       setActiveIndex(newIndex);
+      activeItemIdRef.current = itemIds[newIndex] ?? null;
+      isInternalScrollRef.current = true;
       scrollToIndex(newIndex, true);
     } else if (itemCount < prevItemCountRef.current) {
       const newIndex = Math.max(0, Math.min(activeIndex - 1, itemCount - 1));
       prevItemCountRef.current = itemCount;
+
+      const oldTotalWidth = prevItemWidthsRef.current.reduce(
+        (sum, w) => sum + w,
+        0,
+      );
+      const newTotalWidth = itemWidths.reduce((sum, w) => sum + w, 0);
+      const removedFootprint = Math.max(
+        0,
+        oldTotalWidth - newTotalWidth + itemSpacing,
+      );
+      setEndPaddingBoost(removedFootprint);
+      setTimeout(() => setEndPaddingBoost(0), 300);
+
       setActiveIndex(newIndex);
+      activeItemIdRef.current = itemIds[newIndex] ?? null;
+      isInternalScrollRef.current = true;
       scrollToIndex(newIndex, true);
     } else {
       prevItemCountRef.current = itemCount;
     }
+    prevItemWidthsRef.current = itemWidths;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemCount]);
 
-  // Land on the last (or first, per startAtEnd) real item once the track
-  // has laid out (basePadding available) and offsets are computable.
   useEffect(() => {
     if (!hasScrolledToInitial.current && basePadding > 0 && trackRef.current) {
       hasScrolledToInitial.current = true;
@@ -225,18 +240,21 @@ export function useSnapTrack({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [basePadding]);
 
-  // Re-centre on the active item if its own centring offset shifts while
-  // it's still the active one — e.g. saving a new card image resizes it (or
-  // an earlier item, which shifts everyone after it) after we've already
-  // settled on it. Guarded to the same index so a normal navigation to a
-  // different item — already handled by goToIndex/settleAt — never
-  // double-scrolls here too.
   const prevActiveIndexRef = useRef(activeIndex);
   const prevActiveOffsetRef = useRef(undefined);
+  const recenterPrevItemCountRef = useRef(itemCount);
+  const recenterPrevItemIdsRef = useRef(itemIds);
   useEffect(() => {
+    const itemCountChanged = itemCount !== recenterPrevItemCountRef.current;
+    recenterPrevItemCountRef.current = itemCount;
+    const itemsReordered = itemIds !== recenterPrevItemIdsRef.current;
+    recenterPrevItemIdsRef.current = itemIds;
+
     const offset = offsets[activeIndex];
     const sameIndex = prevActiveIndexRef.current === activeIndex;
     if (
+      !itemCountChanged &&
+      !itemsReordered &&
       hasScrolledToInitial.current &&
       sameIndex &&
       offset != null &&
@@ -248,7 +266,25 @@ export function useSnapTrack({
     prevActiveIndexRef.current = activeIndex;
     prevActiveOffsetRef.current = offset;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [offsets, activeIndex]);
+  }, [offsets, activeIndex, itemCount, itemIds]);
+
+  const reorderPrevItemCountRef = useRef(itemCount);
+  useEffect(() => {
+    const itemCountChanged = itemCount !== reorderPrevItemCountRef.current;
+    reorderPrevItemCountRef.current = itemCount;
+    if (itemCountChanged || activeIndex === ADD_INDEX) return;
+
+    const trackedId = activeItemIdRef.current;
+    if (trackedId == null || !hasScrolledToInitial.current) return;
+
+    const resolvedIndex = itemIds.indexOf(trackedId);
+    if (resolvedIndex === -1 || resolvedIndex === activeIndex) return;
+
+    setActiveIndex(resolvedIndex);
+    isInternalScrollRef.current = true;
+    scrollToIndex(resolvedIndex, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemIds]);
 
   return {
     ADD_INDEX,

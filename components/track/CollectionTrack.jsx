@@ -4,6 +4,7 @@ import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
+import { useMemo } from "react";
 import { Pressable } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
@@ -60,10 +61,14 @@ export function CollectionTrack({
   onDelete = () => {},
   onSave = () => {},
 }) {
-  const { state } = useApp();
+  const { state, dispatch } = useApp();
   const items = state.items;
 
   const itemWidths = useItemCardSizes(items, ITEM_HEIGHT);
+  // Same order/length as itemWidths — see useSnapTrack's itemIds param. Lets
+  // the hook keep the same item "active" by identity when the edit panel's
+  // arrow buttons swap it with a neighbour, rather than by raw position.
+  const itemIds = useMemo(() => items.map((it) => it.itemId), [items]);
 
   const {
     ADD_INDEX,
@@ -81,6 +86,7 @@ export function CollectionTrack({
     handleMomentumScrollEnd,
   } = useSnapTrack({
     itemWidths,
+    itemIds,
     itemSpacing: ITEM_SPACING,
     showAddButton: true,
     addButtonWidth: EMPTY_CARD_WIDTH,
@@ -105,6 +111,23 @@ export function CollectionTrack({
     onCancelAdd: onCancelAddItem,
   });
 
+  // Repositions the currently active item one slot left/right — the edit
+  // panel's only way to reorder now. useSnapTrack's own reorder-follow
+  // effect (driven by itemIds changing) keeps the track scrolled to the
+  // same item as it moves.
+  const handleSwap = (direction) => {
+    const item = items[activeIndex];
+    if (!item) return;
+    if (process.env.EXPO_OS === "ios") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    dispatch({ type: "SWAP_ADJACENT_ITEM", itemId: item.itemId, direction });
+  };
+
+  const canSwapLeft = activeIndex !== ADD_INDEX && activeIndex > 0;
+  const canSwapRight =
+    activeIndex !== ADD_INDEX && activeIndex < items.length - 1;
+
   return (
     <Track
       editMode={editMode}
@@ -113,6 +136,10 @@ export function CollectionTrack({
       onCancel={() => goToIndex(activeIndex)}
       onDelete={onDelete}
       onSave={onSave}
+      onSwapLeft={() => handleSwap("left")}
+      onSwapRight={() => handleSwap("right")}
+      canSwapLeft={canSwapLeft}
+      canSwapRight={canSwapRight}
     >
       <ScrollContainer
         horizontal
@@ -145,7 +172,7 @@ export function CollectionTrack({
               active={isScrolling || activeIndex === i}
               inactiveOpacity={editMode ? 0.1 : 0.5}
               onPress={() => goToIndex(i)}
-              disabled={editMode && activeIndex !== i}
+              disabled={editMode}
             />
           </Animated.View>
         ))}
@@ -154,7 +181,7 @@ export function CollectionTrack({
             active={isScrolling || activeIndex === ADD_INDEX}
             editMode={editMode}
             onPress={() => goToIndex(ADD_INDEX)}
-            disabled={editMode && activeIndex !== ADD_INDEX}
+            disabled={editMode}
           />
         </Animated.View>
       </ScrollContainer>

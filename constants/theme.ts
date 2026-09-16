@@ -10,7 +10,7 @@ export const Colors = {
   placeholder: "rgba(0, 0, 0, 0.25)",
   overlay: "rgba(0, 0, 0, 0.9)",
   overlayBorder: "rgba(255, 255, 255, 0.6)",
-  imageOverlay: "rgba(0, 0, 0, 0.4)",
+  imageOverlay: "rgba(0, 0, 0, 0.45)",
   accent: "#f96156",
   accentFaded: "rgba(249, 97, 86, 0.2)",
   background: "#fff",

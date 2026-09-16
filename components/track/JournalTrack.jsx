@@ -87,6 +87,7 @@ export function JournalTrack({
     () => entries.map(() => ITEM_WIDTH),
     [entries.length],
   );
+  const itemIds = useMemo(() => entries.map((e) => e.dayId), [entries]);
 
   // Derived values:
 
@@ -153,6 +154,7 @@ export function JournalTrack({
     handleMomentumScrollEnd,
   } = useSnapTrack({
     itemWidths,
+    itemIds,
     itemSpacing: ITEM_SPACING,
     showAddButton,
     addButtonWidth: ITEM_WIDTH,

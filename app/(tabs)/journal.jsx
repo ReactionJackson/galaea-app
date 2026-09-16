@@ -206,14 +206,13 @@ function JournalScreen() {
             editable={editMode}
           />
         </AnimateHeight>
-        <AnimatedSpacer height={15} visible={textVisible} />
 
         <Tags
           tagIds={activeEntry.tags}
           editMode={editMode}
           onToggleTag={handleToggleTag}
         />
-        <AnimatedSpacer visible={tagsVisible} />
+        <AnimatedSpacer visible={tagsVisible} height={25} />
 
         {activeEntry.items.map(
           ({ itemId, entryId, isNew, text, tags, gallery }, i) => {

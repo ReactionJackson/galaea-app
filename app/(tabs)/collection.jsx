@@ -38,7 +38,7 @@ export default function CollectionScreen() {
   const displayItem = itemDraft ?? activeItem;
   const orderedEntries = displayItem
     ? [...displayItem.entries].sort(
-        (a, b) => new Date(a.date) - new Date(b.date),
+        (a, b) => new Date(b.date) - new Date(a.date),
       )
     : [];
 
@@ -98,6 +98,8 @@ export default function CollectionScreen() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
       >
         <ItemHero
+          height={250}
+          spacing={30}
           cardImage={displayItem.cardImage}
           coverImage={displayItem.coverImage}
           editable={editMode}
@@ -105,7 +107,7 @@ export default function CollectionScreen() {
           onPressCover={handlePickCover}
         />
 
-        <PageHeader gap={7}>
+        <PageHeader gap={7} style={{ marginBottom: 10 }}>
           <PageHeader.Title
             key={editMode ? "editing" : "display"}
             value={

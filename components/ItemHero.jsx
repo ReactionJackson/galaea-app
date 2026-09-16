@@ -1,5 +1,8 @@
 import { Colors } from "@/constants/theme";
-import { getCachedAspectRatio, loadAspectRatio } from "@/hooks/useImageAspectRatio";
+import {
+  getCachedAspectRatio,
+  loadAspectRatio,
+} from "@/hooks/useImageAspectRatio";
 import { Image as ExpoImage } from "expo-image";
 import { useEffect, useState } from "react";
 import { Pressable, useWindowDimensions } from "react-native";
@@ -7,11 +10,11 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { ThemedText } from "./interface/ThemedText";
 
-const CARD_HEIGHT = 180;
-const DEFAULT_CARD_WIDTH = 120;
+const DEFAULT_ASPECT_RATIO = 2 / 3;
 
 const HeroContainer = styled.View`
-  height: 250px;
+  height: ${({ height }) => height}px;
+  padding: ${({ spacing }) => spacing}px 0;
   margin: 0 -20px;
   overflow: hidden;
   justify-content: center;
@@ -47,7 +50,7 @@ const CardWrap = styled.View`
 
 const CardFrame = styled.View`
   width: ${({ cardWidth }) => cardWidth}px;
-  height: ${CARD_HEIGHT}px;
+  height: ${({ cardHeight }) => cardHeight}px;
   border-radius: 4px;
   overflow: hidden;
 `;
@@ -58,8 +61,8 @@ const CardImage = styled(ExpoImage).attrs({ transition: 200 })`
 `;
 
 const CardPlaceholder = styled.View`
-  width: ${DEFAULT_CARD_WIDTH}px;
-  height: ${CARD_HEIGHT}px;
+  width: ${({ cardWidth }) => cardWidth}px;
+  height: ${({ cardHeight }) => cardHeight}px;
   border: 2px dashed ${Colors.disabled};
   border-radius: 4px;
 `;
@@ -103,6 +106,8 @@ function EditButton({ onPress, style }) {
 }
 
 export function ItemHero({
+  height,
+  spacing = 0,
   cardImage,
   coverImage,
   editable = false,
@@ -110,34 +115,39 @@ export function ItemHero({
   onPressCover = () => {},
 }) {
   const { width: screenWidth } = useWindowDimensions();
-  const [cardWidth, setCardWidth] = useState(() => {
-    const cachedRatio = getCachedAspectRatio(cardImage);
-    return cachedRatio ? Math.round(CARD_HEIGHT * cachedRatio) : DEFAULT_CARD_WIDTH;
-  });
+  const cardHeight = height - spacing * 2;
+
+  const [aspectRatio, setAspectRatio] = useState(
+    () => getCachedAspectRatio(cardImage) ?? DEFAULT_ASPECT_RATIO,
+  );
 
   useEffect(() => {
     if (!cardImage) {
-      setCardWidth(DEFAULT_CARD_WIDTH);
+      setAspectRatio(DEFAULT_ASPECT_RATIO);
       return;
     }
     // If this image's ratio is already known (it's been shown elsewhere this
     // session), size correctly straight away instead of flashing back to the
-    // default width and re-fetching.
+    // default ratio and re-fetching.
     const cachedRatio = getCachedAspectRatio(cardImage);
-    setCardWidth(
-      cachedRatio ? Math.round(CARD_HEIGHT * cachedRatio) : DEFAULT_CARD_WIDTH,
-    );
+    setAspectRatio(cachedRatio ?? DEFAULT_ASPECT_RATIO);
     let cancelled = false;
     loadAspectRatio(cardImage, (ratio) => {
-      if (!cancelled) setCardWidth(Math.round(CARD_HEIGHT * ratio));
+      if (!cancelled) setAspectRatio(ratio);
     });
     return () => {
       cancelled = true;
     };
   }, [cardImage]);
 
+  const cardWidth = Math.round(cardHeight * aspectRatio);
+
   return (
-    <HeroContainer style={{ width: screenWidth }}>
+    <HeroContainer
+      height={height}
+      spacing={spacing}
+      style={{ width: screenWidth }}
+    >
       <CoverFill>
         {coverImage && (
           <CoverImage source={{ uri: coverImage }} contentFit="cover" />
@@ -147,11 +157,11 @@ export function ItemHero({
 
       <CardWrap>
         {cardImage ? (
-          <CardFrame cardWidth={cardWidth}>
-            <CardImage source={{ uri: cardImage }} contentFit="cover" />
+          <CardFrame cardWidth={cardWidth} cardHeight={cardHeight}>
+            <CardImage source={{ uri: cardImage }} />
           </CardFrame>
         ) : (
-          <CardPlaceholder />
+          <CardPlaceholder cardWidth={cardWidth} cardHeight={cardHeight} />
         )}
         {editable && (
           <EditOverlay>

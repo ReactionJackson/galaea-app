@@ -9,7 +9,11 @@ import Animated, {
 
 const OPEN_MAX_HEIGHT = 9999;
 
-export function AnimatedSpacer({ visible, height = 20, animateOnMount = false }) {
+export function AnimatedSpacer({
+  visible,
+  height = 20,
+  animateOnMount = false,
+}) {
   return (
     <AnimateHeight visible={visible} animateOnMount={animateOnMount}>
       <View style={{ height }} />
@@ -17,7 +21,13 @@ export function AnimatedSpacer({ visible, height = 20, animateOnMount = false })
   );
 }
 
-export function AnimateHeight({ visible, children, duration = 250, animateOnMount = false, style }) {
+export function AnimateHeight({
+  visible,
+  children,
+  duration = 250,
+  animateOnMount = false,
+  style,
+}) {
   const heightValue = useSharedValue(0);
   const naturalHeight = useRef(0);
   const measured = useRef(false);
@@ -66,7 +76,7 @@ export function AnimateHeight({ visible, children, duration = 250, animateOnMoun
                 isFullyOpen.current = true;
                 heightValue.value = OPEN_MAX_HEIGHT;
               }
-            }
+            },
           );
         }
       } else {
@@ -104,14 +114,22 @@ export function AnimateHeight({ visible, children, duration = 250, animateOnMoun
     }
   }, [visible]);
 
+  // Only actually needs to clip while the height is constrained below the
+  // content's natural size (i.e. mid-animation) — once fully open (snapped
+  // to OPEN_MAX_HEIGHT) there's nothing left to hide, and clipping anyway
+  // was cutting off anything a child rendered outside its own bounds, like
+  // a drop shadow.
   const animatedStyle = useAnimatedStyle(() => ({
     maxHeight: heightValue.value,
-    overflow: "hidden",
+    overflow: heightValue.value >= OPEN_MAX_HEIGHT ? "visible" : "hidden",
   }));
 
   return (
     <Animated.View
-      style={[ready ? animatedStyle : { overflow: "hidden", opacity: 0 }, style]}
+      style={[
+        ready ? animatedStyle : { overflow: "hidden", opacity: 0 },
+        style,
+      ]}
     >
       <View onLayout={onLayout}>{children}</View>
     </Animated.View>
