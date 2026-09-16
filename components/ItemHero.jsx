@@ -6,10 +6,10 @@ import {
 import { useResizedImage } from "@/hooks/useResizedImage";
 import { Image as ExpoImage } from "expo-image";
 import { useEffect, useState } from "react";
-import { Pressable, useWindowDimensions } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { useWindowDimensions } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { ThemedText } from "./interface/ThemedText";
+import { InteractionControls } from "./interface/InteractionControls";
 
 const DEFAULT_ASPECT_RATIO = 2 / 3;
 const BLEED = 20;
@@ -101,34 +101,6 @@ const EditOverlay = styled.View`
   align-items: center;
 `;
 
-const EditCircle = styled.View`
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  border: 2px solid ${Colors.dateBorder};
-  background-color: ${Colors.editButtonBackground};
-  justify-content: center;
-  align-items: center;
-`;
-
-function EditButton({ onPress, style }) {
-  return (
-    <Animated.View
-      entering={FadeIn.duration(200)}
-      exiting={FadeOut.duration(200)}
-      style={style}
-    >
-      <Pressable onPress={onPress}>
-        <EditCircle>
-          <ThemedText type="date-number" color="black">
-            +
-          </ThemedText>
-        </EditCircle>
-      </Pressable>
-    </Animated.View>
-  );
-}
-
 export function ItemHero({
   height,
   spacing = 0,
@@ -142,6 +114,8 @@ export function ItemHero({
   shadowOpacity = 0.5,
   onPressCard = () => {},
   onPressCover = () => {},
+  onEditCover = () => {},
+  onRemoveCover = () => {},
 }) {
   const { width: screenWidth } = useWindowDimensions();
   const cardHeight = height - spacing * 2;
@@ -233,14 +207,16 @@ export function ItemHero({
         )}
         {editable && (
           <EditOverlay>
-            <EditButton onPress={onPressCard} />
+            <InteractionControls onAdd={onPressCard} />
           </EditOverlay>
         )}
       </CardWrap>
 
       {editable && (
-        <EditButton
-          onPress={onPressCover}
+        <InteractionControls
+          onAdd={onPressCover}
+          onEdit={coverImage ? onEditCover : undefined}
+          onDelete={coverImage ? onRemoveCover : undefined}
           style={{ position: "absolute", top: 10, right: 10 }}
         />
       )}

@@ -1,7 +1,6 @@
 import { Colors } from "@/constants/theme";
 import { ITEM_ASPECT_RATIO } from "@/constants/values";
 import { storePickedImage } from "@/utils/imageStorage";
-import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { memo, useState } from "react";
@@ -11,9 +10,9 @@ import {
   ScrollView,
   useWindowDimensions,
 } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { Lightbox } from "./Lightbox";
+import { InteractionControls } from "./interface/InteractionControls";
 import { ThemedText } from "./interface/ThemedText";
 
 const Item = styled.View`
@@ -36,42 +35,6 @@ const EditableView = styled.View`
   border-radius: 10px;
   transform: scale(0.99);
 `;
-
-const DeleteCircle = styled.View`
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  border: 2px solid ${Colors.dateBorder};
-  background-color: ${Colors.accent};
-  justify-content: center;
-  align-items: center;
-`;
-
-function DeleteButton({ onPress, style }) {
-  const handlePress = () => {
-    if (process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    }
-    onPress?.();
-  };
-
-  return (
-    <Animated.View
-      entering={FadeIn.duration(200)}
-      exiting={FadeOut.duration(200)}
-      style={style}
-    >
-      <Pressable onPress={handlePress}>
-        <DeleteCircle>
-          <ThemedText type="date-number" color="white">
-            X
-          </ThemedText>
-        </DeleteCircle>
-      </Pressable>
-    </Animated.View>
-  );
-}
-// End Duplicate
 
 const GALLERY_ITEM_GAP = 10;
 const DEFAULT_HORIZONTAL_PADDING = 80;
@@ -101,9 +64,7 @@ export const Gallery = memo(function Gallery({
   const [lightbox, setLightbox] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
-  const handleAddImage = async () => {
-    if (!onAddImage) return;
-
+  const pickAndOpenLightbox = async (index) => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return;
 
@@ -116,7 +77,7 @@ export const Gallery = memo(function Gallery({
     const asset = result.assets?.[0];
     if (!asset?.uri) return;
     const stored = await storePickedImage(asset);
-    setLightboxIndex(null);
+    setLightboxIndex(index);
     setLightbox({
       mode: "edit",
       uri: stored.uri,
@@ -126,8 +87,12 @@ export const Gallery = memo(function Gallery({
     });
   };
 
+  const handleAddImage = () => pickAndOpenLightbox(null);
+  const handleReplaceImage = (index) => pickAndOpenLightbox(index);
+
   const openEditExisting = (item, index) => {
     const uri = getImageUri(item);
+    if (!uri) return;
     const focus = getImageFocus(item);
     RNImage.getSize(
       uri,
@@ -143,6 +108,7 @@ export const Gallery = memo(function Gallery({
   };
 
   const openView = (uri) => {
+    if (!uri) return;
     RNImage.getSize(
       uri,
       (width, height) => setLightbox({ mode: "view", uri, width, height }),
@@ -151,10 +117,12 @@ export const Gallery = memo(function Gallery({
   };
 
   const handleSaveLightbox = (focus) => {
+    if (!lightbox) return;
+    const item = focus ? { uri: lightbox.uri, focus } : lightbox.uri;
     if (lightboxIndex == null) {
-      onAddImage?.(focus ? { uri: lightbox.uri, focus } : lightbox.uri);
+      onAddImage?.(item);
     } else {
-      onUpdateImage?.(lightboxIndex, focus);
+      onUpdateImage?.(lightboxIndex, item);
     }
     setLightbox(null);
   };
@@ -179,24 +147,31 @@ export const Gallery = memo(function Gallery({
         }}
       >
         {images.map((item, i) => {
+          if (!item) return null;
           const uri = getImageUri(item);
           return (
             <Item key={`image-${i}`} style={{ width: containerWidth }}>
-              <Pressable
-                onPress={() =>
-                  editMode ? openEditExisting(item, i) : openView(uri)
-                }
-                style={{ flex: 1 }}
-              >
+              {editMode ? (
                 <Image
                   contentFit="cover"
                   contentPosition={getImageFocus(item) ?? undefined}
                   source={{ uri }}
+                  style={{ flex: 1 }}
                 />
-              </Pressable>
+              ) : (
+                <Pressable onPress={() => openView(uri)} style={{ flex: 1 }}>
+                  <Image
+                    contentFit="cover"
+                    contentPosition={getImageFocus(item) ?? undefined}
+                    source={{ uri }}
+                  />
+                </Pressable>
+              )}
               {editMode && (
-                <DeleteButton
-                  onPress={() => onDeleteImage?.(i)}
+                <InteractionControls
+                  onAdd={() => handleReplaceImage(i)}
+                  onEdit={() => openEditExisting(item, i)}
+                  onDelete={() => onDeleteImage?.(i)}
                   style={{ position: "absolute", top: 10, right: 10 }}
                 />
               )}

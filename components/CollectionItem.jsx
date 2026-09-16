@@ -129,13 +129,11 @@ export const CollectionItem = memo(function CollectionItem({
     updateItem({ gallery: [...gallery, item] });
   };
 
-  const handleUpdateImage = (imageIndex, focus) => {
+  const handleUpdateImage = (imageIndex, item) => {
     updateItem({
-      gallery: gallery.map((item, i) => {
-        if (i !== imageIndex) return item;
-        const uri = getImageUri(item);
-        return focus ? { uri, focus } : uri;
-      }),
+      gallery: gallery.map((existing, i) =>
+        i === imageIndex ? item : existing,
+      ),
     });
   };
 

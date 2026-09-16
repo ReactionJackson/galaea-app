@@ -13,7 +13,7 @@ import { useApp } from "@/context/AppContext";
 import { storePickedImage } from "@/utils/imageStorage";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
-import { useWindowDimensions } from "react-native";
+import { Image as RNImage, useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -98,7 +98,7 @@ export default function CollectionScreen() {
   };
 
   const handlePickCover = async () => {
-    const stored = await pickImage(0.5);
+    const stored = await pickImage(0.4);
     if (!stored) return;
     setCoverLightbox({
       mode: "edit",
@@ -119,6 +119,27 @@ export default function CollectionScreen() {
 
   const handleCloseCoverLightbox = () => setCoverLightbox(null);
 
+  const handleEditCover = () => {
+    const uri = getImageUri(displayItem.coverImage);
+    if (!uri) return;
+    const focus = getImageFocus(displayItem.coverImage);
+    RNImage.getSize(
+      uri,
+      (width, height) =>
+        setCoverLightbox({ mode: "edit", uri, width, height, focus }),
+      () =>
+        setCoverLightbox({
+          mode: "edit",
+          uri,
+          width: null,
+          height: null,
+          focus,
+        }),
+    );
+  };
+
+  const handleRemoveCover = () => updateDraft({ coverImage: null });
+
   if (!displayItem) return <Container />;
 
   return (
@@ -136,6 +157,8 @@ export default function CollectionScreen() {
           editable={editMode}
           onPressCard={handlePickCard}
           onPressCover={handlePickCover}
+          onEditCover={handleEditCover}
+          onRemoveCover={handleRemoveCover}
         />
 
         <Lightbox

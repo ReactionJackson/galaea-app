@@ -56,10 +56,26 @@ function buildDefaultItem() {
   };
 }
 
+function sanitizeGallery(gallery) {
+  if (!Array.isArray(gallery)) return [];
+  return gallery.filter((image) =>
+    typeof image === "string" ? !!image : !!image?.uri,
+  );
+}
+
 function ensureSeedData(entries, items) {
+  const safeItems = (items.length ? items : [buildDefaultItem()]).map(
+    (item) => ({
+      ...item,
+      entries: (item.entries ?? []).map((entry) => ({
+        ...entry,
+        gallery: sanitizeGallery(entry.gallery),
+      })),
+    }),
+  );
   return {
     entries: entries.length ? entries : [buildDefaultDay()],
-    items: items.length ? items : [buildDefaultItem()],
+    items: safeItems,
   };
 }
 
