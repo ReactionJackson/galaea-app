@@ -54,6 +54,7 @@ export const PageScroll = forwardRef(function PageScroll(
         contentContainerStyle ?? DEFAULT_CONTENT_CONTAINER_STYLE
       }
       contentInsetAdjustmentBehavior="never"
+      automaticallyAdjustKeyboardInsets
       {...props}
     >
       {children}
