@@ -28,19 +28,28 @@ function storageDir() {
 // DEFAULT_COMPRESS_QUALITY when not given.
 export async function storePickedImage(
   { uri, width, height },
-  { quality = DEFAULT_COMPRESS_QUALITY } = {},
+  { quality = DEFAULT_COMPRESS_QUALITY, resizeWidth } = {},
 ) {
-  const longEdge = Math.max(width ?? 0, height ?? 0);
-  const targetLongEdge = longEdge
-    ? Math.min(longEdge, MAX_DIMENSION)
-    : MAX_DIMENSION;
-  const isLandscape = (width ?? 0) >= (height ?? 0);
-
-  const imageRef = await ImageManipulator.manipulate(uri)
-    .resize(
+  // resizeWidth lets a caller resize straight to a known display width
+  // instead — used for the hero cover art, which is always shown at full
+  // screen width, so there's no reason to keep more resolution than that
+  // around (unlike card art/gallery photos, which get reused at several
+  // different sizes and so keep the longest-edge cap below instead).
+  let manipulated = ImageManipulator.manipulate(uri);
+  if (resizeWidth) {
+    manipulated = manipulated.resize({ width: resizeWidth });
+  } else {
+    const longEdge = Math.max(width ?? 0, height ?? 0);
+    const targetLongEdge = longEdge
+      ? Math.min(longEdge, MAX_DIMENSION)
+      : MAX_DIMENSION;
+    const isLandscape = (width ?? 0) >= (height ?? 0);
+    manipulated = manipulated.resize(
       isLandscape ? { width: targetLongEdge } : { height: targetLongEdge },
-    )
-    .renderAsync();
+    );
+  }
+
+  const imageRef = await manipulated.renderAsync();
   const saved = await imageRef.saveAsync({
     compress: quality,
     format: SaveFormat.JPEG,

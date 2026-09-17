@@ -22,7 +22,7 @@ const Container = styled.View`
   background-color: ${Colors.background};
 `;
 
-async function pickImage(quality) {
+async function pickImage(options) {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) return null;
   const result = await ImagePicker.launchImageLibraryAsync({
@@ -32,7 +32,7 @@ async function pickImage(quality) {
   if (result.canceled) return null;
   const asset = result.assets?.[0];
   if (!asset?.uri) return null;
-  return storePickedImage(asset, { quality });
+  return storePickedImage(asset, options);
 }
 
 export default function CollectionScreen() {
@@ -94,12 +94,12 @@ export default function CollectionScreen() {
   };
 
   const handlePickCard = async () => {
-    const stored = await pickImage();
+    const stored = await pickImage({ quality: 0.7 });
     if (stored) updateDraft({ cardImage: stored.uri });
   };
 
   const handlePickCover = async () => {
-    const stored = await pickImage(0.4);
+    const stored = await pickImage({ quality: 0.4, resizeWidth: screenWidth });
     if (!stored) return;
     setCoverLightbox({
       mode: "edit",
