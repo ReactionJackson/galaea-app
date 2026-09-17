@@ -18,6 +18,14 @@ function storageDir() {
   return dir;
 }
 
+// ImageManipulator only ever exports a single flattened frame, so running
+// a GIF through the JPEG path below would silently strip its animation —
+// detected up front so it can skip straight to a plain copy instead.
+function isGif({ mimeType, uri } = {}) {
+  if (mimeType) return mimeType === "image/gif";
+  return /\.gif(\?|$)/i.test(uri ?? "");
+}
+
 // Takes an image picker asset ({ uri, width, height }) and returns a
 // { uri, width, height } for a small, permanently-stored copy this app
 // owns — resized so its longest edge is at most MAX_DIMENSION (only one
@@ -25,11 +33,23 @@ function storageDir() {
 // rather than stretched) and re-encoded as a compressed JPEG. quality lets
 // a caller knock compression down further for imagery that doesn't need to
 // be sharp (e.g. a hero's background cover art) — defaults to
-// DEFAULT_COMPRESS_QUALITY when not given.
+// DEFAULT_COMPRESS_QUALITY when not given. A GIF skips all of that (see
+// isGif above) and is just copied through unresized, animation intact.
 export async function storePickedImage(
-  { uri, width, height },
+  { uri, width, height, mimeType },
   { quality = DEFAULT_COMPRESS_QUALITY, resizeWidth } = {},
 ) {
+  const dir = storageDir();
+
+  if (isGif({ mimeType, uri })) {
+    const destFile = new File(
+      dir,
+      `${Date.now()}-${Math.round(Math.random() * 1e6)}.gif`,
+    );
+    new File(uri).copySync(destFile, { overwrite: true });
+    return { uri: destFile.uri, width, height };
+  }
+
   // resizeWidth lets a caller resize straight to a known display width
   // instead — used for the hero cover art, which is always shown at full
   // screen width, so there's no reason to keep more resolution than that
@@ -55,7 +75,6 @@ export async function storePickedImage(
     format: SaveFormat.JPEG,
   });
 
-  const dir = storageDir();
   const destFile = new File(
     dir,
     `${Date.now()}-${Math.round(Math.random() * 1e6)}.jpg`,
