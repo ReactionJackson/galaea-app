@@ -43,7 +43,8 @@ const CoverBackground = styled.View`
   bottom: 0;
   border-top-left-radius: ${({ nestedInCard }) => (nestedInCard ? 30 : 0)}px;
   border-top-right-radius: ${({ nestedInCard }) => (nestedInCard ? 30 : 0)}px;
-  background-color: ${Colors.black};
+  background-color: ${({ nestedInCard }) =>
+    nestedInCard ? Colors.surfaceTint : Colors.black};
 `;
 
 const CoverImage = styled(ExpoImage).attrs({ transition: 200 })`
