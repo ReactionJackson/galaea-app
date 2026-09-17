@@ -1,43 +1,85 @@
 import { Colors } from "@/constants/theme";
 import * as Haptics from "expo-haptics";
+import { useEffect } from "react";
 import { Pressable } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import styled from "styled-components/native";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import styled, { css } from "styled-components/native";
 
-const Circle = styled.View`
-  width: 26px;
+// Exported so anything needing the same 26px-tall/13px-radius bubble for
+// contrast against a photo (e.g. GalleryPagination's page count) can reuse
+// it without duplicating the sizing. `pill` swaps the fixed 26px circle for
+// a row that's free to grow wider — for a button combining an icon with a
+// short label rather than just an icon.
+export const InteractCircle = styled.View`
   height: 26px;
   border-radius: 13px;
-  border: 2px solid ${Colors.dateBorder};
+  border: 2px solid
+    ${({ variant }) =>
+      variant === "danger" ? Colors.dateBorder : Colors.tags.default.primary};
   justify-content: center;
   align-items: center;
   background-color: ${({ variant }) =>
     variant === "danger" ? Colors.accent : Colors.editButtonBackground};
+  ${({ pill }) =>
+    pill
+      ? css`
+          flex-direction: row;
+          gap: 6px;
+          padding: 0 10px;
+        `
+      : css`
+          width: 26px;
+        `}
 `;
 
 export function InteractButton({
   variant,
+  pill = false,
   haptic = false,
+  disabled = false,
   onPress,
   style,
   children,
 }) {
+  const dimmedOpacity = useSharedValue(disabled ? 0.35 : 1);
+  useEffect(() => {
+    dimmedOpacity.value = withTiming(disabled ? 0.35 : 1, { duration: 200 });
+  }, [disabled, dimmedOpacity]);
+  const dimmedStyle = useAnimatedStyle(() => ({
+    opacity: dimmedOpacity.value,
+  }));
+
   const handlePress = () => {
+    if (disabled) return;
     if (haptic && process.env.EXPO_OS === "ios") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     }
     onPress?.();
   };
 
+  // The mount/unmount fade (entering/exiting) and the disabled dim both
+  // animate opacity, but on the same node the entrance transition stomps
+  // the dimmed value once it finishes — so they're split across two
+  // layered views, each owning one.
   return (
     <Animated.View
       entering={FadeIn.duration(200)}
       exiting={FadeOut.duration(200)}
       style={style}
     >
-      <Pressable onPress={handlePress}>
-        <Circle variant={variant}>{children}</Circle>
-      </Pressable>
+      <Animated.View style={dimmedStyle}>
+        <Pressable onPress={handlePress} disabled={disabled}>
+          <InteractCircle variant={variant} pill={pill}>
+            {children}
+          </InteractCircle>
+        </Pressable>
+      </Animated.View>
     </Animated.View>
   );
 }

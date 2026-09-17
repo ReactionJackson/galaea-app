@@ -16,6 +16,26 @@ import { ItemHero } from "./ItemHero";
 import { Tags } from "./Tags";
 import { ThemedText } from "./interface/ThemedText";
 
+// The shadow lives on its own plain (non-rounded) wrapper rather than on
+// Container itself. A shadow computed for a rounded-rect silhouette needs an
+// off-screen alpha mask on iOS, which is expensive and, worse, can leave a
+// stale rendering of itself briefly on screen after the view is removed —
+// exactly what was happening here when a whole page got torn down at once.
+// A plain rectangle's shadow is cheap to compute and doesn't exhibit that;
+// Container's own border-radius still shapes its background, just not the
+// shadow.
+const ShadowWrap = styled.View`
+  width: 100%;
+  ${({ isMinimal }) =>
+    !isMinimal &&
+    css`
+      shadow-color: ${Colors.black};
+      shadow-offset: 0px 0px;
+      shadow-opacity: 0.12;
+      shadow-radius: 8px;
+    `}
+`;
+
 const Container = styled.View`
   width: 100%;
   ${({ isMinimal }) =>
@@ -23,10 +43,6 @@ const Container = styled.View`
     css`
       border-radius: 30px;
       background-color: ${Colors.background};
-      shadow-color: ${Colors.black};
-      shadow-offset: 0px 0px;
-      shadow-opacity: 0.12;
-      shadow-radius: 8px;
     `}
 `;
 
@@ -141,79 +157,88 @@ export const CollectionItem = memo(function CollectionItem({
     updateItem({ gallery: gallery.filter((_, i) => i !== imageIndex) });
   };
 
+  const handleReorderImages = (fromIndex, toIndex) => {
+    const next = [...gallery];
+    [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
+    updateItem({ gallery: next });
+  };
+
   return (
-    <Container isMinimal={isMinimal}>
-      {!isMinimal && (
-        <Header>
-          <ItemHero
-            height={HERO_HEIGHT}
-            spacing={15}
-            cardImage={cardImage}
-            coverImage={getImageUri(coverImage)}
-            coverFocus={getImageFocus(coverImage)}
-            animateCoverReveal={isNew}
-            nestedInCard
-            shadowRadius={CARD_SHADOW_RADIUS}
-            shadowOpacity={CARD_SHADOW_OPACITY}
-          />
-        </Header>
-      )}
-      <Content isMinimal={isMinimal}>
-        {!isMinimal ? (
-          <>
-            <ThemedText type="title" style={{ marginBottom: 10 }}>
-              {title}
-            </ThemedText>
-            <ThemedText
-              type="subtitle"
-              color="text"
-              style={{ marginBottom: 5 }}
-            >
-              Entry {String(entryNumber).padStart(2, "0")}
-            </ThemedText>
-          </>
-        ) : (
-          <ThemedText type="subtitle" style={{ marginBottom: 5 }}>
-            {datePart}
-            <ThemedText type="subtitle" color="faded">
-              {" "}
-              {timePart}
-            </ThemedText>
-          </ThemedText>
+    <ShadowWrap isMinimal={isMinimal}>
+      <Container isMinimal={isMinimal}>
+        {!isMinimal && (
+          <Header>
+            <ItemHero
+              height={HERO_HEIGHT}
+              spacing={15}
+              cardImage={cardImage}
+              coverImage={getImageUri(coverImage)}
+              coverFocus={getImageFocus(coverImage)}
+              animateCoverReveal={isNew}
+              nestedInCard
+              shadowRadius={CARD_SHADOW_RADIUS}
+              shadowOpacity={CARD_SHADOW_OPACITY}
+            />
+          </Header>
         )}
-        <AnimateHeight visible={!!(text || editMode)}>
-          <ThemedText
-            isInput
-            multiline={true}
-            value={text}
-            placeholder="Write something about this..."
-            onChangeText={(t) => updateItem({ text: t })}
-            editable={editMode}
+        <Content isMinimal={isMinimal}>
+          {!isMinimal ? (
+            <>
+              <ThemedText type="title" style={{ marginBottom: 10 }}>
+                {title}
+              </ThemedText>
+              <ThemedText
+                type="subtitle"
+                color="text"
+                style={{ marginBottom: 5 }}
+              >
+                Entry {String(entryNumber).padStart(2, "0")}
+              </ThemedText>
+            </>
+          ) : (
+            <ThemedText type="subtitle" style={{ marginBottom: 5 }}>
+              {datePart}
+              <ThemedText type="subtitle" color="faded">
+                {" "}
+                {timePart}
+              </ThemedText>
+            </ThemedText>
+          )}
+          <AnimateHeight visible={!!(text || editMode)}>
+            <ThemedText
+              isInput
+              multiline={true}
+              value={text}
+              placeholder="Write something about this..."
+              onChangeText={(t) => updateItem({ text: t })}
+              editable={editMode}
+            />
+          </AnimateHeight>
+          <AnimatedSpacer
+            height={15}
+            visible={!!((text && gallery.length) || editMode)}
           />
-        </AnimateHeight>
-        <AnimatedSpacer
-          height={15}
-          visible={!!((text && gallery.length) || editMode)}
-        />
-        <AnimateHeight
-          visible={!!(gallery.length || editMode)}
-          style={{ marginHorizontal: -20 }}
-        >
-          <Gallery
-            images={gallery}
+          <AnimateHeight
+            visible={!!(gallery.length || editMode)}
+            style={{ marginHorizontal: -20 }}
+          >
+            <Gallery
+              images={gallery}
+              editMode={editMode}
+              onAddImage={handleAddImage}
+              onUpdateImage={handleUpdateImage}
+              onDeleteImage={handleDeleteImage}
+              onReorderImages={handleReorderImages}
+              horizontalPadding={isMinimal ? 40 : undefined}
+            />
+          </AnimateHeight>
+          <Tags
+            tagIds={tagIds}
             editMode={editMode}
-            onAddImage={handleAddImage}
-            onUpdateImage={handleUpdateImage}
-            onDeleteImage={handleDeleteImage}
-            horizontalPadding={isMinimal ? 40 : undefined}
+            onToggleTag={handleToggleTag}
           />
-        </AnimateHeight>
-        <Tags
-          tagIds={tagIds}
-          editMode={editMode}
-          onToggleTag={handleToggleTag}
-        />
-      </Content>
-    </Container>
+        </Content>
+      </Container>
+    </ShadowWrap>
   );
 });

@@ -3,13 +3,14 @@ import {
   AnimatedSpacer,
 } from "@/components/interface/AnimateHeight";
 import { FadeTrack } from "@/components/interface/FadeTrack";
+import { InteractButton } from "@/components/interface/InteractButton";
+import { CrossIcon } from "@/components/interface/icons/CrossIcon";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { TagEditRow } from "@/components/TagEditRow";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, View } from "react-native";
-import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
 
 const Row = styled.View`
@@ -36,28 +37,6 @@ const Tag = styled.View`
     border-color: ${Colors.tags[color].primary};
     background-color: ${Colors.tags[color].secondary};
   `}
-`;
-
-const CircleButton = styled.View`
-  width: 26px;
-  height: 26px;
-  border-radius: 13px;
-  align-items: center;
-  justify-content: center;
-  border-width: 2px;
-  flex-shrink: 0;
-`;
-
-const PlusCircle = styled(CircleButton)`
-  border-color: ${Colors.tags.default.primary};
-  background-color: ${Colors.tags.default.secondary};
-`;
-
-const PlusGlyph = styled(Animated.Text)`
-  font-family: ${Fonts.bold};
-  font-size: 14px;
-  line-height: 16px;
-  color: ${Colors.tags.default.primary};
 `;
 
 export function Tags({
@@ -143,11 +122,9 @@ export function Tags({
       <AnimatedSpacer visible={editMode || !!tagIds.length} height={15} />
       <AnimateHeight visible={editMode}>
         <Row>
-          <Pressable onPress={() => openEditRow(null)}>
-            <PlusCircle>
-              <PlusGlyph>+</PlusGlyph>
-            </PlusCircle>
-          </Pressable>
+          <InteractButton onPress={() => openEditRow(null)}>
+            <CrossIcon color={Colors.tags.default.primary} />
+          </InteractButton>
 
           <FadeTrack ref={tagPickerRef} contentContainerStyle={{ gap: 10 }}>
             {activeTags.map(({ tagId, name, color }, i) => {

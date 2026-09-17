@@ -1,4 +1,5 @@
 import { Colors, cardShadow } from "@/constants/theme";
+import { PAGE_INTRO_FADE } from "@/constants/values";
 import {
   getCachedAspectRatio,
   loadAspectRatio,
@@ -40,10 +41,9 @@ const CoverBackground = styled.View`
   left: 0;
   right: 0;
   bottom: 0;
-  border: 1px solid ${Colors.border};
   border-top-left-radius: ${({ nestedInCard }) => (nestedInCard ? 30 : 0)}px;
   border-top-right-radius: ${({ nestedInCard }) => (nestedInCard ? 30 : 0)}px;
-  background-color: ${Colors.surfaceTint};
+  background-color: ${Colors.black};
 `;
 
 const CoverImage = styled(ExpoImage).attrs({ transition: 200 })`
@@ -177,7 +177,7 @@ export function ItemHero({
         )}
         {coverImage && coverLoaded && (
           <Animated.View
-            entering={animateCoverReveal ? FadeIn.duration(400) : undefined}
+            entering={FadeIn.duration(PAGE_INTRO_FADE)}
             style={{ width: "100%", height: "100%" }}
           >
             <CoverImage

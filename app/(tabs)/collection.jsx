@@ -3,6 +3,7 @@ import { getImageFocus, getImageUri } from "@/components/Gallery";
 import { ItemHero } from "@/components/ItemHero";
 import { Lightbox } from "@/components/Lightbox";
 import { AnimatedSpacer } from "@/components/interface/AnimateHeight";
+import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
@@ -191,27 +192,29 @@ export default function CollectionScreen() {
           </PageHeader.Meta>
         </PageHeader>
 
-        {orderedEntries.map((entry) => (
-          <CollectionItem
-            key={entry.entryId}
-            isMinimal
-            editable={editMode}
-            entryId={entry.entryId}
-            date={entry.date}
-            text={entry.text}
-            tagIds={entry.tags}
-            gallery={entry.gallery}
-            onUpdate={(changes) =>
-              dispatch({
-                type: "UPDATE_ITEM_DRAFT_ENTRY",
-                entryId: entry.entryId,
-                changes,
-              })
-            }
-          />
-        ))}
+        <FadeInOnMount>
+          {orderedEntries.map((entry) => (
+            <CollectionItem
+              key={entry.entryId}
+              isMinimal
+              editable={editMode}
+              entryId={entry.entryId}
+              date={entry.date}
+              text={entry.text}
+              tagIds={entry.tags}
+              gallery={entry.gallery}
+              onUpdate={(changes) =>
+                dispatch({
+                  type: "UPDATE_ITEM_DRAFT_ENTRY",
+                  entryId: entry.entryId,
+                  changes,
+                })
+              }
+            />
+          ))}
 
-        <AnimatedSpacer visible={editMode} height={50} />
+          <AnimatedSpacer visible={editMode} height={50} />
+        </FadeInOnMount>
       </PageScroll>
 
       <CollectionTrack

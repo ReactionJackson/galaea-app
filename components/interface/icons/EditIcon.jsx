@@ -3,7 +3,7 @@ import Svg, { Path } from "react-native-svg";
 
 export function EditIcon({
   size = 14,
-  color = Colors.black,
+  color = Colors.tags.default.primary,
   strokeWidth = 1.6,
 }) {
   return (

@@ -12,19 +12,19 @@ const Column = styled.View`
 export function InteractionControls({ onAdd, onEdit, onDelete, style }) {
   return (
     <Column style={style}>
-      {onAdd && (
-        <InteractButton onPress={onAdd}>
-          <CrossIcon color={Colors.black} />
+      {onDelete && (
+        <InteractButton variant="danger" haptic onPress={onDelete}>
+          <CrossIcon rotation={45} />
         </InteractButton>
       )}
       {onEdit && (
         <InteractButton onPress={onEdit}>
-          <EditIcon color={Colors.black} />
+          <EditIcon />
         </InteractButton>
       )}
-      {onDelete && (
-        <InteractButton variant="danger" haptic onPress={onDelete}>
-          <CrossIcon rotation={45} />
+      {onAdd && (
+        <InteractButton onPress={onAdd}>
+          <CrossIcon color={Colors.tags.default.primary} />
         </InteractButton>
       )}
     </Column>

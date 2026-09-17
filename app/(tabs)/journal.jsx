@@ -3,6 +3,7 @@ import {
   AnimateHeight,
   AnimatedSpacer,
 } from "@/components/interface/AnimateHeight";
+import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
@@ -135,63 +136,73 @@ function JournalScreen() {
           />
         </PageHeader>
 
-        <AnimateHeight visible={textVisible}>
-          <ThemedText
-            key={editMode ? "editing" : "display"}
-            isInput
-            multiline={true}
-            value={activeEntry.text}
-            placeholder="Write something about today..."
-            onChangeText={(text) => dispatch({ type: "UPDATE_TEXT", text })}
-            editable={editMode}
+        <FadeInOnMount>
+          <AnimateHeight visible={textVisible}>
+            <ThemedText
+              key={editMode ? "editing" : "display"}
+              isInput
+              multiline={true}
+              value={activeEntry.text}
+              placeholder="Write something about today..."
+              onChangeText={(text) => dispatch({ type: "UPDATE_TEXT", text })}
+              editable={editMode}
+            />
+          </AnimateHeight>
+
+          <Tags
+            tagIds={activeEntry.tags}
+            editMode={editMode}
+            onToggleTag={handleToggleTag}
           />
-        </AnimateHeight>
+          <AnimatedSpacer visible={tagsVisible} height={25} />
 
-        <Tags
-          tagIds={activeEntry.tags}
-          editMode={editMode}
-          onToggleTag={handleToggleTag}
-        />
-        <AnimatedSpacer visible={tagsVisible} height={25} />
-
-        {activeEntry.items.map(
-          ({ itemId, entryId, isNew, text, tags, gallery }, i) => {
-            const itemVisible = !cancelling || !isNew || !!text;
-            return (
-              <View
-                key={`${itemId}-${String(entryId)}-${i}`}
-                onLayout={(e) => handleItemLayout(itemId, e.nativeEvent.layout)}
-              >
-                <AnimateHeight visible={itemVisible}>
-                  <CollectionItem
-                    itemId={itemId}
-                    entryId={entryId}
-                    index={i}
-                    isNew={isNew}
-                    text={text}
-                    tagIds={tags}
-                    gallery={gallery}
-                  />
-                </AnimateHeight>
-                {i !== activeEntry.items.length - 1 && (
-                  <AnimatedSpacer visible={itemVisible} />
-                )}
-              </View>
-            );
-          },
-        )}
-        <AnimatedSpacer
-          visible={activeEntry.items.length > 0}
-          height={editMode ? 20 : 10}
-        />
-
-        <AnimateHeight visible={editMode} style={{ marginHorizontal: -20 }}>
-          <ItemPickerTrack
-            attachedItemIds={activeEntry.items.map((it) => it.itemId)}
-            onSelect={handleSelectItem}
+          {activeEntry.items.map(
+            ({ itemId, entryId, isNew, text, tags, gallery }, i) => {
+              const itemVisible = !cancelling || !isNew || !!text;
+              return (
+                <View
+                  key={`${itemId}-${String(entryId)}-${i}`}
+                  onLayout={(e) =>
+                    handleItemLayout(itemId, e.nativeEvent.layout)
+                  }
+                >
+                  <AnimateHeight visible={itemVisible}>
+                    <CollectionItem
+                      itemId={itemId}
+                      entryId={entryId}
+                      index={i}
+                      isNew={isNew}
+                      text={text}
+                      tagIds={tags}
+                      gallery={gallery}
+                    />
+                  </AnimateHeight>
+                  {i !== activeEntry.items.length - 1 && (
+                    <AnimatedSpacer visible={itemVisible} />
+                  )}
+                </View>
+              );
+            },
+          )}
+          <AnimatedSpacer
+            visible={activeEntry.items.length > 0}
+            height={editMode ? 20 : 10}
           />
-        </AnimateHeight>
-        <AnimatedSpacer visible={editMode} height={70} />
+
+          {(editMode || cancelling) && (
+            <AnimateHeight
+              visible={editMode}
+              animateOnMount
+              style={{ marginHorizontal: -20 }}
+            >
+              <ItemPickerTrack
+                attachedItemIds={activeEntry.items.map((it) => it.itemId)}
+                onSelect={handleSelectItem}
+              />
+            </AnimateHeight>
+          )}
+          <AnimatedSpacer visible={editMode} height={70} />
+        </FadeInOnMount>
       </PageScroll>
 
       <JournalTrack

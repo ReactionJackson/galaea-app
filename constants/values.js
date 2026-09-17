@@ -19,3 +19,7 @@ export const COLLECTION_HERO_HEIGHT = 250;
 // ItemHero via cardShadow() in theme.js.
 export const CARD_SHADOW_RADIUS = 3;
 export const CARD_SHADOW_OPACITY = 0.15;
+
+// How long a freshly-mounted page (FadeInOnMount) or a hero's own cover
+// image (ItemHero) takes to fade in on arrival.
+export const PAGE_INTRO_FADE = 450;

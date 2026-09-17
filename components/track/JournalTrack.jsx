@@ -173,8 +173,21 @@ export function JournalTrack({
         }
         return;
       }
-      if (entries[index])
-        dispatch({ type: "CHANGE_DAY", dayId: entries[index].dayId });
+      if (entries[index]) {
+        const dayId = entries[index].dayId;
+        // The indicator's own settle animation (scale/opacity back to 1)
+        // starts on this same tick. Landing on a heavier day mounts a burst
+        // of new native views right away, which competes for the same
+        // frames and makes that animation stutter even though it's a
+        // separate, already-mounted component. Pushing the dispatch two
+        // frames out lets the settle animation actually get painted first,
+        // instead of racing the mount.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            dispatch({ type: "CHANGE_DAY", dayId });
+          });
+        });
+      }
     },
     onAdd: () => dispatch({ type: "ADD_DAY" }),
     onCancelAdd: onCancelEdit,
