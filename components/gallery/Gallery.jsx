@@ -1,7 +1,6 @@
 import { Colors } from "@/constants/theme";
 import { ITEM_ASPECT_RATIO } from "@/constants/values";
 import { storePickedImage } from "@/utils/imageStorage";
-import { Image as ExpoImage } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { memo, useEffect, useRef, useState } from "react";
 import {
@@ -11,44 +10,31 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import styled from "styled-components/native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+import { Lightbox } from "../Lightbox";
+import { InteractionControls } from "../interface/InteractionControls";
+import { ThemedText } from "../interface/ThemedText";
+import { GalleryItem } from "./GalleryItem";
 import { GalleryPagination } from "./GalleryPagination";
-import { Lightbox } from "./Lightbox";
-import { InteractionControls } from "./interface/InteractionControls";
-import { ThemedText } from "./interface/ThemedText";
+import {
+  CAPTION_REVEAL_DURATION,
+  CAPTION_REVEAL_EASING,
+  CAPTION_REVEAL_HEIGHT,
+  DEFAULT_HORIZONTAL_PADDING,
+  EditableView,
+  GALLERY_ITEM_GAP,
+  Item,
+  getImageCaption,
+  getImageFocus,
+  getImageUri,
+} from "./shared";
 
-const Item = styled.View`
-  flex-shrink: 0;
-  aspect-ratio: ${ITEM_ASPECT_RATIO};
-  border-radius: 10px;
-  overflow: hidden;
-`;
-
-const Image = styled(ExpoImage).attrs({ transition: 200 })`
-  width: 100%;
-  height: 100%;
-`;
-
-const EditableView = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  border: 2px dashed ${Colors.disabled};
-  border-radius: 10px;
-  transform: scale(0.99);
-`;
-
-const GALLERY_ITEM_GAP = 10;
-const DEFAULT_HORIZONTAL_PADDING = 80;
-
-export function getImageUri(item) {
-  if (!item) return null;
-  return typeof item === "string" ? item : item.uri;
-}
-export function getImageFocus(item) {
-  if (!item) return null;
-  return typeof item === "string" ? null : (item.focus ?? null);
-}
+export { CAPTION_REVEAL_HEIGHT, getImageCaption, getImageFocus, getImageUri };
 
 export const Gallery = memo(function Gallery({
   images,
@@ -67,6 +53,31 @@ export const Gallery = memo(function Gallery({
 
   const scrollRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const revealShift = useSharedValue(0);
+  const [transitioning, setTransitioning] = useState(false);
+  useEffect(() => {
+    setTransitioning(true);
+    revealShift.value = withTiming(
+      editMode ? CAPTION_REVEAL_HEIGHT : 0,
+      { duration: CAPTION_REVEAL_DURATION, easing: CAPTION_REVEAL_EASING },
+      (finished) => {
+        if (finished) scheduleOnRN(setTransitioning, false);
+      },
+    );
+  }, [editMode, revealShift]);
+  const revealContainerAnimatedStyle = useAnimatedStyle(() => ({
+    height: trackHeight + revealShift.value,
+  }));
+  const revealContainerStyle = transitioning
+    ? [{ overflow: "hidden" }, revealContainerAnimatedStyle]
+    : {
+        height: trackHeight + (editMode ? CAPTION_REVEAL_HEIGHT : 0),
+        overflow: editMode ? "visible" : "hidden",
+      };
+  const addTileTrayStyle = useAnimatedStyle(() => ({
+    bottom: CAPTION_REVEAL_HEIGHT - revealShift.value,
+  }));
 
   useEffect(() => {
     setActiveIndex((i) => Math.min(i, Math.max(itemCount - 1, 0)));
@@ -130,7 +141,13 @@ export const Gallery = memo(function Gallery({
 
   const handleSaveLightbox = (focus) => {
     if (!lightbox) return;
-    const item = focus ? { uri: lightbox.uri, focus } : lightbox.uri;
+    const existing = lightboxIndex != null ? images[lightboxIndex] : null;
+    const caption = getImageCaption(existing);
+    const item = focus
+      ? { uri: lightbox.uri, focus, ...(caption ? { caption } : {}) }
+      : caption
+        ? { uri: lightbox.uri, caption }
+        : lightbox.uri;
     if (lightboxIndex == null) {
       onAddImage?.(item);
     } else {
@@ -141,6 +158,12 @@ export const Gallery = memo(function Gallery({
 
   const handleCloseLightbox = () => {
     setLightbox(null);
+  };
+
+  const handleChangeCaption = (index, text) => {
+    const item = images[index];
+    const base = typeof item === "string" ? { uri: item } : { ...item };
+    onUpdateImage?.(index, { ...base, caption: text });
   };
 
   const handleScroll = (e) => {
@@ -164,10 +187,10 @@ export const Gallery = memo(function Gallery({
 
   return (
     <>
-      <View style={{ position: "relative" }}>
+      <Animated.View style={[{ position: "relative" }, revealContainerStyle]}>
         <ScrollView
           ref={scrollRef}
-          style={{ height: trackHeight }}
+          style={{ height: trackHeight + CAPTION_REVEAL_HEIGHT }}
           horizontal
           snapToInterval={scrollInterval}
           decelerationRate="fast"
@@ -185,29 +208,50 @@ export const Gallery = memo(function Gallery({
             if (!item) return null;
             const uri = getImageUri(item);
             return (
-              <Item key={uri} style={{ width: containerWidth }}>
-                <Pressable
-                  onPress={() => openView(uri)}
-                  disabled={editMode}
-                  style={{ flex: 1 }}
-                >
-                  <Image
-                    contentFit="cover"
-                    contentPosition={getImageFocus(item) ?? undefined}
-                    source={{ uri }}
-                  />
-                </Pressable>
-              </Item>
+              <GalleryItem
+                key={uri}
+                item={item}
+                index={i}
+                containerWidth={containerWidth}
+                trackHeight={trackHeight}
+                editMode={editMode}
+                revealShift={revealShift}
+                onPressView={openView}
+                onChangeCaption={handleChangeCaption}
+              />
             );
           })}
           {editMode && (
-            <Item style={{ width: containerWidth }}>
-              <Pressable onPress={handleAddImage} style={{ flex: 1 }}>
-                <EditableView>
-                  <ThemedText>Add Image</ThemedText>
-                </EditableView>
-              </Pressable>
-            </Item>
+            <View
+              style={{
+                width: containerWidth,
+                height: trackHeight + CAPTION_REVEAL_HEIGHT,
+              }}
+            >
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  {
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    height: trackHeight / 2,
+                    borderRadius: 15,
+                    borderWidth: 1,
+                    borderColor: Colors.border,
+                    backgroundColor: Colors.surfaceTint,
+                  },
+                  addTileTrayStyle,
+                ]}
+              />
+              <Item style={{ width: containerWidth }}>
+                <Pressable onPress={handleAddImage} style={{ flex: 1 }}>
+                  <EditableView>
+                    <ThemedText>Add Image</ThemedText>
+                  </EditableView>
+                </Pressable>
+              </Item>
+            </View>
           )}
         </ScrollView>
         {editMode && !onAddTile && (
@@ -232,14 +276,14 @@ export const Gallery = memo(function Gallery({
             onPressRight={handleMoveRight}
             style={{
               position: "absolute",
-              bottom: 10,
+              bottom: 10 + CAPTION_REVEAL_HEIGHT,
               left: 20,
               width: containerWidth,
               justifyContent: "center",
             }}
           />
         )}
-      </View>
+      </Animated.View>
       <Lightbox
         state={lightbox}
         onClose={handleCloseLightbox}

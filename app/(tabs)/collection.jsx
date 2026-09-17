@@ -1,5 +1,5 @@
 import { CollectionItem } from "@/components/CollectionItem";
-import { getImageFocus, getImageUri } from "@/components/Gallery";
+import { getImageFocus, getImageUri } from "@/components/gallery/Gallery";
 import { ItemHero } from "@/components/ItemHero";
 import { Lightbox } from "@/components/Lightbox";
 import { AnimatedSpacer } from "@/components/interface/AnimateHeight";

@@ -1,5 +1,6 @@
 import { Colors, Fonts } from "@/constants/theme";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
+import { forwardRef } from "react";
 import { Platform, StyleSheet, TextInput } from "react-native";
 import Animated from "react-native-reanimated";
 
@@ -9,6 +10,7 @@ const TYPE_STYLES = {
   title: "title",
   "title-small": "titleSmall",
   text: "text",
+  caption: "caption",
   subtitle: "subtitle",
   "date-number": "dateNumber",
   tag: "tag",
@@ -18,17 +20,20 @@ function resolveColor(color) {
   return Colors.tags[color]?.primary ?? Colors[color] ?? color;
 }
 
-export function ThemedText({
-  style,
-  type = "text",
-  color,
-  colorSwitch,
-  isInput = false,
-  multiline = false,
-  value,
-  editable,
-  ...rest
-}) {
+export const ThemedText = forwardRef(function ThemedText(
+  {
+    style,
+    type = "text",
+    color,
+    colorSwitch,
+    isInput = false,
+    multiline = false,
+    value,
+    editable,
+    ...rest
+  },
+  ref,
+) {
   const defaultColor =
     type === "tag"
       ? (Colors.tags[color ?? "default"]?.primary ?? Colors.black)
@@ -71,6 +76,7 @@ export function ThemedText({
   if (isInput) {
     return (
       <AnimatedTextInput
+        ref={ref}
         style={baseStyle}
         multiline={multiline}
         // Single-line inputs don't need RN's own scroll-view-backed caret
@@ -93,8 +99,8 @@ export function ThemedText({
     );
   }
 
-  return <Animated.Text style={baseStyle} {...rest} />;
-}
+  return <Animated.Text ref={ref} style={baseStyle} {...rest} />;
+});
 
 const webTextStyles = Platform.select({
   web: {
@@ -135,6 +141,13 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 16,
     lineHeight: 24,
+    ...webTextStyles,
+  },
+  caption: {
+    color: Colors.text,
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    lineHeight: 18,
     ...webTextStyles,
   },
   dateNumber: {

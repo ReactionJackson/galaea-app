@@ -1,7 +1,7 @@
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { InteractButton, InteractCircle } from "./interface/InteractButton";
-import { ThemedText } from "./interface/ThemedText";
+import { InteractButton, InteractCircle } from "../interface/InteractButton";
+import { ThemedText } from "../interface/ThemedText";
 
 const Row = styled(Animated.View)`
   flex-direction: row;

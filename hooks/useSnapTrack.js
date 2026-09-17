@@ -118,6 +118,7 @@ export function useSnapTrack({
         onCancelAdd();
         setIsScrolling(true);
         hapticLight();
+        isInternalScrollRef.current = false;
         scrollToIndex(itemCount - 1, true);
         return;
       }
@@ -126,6 +127,7 @@ export function useSnapTrack({
     }
     setIsScrolling(true);
     hapticLight();
+    isInternalScrollRef.current = false;
     if (index === ADD_INDEX) {
       setAddActive(true);
       scrollToAddAfterResize.current = true;

@@ -11,7 +11,7 @@ import {
 import { useApp } from "@/context/AppContext";
 import { memo } from "react";
 import styled, { css } from "styled-components/native";
-import { Gallery, getImageFocus, getImageUri } from "./Gallery";
+import { Gallery, getImageFocus, getImageUri } from "./gallery/Gallery";
 import { ItemHero } from "./ItemHero";
 import { Tags } from "./Tags";
 import { ThemedText } from "./interface/ThemedText";
@@ -59,6 +59,7 @@ const Content = styled.View`
     !isMinimal &&
     css`
       padding: 20px;
+      padding-top: 15px;
       margin-bottom: 0px;
       border: 1px solid ${Colors.border};
       border-top-width: 0px;
