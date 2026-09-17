@@ -1,7 +1,6 @@
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { ArrowIcon } from "./interface/icons/ArrowIcon";
-import { InteractButton } from "./interface/InteractButton";
+import { InteractButton, InteractCircle } from "./interface/InteractButton";
 import { ThemedText } from "./interface/ThemedText";
 
 const Row = styled(Animated.View)`
@@ -23,21 +22,20 @@ export function GalleryPagination({
       entering={FadeIn.duration(200)}
       exiting={FadeOut.duration(200)}
     >
-      <InteractButton pill onPress={onPressLeft} disabled={index === 0}>
-        <ArrowIcon rotation={180} size={10} />
+      <InteractButton onPress={onPressLeft} disabled={index === 0}>
         <ThemedText type="tag" color="black">
-          Shift
+          ←
         </ThemedText>
       </InteractButton>
-      <InteractButton
-        pill
-        onPress={onPressRight}
-        disabled={index === total - 1}
-      >
+      <InteractCircle pill>
         <ThemedText type="tag" color="black">
-          Shift
+          Order: {index + 1} / {total}
         </ThemedText>
-        <ArrowIcon size={10} />
+      </InteractCircle>
+      <InteractButton onPress={onPressRight} disabled={index === total - 1}>
+        <ThemedText type="tag" color="black">
+          →
+        </ThemedText>
       </InteractButton>
     </Row>
   );

@@ -68,16 +68,10 @@ export const Gallery = memo(function Gallery({
   const scrollRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Keep the current position in bounds if an image is added/removed
-  // elsewhere (e.g. the delete button) rather than via the paging arrows.
-  // Allowed to sit one past the last image — that slot is the "add image"
-  // tile in edit mode, which is a valid (if unreorderable) place to land.
   useEffect(() => {
     setActiveIndex((i) => Math.min(i, Math.max(itemCount - 1, 0)));
   }, [itemCount]);
 
-  // True once the gallery has scrolled onto the trailing "add image" tile
-  // rather than an actual photo — reordering doesn't apply there.
   const onAddTile = editMode && activeIndex >= images.length;
 
   const [lightbox, setLightbox] = useState(null);
@@ -149,25 +143,19 @@ export const Gallery = memo(function Gallery({
     setLightbox(null);
   };
 
-  // Tracked continuously (not just on momentum end) so the pagination/
-  // interaction controls update the moment the track visually settles on a
-  // new image, rather than lagging until the deceleration fully stops.
   const handleScroll = (e) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / scrollInterval);
     const clamped = Math.max(0, Math.min(index, itemCount - 1));
     setActiveIndex((prev) => (prev === clamped ? prev : clamped));
   };
 
-  // Swaps the currently-viewed image with its neighbour and scrolls the
-  // track to follow it, so the photo you were looking at stays in view at
-  // its new position rather than appearing to jump away.
   const moveImage = (toIndex) => {
     if (toIndex < 0 || toIndex >= images.length) return;
     onReorderImages?.(activeIndex, toIndex);
     setActiveIndex(toIndex);
     scrollRef.current?.scrollTo({
       x: toIndex * scrollInterval,
-      animated: true,
+      animated: false,
     });
   };
 
@@ -197,23 +185,18 @@ export const Gallery = memo(function Gallery({
             if (!item) return null;
             const uri = getImageUri(item);
             return (
-              <Item key={`image-${i}`} style={{ width: containerWidth }}>
-                {editMode ? (
+              <Item key={uri} style={{ width: containerWidth }}>
+                <Pressable
+                  onPress={() => openView(uri)}
+                  disabled={editMode}
+                  style={{ flex: 1 }}
+                >
                   <Image
                     contentFit="cover"
                     contentPosition={getImageFocus(item) ?? undefined}
                     source={{ uri }}
-                    style={{ flex: 1 }}
                   />
-                ) : (
-                  <Pressable onPress={() => openView(uri)} style={{ flex: 1 }}>
-                    <Image
-                      contentFit="cover"
-                      contentPosition={getImageFocus(item) ?? undefined}
-                      source={{ uri }}
-                    />
-                  </Pressable>
-                )}
+                </Pressable>
               </Item>
             );
           })}
