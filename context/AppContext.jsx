@@ -1,8 +1,10 @@
+import { reprocessLegacyImages } from "@/utils/reprocessLegacyImages";
 import { loadPersistedState, savePersistedState } from "@/utils/storage";
 import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useReducer,
   useRef,
   useState,
@@ -529,6 +531,49 @@ function appReducer(state, action) {
       };
     }
 
+    // Merges results from the one-time background image-reprocessing pass
+    // (see utils/reprocessLegacyImages) onto whatever state.items is right
+    // now, not the snapshot that pass started from. Each patch only applies
+    // where the live image's uri still matches the one it was reprocessed
+    // from, so an edit made while it was still running in the background
+    // (replacing that same image, or removing the item/entry entirely)
+    // simply leaves the patch a no-op instead of clobbering it.
+    case "APPLY_IMAGE_PATCHES": {
+      const patchesById = new Map(action.patches.map((p) => [p.itemId, p]));
+      const items = state.items.map((item) => {
+        const patch = patchesById.get(item.itemId);
+        if (!patch) return item;
+
+        const cardImage =
+          patch.cardImage && item.cardImage?.uri === patch.cardImage.fromUri
+            ? patch.cardImage.value
+            : item.cardImage;
+        const coverImage =
+          patch.coverImage && item.coverImage?.uri === patch.coverImage.fromUri
+            ? patch.coverImage.value
+            : item.coverImage;
+
+        const entries = patch.entryPatches
+          ? item.entries.map((entry) => {
+              const entryPatch = patch.entryPatches.find(
+                (ep) => ep.entryId === entry.entryId,
+              );
+              if (!entryPatch) return entry;
+              const gallery = (entry.gallery ?? []).map((image) => {
+                const imagePatch = entryPatch.images.find(
+                  (ip) => ip.fromUri === image.uri,
+                );
+                return imagePatch ? imagePatch.value : image;
+              });
+              return { ...entry, gallery };
+            })
+          : item.entries;
+
+        return { ...item, cardImage, coverImage, entries };
+      });
+      return { ...state, items };
+    }
+
     default:
       return state;
   }
@@ -546,6 +591,7 @@ export function AppProvider({ children }) {
   // before checking whether there's real, previously-saved content to show.
   const [ready, setReady] = useState(false);
   const persistTimerRef = useRef(null);
+  const hasReprocessedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -558,6 +604,20 @@ export function AppProvider({ children }) {
       cancelled = true;
     };
   }, []);
+
+  // One-time background pass over whatever items just came out of storage,
+  // shrinking any images still left at their original (pre-optimizer) size.
+  // Runs once per launch, after hydration — never re-triggered by its own
+  // resulting dispatches — and reports progress incrementally so an app
+  // close partway through doesn't lose what it already did.
+  useEffect(() => {
+    if (!ready || hasReprocessedRef.current) return;
+    hasReprocessedRef.current = true;
+    reprocessLegacyImages(state.items, (patch) => {
+      dispatch({ type: "APPLY_IMAGE_PATCHES", patches: [patch] });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
 
   // Persists the actual content whenever it changes — not on every keystroke
   // of an in-progress edit, since drafts aren't part of what's saved anyway
@@ -583,13 +643,36 @@ export function AppProvider({ children }) {
   // The entry the UI always reads from — draft while editing, committed otherwise.
   const activeEntry = state.draft ?? state.committed;
 
+  // Re-structure data and memoize to help with loading
+  const itemsById = useMemo(() => {
+    const map = {};
+    for (const item of state.items) {
+      const sortedEntries = [...item.entries].sort(
+        (a, b) => a.entryId - b.entryId,
+      );
+      const entriesById = {};
+      sortedEntries.forEach((entry, index) => {
+        entriesById[entry.entryId] = { ...entry, entryNumber: index + 1 };
+      });
+      map[item.itemId] = {
+        ...item,
+        entriesById,
+        entryCount: sortedEntries.length,
+      };
+    }
+    return map;
+  }, [state.items]);
+
+  const contextValue = useMemo(
+    () => ({ state, activeEntry, dispatch, itemsById }),
+    [state, activeEntry, dispatch, itemsById],
+  );
+
   // Nothing to show yet — still checking AsyncStorage for real content.
   if (!ready) return null;
 
   return (
-    <AppContext.Provider value={{ state, activeEntry, dispatch }}>
-      {children}
-    </AppContext.Provider>
+    <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
   );
 }
 

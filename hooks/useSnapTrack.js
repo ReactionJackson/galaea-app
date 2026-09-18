@@ -127,13 +127,18 @@ export function useSnapTrack({
     }
     setIsScrolling(true);
     hapticLight();
-    isInternalScrollRef.current = false;
     if (index === ADD_INDEX) {
+      isInternalScrollRef.current = false;
       setAddActive(true);
       scrollToAddAfterResize.current = true;
       return;
     }
+    // Load content immediately if we tap directly to an index
+    isInternalScrollRef.current = true;
+    setActiveIndex(index);
+    activeItemIdRef.current = itemIds[index] ?? null;
     scrollToIndex(index);
+    onSettle(index, { alreadyActive: false });
   };
 
   const handleTrackLayout = (event) => {

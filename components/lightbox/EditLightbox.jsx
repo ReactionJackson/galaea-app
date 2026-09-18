@@ -1,5 +1,5 @@
-import { Image } from "@/components/image/Image";
 import { GALLERY_ITEM_RADIUS } from "@/components/gallery/shared";
+import { Image } from "@/components/image/Image";
 import { Colors } from "@/constants/theme";
 import { ITEM_ASPECT_RATIO } from "@/constants/values";
 import { useEffect, useRef, useState } from "react";
@@ -61,11 +61,6 @@ export function EditLightbox({
 }) {
   const [rect, setRect] = useState(null);
   const [focusPercent, setFocusPercent] = useState(null);
-  // The Lightbox modal stays mounted through its own close-fade (see
-  // Lightbox), so image itself going to null on close would otherwise yank
-  // the image (and the crop box positioned against it) out from under the
-  // still-fading-out modal. Keep showing the last real image until a new
-  // one actually opens.
   const [displayImage, setDisplayImage] = useState(image);
 
   const cropRef = useRef(null);

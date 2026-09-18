@@ -1,5 +1,5 @@
 import { ITEM_ASPECT_RATIO } from "@/constants/values";
-import { storePickedImage } from "@/utils/images";
+import { pickAndStoreImage } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
 import { memo, useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, useWindowDimensions } from "react-native";
@@ -71,7 +71,8 @@ export const Gallery = memo(function Gallery({
   const [transitioning, setTransitioning] = useState(false);
   const [openItem, setOpenItem] = useState(null); // { mode: "edit" | "view", image, index }
 
-  const containerWidth = useWindowDimensions().width - horizontalPadding;
+  const { width: screenWidth } = useWindowDimensions();
+  const containerWidth = screenWidth - horizontalPadding;
   const scrollRef = useRef(null);
   const revealShift = useSharedValue(0);
 
@@ -113,7 +114,7 @@ export const Gallery = memo(function Gallery({
 
     const asset = result.assets?.[0];
     if (!asset?.uri) return;
-    const stored = await storePickedImage(asset);
+    const stored = await pickAndStoreImage(asset, "gallery");
     setOpenItem({ mode: "edit", image: stored, index: null });
   };
 

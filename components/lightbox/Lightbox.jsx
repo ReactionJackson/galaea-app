@@ -1,3 +1,4 @@
+import { LIGHTBOX_PADDING } from "@/constants/values";
 import { BlurView } from "expo-blur";
 import { Modal, Pressable } from "react-native";
 import styled from "styled-components/native";
@@ -7,7 +8,7 @@ const Backdrop = styled(BlurView).attrs({
   tint: "dark",
 })`
   flex: 1;
-  padding: 20px;
+  padding: ${LIGHTBOX_PADDING}px;
   background-color: rgba(0, 0, 0, 0.75);
 `;
 

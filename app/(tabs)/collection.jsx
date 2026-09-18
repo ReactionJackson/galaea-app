@@ -8,9 +8,12 @@ import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
 import { CollectionTrack } from "@/components/track/CollectionTrack";
 import { Colors } from "@/constants/theme";
-import { COLLECTION_HERO_HEIGHT } from "@/constants/values";
+import {
+  COLLECTION_HERO_HEIGHT,
+  COLLECTION_HERO_SPACING,
+} from "@/constants/values";
 import { useApp } from "@/context/AppContext";
-import { storePickedImage } from "@/utils/images";
+import { pickAndStoreImage } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { useWindowDimensions } from "react-native";
@@ -21,7 +24,7 @@ const Container = styled.View`
   background-color: ${Colors.background};
 `;
 
-async function pickImage(options) {
+async function pickImage(kind) {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) return null;
   const result = await ImagePicker.launchImageLibraryAsync({
@@ -31,11 +34,11 @@ async function pickImage(options) {
   if (result.canceled) return null;
   const asset = result.assets?.[0];
   if (!asset?.uri) return null;
-  return storePickedImage(asset, options);
+  return pickAndStoreImage(asset, kind);
 }
 
 export default function CollectionScreen() {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, itemsById } = useApp();
   const { items, itemDraft, editingItemId } = state;
   const editMode = !!itemDraft;
 
@@ -43,7 +46,7 @@ export default function CollectionScreen() {
   const [activeItemId, setActiveItemId] = useState(items[0]?.itemId);
   const [coverImageToEdit, setCoverImageToEdit] = useState(null);
 
-  const activeItem = items.find((it) => it.itemId === activeItemId) ?? items[0];
+  const activeItem = itemsById[activeItemId] ?? items[0];
   const displayItem = itemDraft ?? activeItem;
   const orderedEntries = displayItem
     ? [...displayItem.entries].sort(
@@ -89,12 +92,12 @@ export default function CollectionScreen() {
   };
 
   const handlePickCard = async () => {
-    const stored = await pickImage({ quality: 0.7 });
+    const stored = await pickImage("card");
     if (stored) updateDraft({ cardImage: stored });
   };
 
   const handlePickCover = async () => {
-    const stored = await pickImage({ quality: 0.4, resizeWidth: screenWidth });
+    const stored = await pickImage("cover");
     if (stored) setCoverImageToEdit(stored);
   };
 
@@ -131,7 +134,7 @@ export default function CollectionScreen() {
       >
         <ItemHero
           height={COLLECTION_HERO_HEIGHT}
-          spacing={30}
+          spacing={COLLECTION_HERO_SPACING}
           cardImage={displayItem.cardImage}
           coverImage={displayItem.coverImage}
           editable={editMode}

@@ -88,33 +88,19 @@ export const CollectionItem = memo(function CollectionItem({
   gallery: galleryProp,
   onUpdate,
 }) {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, itemsById } = useApp();
   const editMode = editable ?? (isMinimal ? false : state.editMode);
 
-  const { title, cardImage, coverImage, entries } =
-    state.items.find((item) => item.itemId === itemId) ?? {};
-
-  // Purely a display ordinal — "the Nth thing written about this item" —
-  // computed fresh from current entries every render rather than stored, so
-  // it can never drift out of sync. entryId itself just keeps incrementing
-  // and is never reused/shown, so a gap left by a removed entry elsewhere
-  // never surfaces here: this entry simply becomes "number 3" instead of
-  // "number 4" once whatever was in front of it in creation order is gone.
-  const sortedEntries = entries
-    ? [...entries].sort((a, b) => a.entryId - b.entryId)
-    : [];
-  const entryIndex =
-    entryId != null
-      ? sortedEntries.findIndex((entry) => entry.entryId === entryId)
-      : -1;
-  const entryNumber =
-    entryIndex !== -1 ? entryIndex + 1 : sortedEntries.length + 1;
+  const item = itemsById[itemId];
+  const { title, cardImage, coverImage } = item ?? {};
+  const resolvedEntry = entryId != null ? item?.entriesById[entryId] : null;
+  const entryNumber = resolvedEntry?.entryNumber ?? (item?.entryCount ?? 0) + 1;
 
   const {
     text: dataText = "",
     tags: dataTagIds = [],
     gallery: dataGallery = [],
-  } = entries?.find((entry) => entry.entryId === entryId) ?? {};
+  } = resolvedEntry ?? {};
 
   const text = textProp ?? dataText;
   const tagIds = tagIdsProp ?? dataTagIds;
