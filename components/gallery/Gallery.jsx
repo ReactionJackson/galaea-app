@@ -1,4 +1,3 @@
-import { Colors } from "@/constants/theme";
 import { ITEM_ASPECT_RATIO } from "@/constants/values";
 import { storePickedImage } from "@/utils/imageStorage";
 import * as ImagePicker from "expo-image-picker";
@@ -8,7 +7,6 @@ import {
   Image as RNImage,
   ScrollView,
   useWindowDimensions,
-  View,
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -16,25 +14,56 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
+import styled, { css } from "styled-components/native";
 import { Lightbox } from "../Lightbox";
 import { InteractionControls } from "../interface/InteractionControls";
 import { ThemedText } from "../interface/ThemedText";
 import { GalleryItem } from "./GalleryItem";
 import { GalleryPagination } from "./GalleryPagination";
 import {
-  CAPTION_REVEAL_DURATION,
   CAPTION_REVEAL_EASING,
   CAPTION_REVEAL_HEIGHT,
-  DEFAULT_HORIZONTAL_PADDING,
+  CaptionTray,
   EditableView,
   GALLERY_ITEM_GAP,
+  GallerySlot,
   Item,
   getImageCaption,
   getImageFocus,
   getImageUri,
 } from "./shared";
 
-export { CAPTION_REVEAL_HEIGHT, getImageCaption, getImageFocus, getImageUri };
+const GalleryScrollView = styled(ScrollView)`
+  height: ${({ $height }) => $height}px;
+`;
+
+const ControlsOverlay = styled(InteractionControls)`
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  width: ${({ $width }) => $width}px;
+  align-items: flex-end;
+  padding-right: 10px;
+`;
+
+const PaginationOverlay = styled(GalleryPagination)`
+  position: absolute;
+  bottom: ${10 + CAPTION_REVEAL_HEIGHT}px;
+  left: 20px;
+  width: ${({ $width }) => $width}px;
+  justify-content: center;
+`;
+
+const RevealContainer = styled(Animated.View)`
+  position: relative;
+  overflow: ${({ $transitioning, $editMode }) =>
+    $transitioning || !$editMode ? "hidden" : "visible"};
+  ${({ $transitioning, $editMode, $trackHeight }) =>
+    !$transitioning &&
+    css`
+      height: ${$trackHeight + ($editMode ? CAPTION_REVEAL_HEIGHT : 0)}px;
+    `}
+`;
 
 export const Gallery = memo(function Gallery({
   images,
@@ -43,54 +72,46 @@ export const Gallery = memo(function Gallery({
   onUpdateImage,
   onDeleteImage,
   onReorderImages,
-  horizontalPadding = DEFAULT_HORIZONTAL_PADDING,
+  horizontalPadding = 80,
 }) {
-  const { width: screenWidth } = useWindowDimensions();
-  const containerWidth = screenWidth - horizontalPadding;
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [transitioning, setTransitioning] = useState(false);
+  const [lightbox, setLightbox] = useState(null);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  const containerWidth = useWindowDimensions().width - horizontalPadding;
+  const scrollRef = useRef(null);
+  const revealShift = useSharedValue(0);
+
   const trackHeight = Math.round(containerWidth / ITEM_ASPECT_RATIO);
   const itemCount = images.length + (editMode ? 1 : 0);
   const scrollInterval = containerWidth + GALLERY_ITEM_GAP;
-
-  const scrollRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const revealShift = useSharedValue(0);
-  const [transitioning, setTransitioning] = useState(false);
-  useEffect(() => {
-    setTransitioning(true);
-    revealShift.value = withTiming(
-      editMode ? CAPTION_REVEAL_HEIGHT : 0,
-      { duration: CAPTION_REVEAL_DURATION, easing: CAPTION_REVEAL_EASING },
-      (finished) => {
-        if (finished) scheduleOnRN(setTransitioning, false);
-      },
-    );
-  }, [editMode, revealShift]);
+  const onAddTile = editMode && activeIndex >= images.length;
   const revealContainerAnimatedStyle = useAnimatedStyle(() => ({
     height: trackHeight + revealShift.value,
   }));
-  const revealContainerStyle = transitioning
-    ? [{ overflow: "hidden" }, revealContainerAnimatedStyle]
-    : {
-        height: trackHeight + (editMode ? CAPTION_REVEAL_HEIGHT : 0),
-        overflow: editMode ? "visible" : "hidden",
-      };
   const addTileTrayStyle = useAnimatedStyle(() => ({
     bottom: CAPTION_REVEAL_HEIGHT - revealShift.value,
   }));
 
   useEffect(() => {
+    setTransitioning(true);
+    revealShift.value = withTiming(
+      editMode ? CAPTION_REVEAL_HEIGHT : 0,
+      { duration: 250, easing: CAPTION_REVEAL_EASING },
+      (finished) => {
+        if (finished) scheduleOnRN(setTransitioning, false);
+      },
+    );
+  }, [editMode, revealShift]);
+
+  useEffect(() => {
     setActiveIndex((i) => Math.min(i, Math.max(itemCount - 1, 0)));
   }, [itemCount]);
 
-  const onAddTile = editMode && activeIndex >= images.length;
-
-  const [lightbox, setLightbox] = useState(null);
-  const [lightboxIndex, setLightboxIndex] = useState(null);
-
   const pickAndOpenLightbox = async (index) => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return;
+    if (!(await ImagePicker.requestMediaLibraryPermissionsAsync()).granted)
+      return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -111,8 +132,6 @@ export const Gallery = memo(function Gallery({
     });
   };
 
-  const handleAddImage = () => pickAndOpenLightbox(null);
-
   const openEditExisting = (item, index) => {
     const uri = getImageUri(item);
     if (!uri) return;
@@ -130,19 +149,21 @@ export const Gallery = memo(function Gallery({
     );
   };
 
-  const openView = (uri) => {
+  const openView = (uri, caption) => {
     if (!uri) return;
     RNImage.getSize(
       uri,
-      (width, height) => setLightbox({ mode: "view", uri, width, height }),
-      () => setLightbox({ mode: "view", uri }),
+      (width, height) =>
+        setLightbox({ mode: "view", uri, width, height, caption }),
+      () => setLightbox({ mode: "view", uri, caption }),
     );
   };
 
   const handleSaveLightbox = (focus) => {
     if (!lightbox) return;
-    const existing = lightboxIndex != null ? images[lightboxIndex] : null;
-    const caption = getImageCaption(existing);
+    const caption = getImageCaption(
+      lightboxIndex != null ? images[lightboxIndex] : null,
+    );
     const item = focus
       ? { uri: lightbox.uri, focus, ...(caption ? { caption } : {}) }
       : caption
@@ -162,13 +183,20 @@ export const Gallery = memo(function Gallery({
 
   const handleChangeCaption = (index, text) => {
     const item = images[index];
-    const base = typeof item === "string" ? { uri: item } : { ...item };
-    onUpdateImage?.(index, { ...base, caption: text });
+    onUpdateImage?.(index, {
+      ...(typeof item === "string" ? { uri: item } : { ...item }),
+      caption: text,
+    });
   };
 
   const handleScroll = (e) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / scrollInterval);
-    const clamped = Math.max(0, Math.min(index, itemCount - 1));
+    const clamped = Math.max(
+      0,
+      Math.min(
+        Math.round(e.nativeEvent.contentOffset.x / scrollInterval),
+        itemCount - 1,
+      ),
+    );
     setActiveIndex((prev) => (prev === clamped ? prev : clamped));
   };
 
@@ -187,10 +215,15 @@ export const Gallery = memo(function Gallery({
 
   return (
     <>
-      <Animated.View style={[{ position: "relative" }, revealContainerStyle]}>
-        <ScrollView
+      <RevealContainer
+        $transitioning={transitioning}
+        $editMode={editMode}
+        $trackHeight={trackHeight}
+        style={transitioning ? revealContainerAnimatedStyle : undefined}
+      >
+        <GalleryScrollView
           ref={scrollRef}
-          style={{ height: trackHeight + CAPTION_REVEAL_HEIGHT }}
+          $height={trackHeight + CAPTION_REVEAL_HEIGHT}
           horizontal
           snapToInterval={scrollInterval}
           decelerationRate="fast"
@@ -222,68 +255,41 @@ export const Gallery = memo(function Gallery({
             );
           })}
           {editMode && (
-            <View
-              style={{
-                width: containerWidth,
-                height: trackHeight + CAPTION_REVEAL_HEIGHT,
-              }}
+            <GallerySlot
+              $width={containerWidth}
+              $height={trackHeight + CAPTION_REVEAL_HEIGHT}
             >
-              <Animated.View
-                pointerEvents="none"
-                style={[
-                  {
-                    position: "absolute",
-                    left: 0,
-                    right: 0,
-                    height: trackHeight / 2,
-                    borderRadius: 15,
-                    borderWidth: 1,
-                    borderColor: Colors.border,
-                    backgroundColor: Colors.surfaceTint,
-                  },
-                  addTileTrayStyle,
-                ]}
-              />
-              <Item style={{ width: containerWidth }}>
-                <Pressable onPress={handleAddImage} style={{ flex: 1 }}>
+              <CaptionTray $height={trackHeight / 2} style={addTileTrayStyle} />
+              <Item $width={containerWidth}>
+                <Pressable
+                  onPress={() => pickAndOpenLightbox(null)}
+                  style={{ flex: 1 }}
+                >
                   <EditableView>
                     <ThemedText>Add Image</ThemedText>
                   </EditableView>
                 </Pressable>
               </Item>
-            </View>
+            </GallerySlot>
           )}
-        </ScrollView>
+        </GalleryScrollView>
         {editMode && !onAddTile && (
-          <InteractionControls
+          <ControlsOverlay
             onEdit={() => openEditExisting(images[activeIndex], activeIndex)}
             onDelete={() => onDeleteImage?.(activeIndex)}
-            style={{
-              position: "absolute",
-              top: 10,
-              left: 20,
-              width: containerWidth,
-              alignItems: "flex-end",
-              paddingRight: 10,
-            }}
+            $width={containerWidth}
           />
         )}
         {editMode && images.length > 1 && !onAddTile && (
-          <GalleryPagination
+          <PaginationOverlay
             index={activeIndex}
             total={images.length}
             onPressLeft={handleMoveLeft}
             onPressRight={handleMoveRight}
-            style={{
-              position: "absolute",
-              bottom: 10 + CAPTION_REVEAL_HEIGHT,
-              left: 20,
-              width: containerWidth,
-              justifyContent: "center",
-            }}
+            $width={containerWidth}
           />
         )}
-      </Animated.View>
+      </RevealContainer>
       <Lightbox
         state={lightbox}
         onClose={handleCloseLightbox}

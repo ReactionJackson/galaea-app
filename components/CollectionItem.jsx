@@ -11,19 +11,12 @@ import {
 import { useApp } from "@/context/AppContext";
 import { memo } from "react";
 import styled, { css } from "styled-components/native";
-import { Gallery, getImageFocus, getImageUri } from "./gallery/Gallery";
+import { Gallery } from "./gallery/Gallery";
+import { getImageFocus, getImageUri } from "./gallery/shared";
+import { ThemedText } from "./interface/ThemedText";
 import { ItemHero } from "./ItemHero";
 import { Tags } from "./Tags";
-import { ThemedText } from "./interface/ThemedText";
 
-// The shadow lives on its own plain (non-rounded) wrapper rather than on
-// Container itself. A shadow computed for a rounded-rect silhouette needs an
-// off-screen alpha mask on iOS, which is expensive and, worse, can leave a
-// stale rendering of itself briefly on screen after the view is removed —
-// exactly what was happening here when a whole page got torn down at once.
-// A plain rectangle's shadow is cheap to compute and doesn't exhibit that;
-// Container's own border-radius still shapes its background, just not the
-// shadow.
 const ShadowWrap = styled.View`
   width: 100%;
   ${({ isMinimal }) =>

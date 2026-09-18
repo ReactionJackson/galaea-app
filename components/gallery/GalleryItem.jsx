@@ -1,11 +1,14 @@
 import { Colors } from "@/constants/theme";
 import { useRef, useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import styled from "styled-components/native";
 import { ThemedText } from "../interface/ThemedText";
 import {
   CAPTION_REVEAL_HEIGHT,
   CaptionGradient,
+  CaptionTray,
+  GallerySlot,
   Image,
   Item,
   getImageCaption,
@@ -14,6 +17,33 @@ import {
 } from "./shared";
 
 const CAPTION_FADE_HEIGHT = 60;
+
+const CaptionFade = styled(Animated.View).attrs({
+  pointerEvents: "none",
+})`
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  height: ${CAPTION_FADE_HEIGHT}px;
+`;
+
+const CaptionRevealRow = styled(Animated.View)`
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  padding-horizontal: 9px;
+`;
+
+const CaptionTextBox = styled(Pressable)`
+  height: 46px;
+  justify-content: center;
+  overflow: hidden;
+`;
+
+const CaptionInput = styled(ThemedText)`
+  padding: 5px;
+  text-align: center;
+`;
 
 export function GalleryItem({
   item,
@@ -25,15 +55,9 @@ export function GalleryItem({
   onPressView,
   onChangeCaption,
 }) {
-  const uri = getImageUri(item);
-  const focus = getImageFocus(item);
-  const caption = getImageCaption(item);
-  const captionInputRef = useRef(null);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
-  const trayHeight = trackHeight / 2;
-  const showCaptionUI = editMode || !!caption;
-  const showFade = !!caption;
-  const captionEditing = isEditingCaption && editMode;
+
+  const captionInputRef = useRef(null);
   const trayStyle = useAnimatedStyle(() => ({
     bottom: CAPTION_REVEAL_HEIGHT - revealShift.value,
   }));
@@ -44,83 +68,47 @@ export function GalleryItem({
     bottom: 14 + CAPTION_REVEAL_HEIGHT - 5 - revealShift.value,
   }));
 
-  return (
-    <View
-      style={{
-        width: containerWidth,
-        height: trackHeight + CAPTION_REVEAL_HEIGHT,
-      }}
-    >
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          {
-            position: "absolute",
-            left: 0,
-            right: 0,
-            height: trayHeight,
-            borderRadius: 15,
-            borderWidth: 1,
-            borderColor: Colors.border,
-            backgroundColor: Colors.surfaceTint,
-          },
-          trayStyle,
-        ]}
-      />
+  const uri = getImageUri(item);
+  const caption = getImageCaption(item);
+  const captionEditing = isEditingCaption && editMode;
 
-      <Item style={{ width: containerWidth }}>
+  return (
+    <GallerySlot
+      $width={containerWidth}
+      $height={trackHeight + CAPTION_REVEAL_HEIGHT}
+    >
+      <CaptionTray $height={trackHeight / 2} style={trayStyle} />
+
+      <Item $width={containerWidth}>
         <Pressable
-          onPress={() => onPressView(uri)}
+          onPress={() => onPressView(uri, caption)}
           disabled={editMode}
           style={{ flex: 1 }}
         >
           <Image
             contentFit="cover"
-            contentPosition={focus ?? undefined}
+            contentPosition={getImageFocus(item) ?? undefined}
             source={{ uri }}
           />
         </Pressable>
-        {showFade && (
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              {
-                position: "absolute",
-                left: 0,
-                right: 0,
-                height: CAPTION_FADE_HEIGHT,
-              },
-              fadeStyle,
-            ]}
-          >
+        {!!caption && (
+          <CaptionFade style={fadeStyle}>
             <CaptionGradient
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
-              // Reaches full black by halfway rather than a slow linear fade.
-              locations={[0, 0.5, 1]}
-              colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.6)"]}
+              colors={[Colors.transparent, Colors.black]}
             />
-          </Animated.View>
+          </CaptionFade>
         )}
       </Item>
 
-      {showCaptionUI && (
-        <Animated.View
-          style={[
-            {
-              position: "absolute",
-              left: 0,
-              right: 0,
-              paddingHorizontal: 9,
-            },
-            textRevealStyle,
-          ]}
-        >
-          <Pressable
+      {(editMode || !!caption) && (
+        <CaptionRevealRow style={textRevealStyle}>
+          <CaptionTextBox
             onPress={() => captionInputRef.current?.focus()}
             pointerEvents={captionEditing ? "box-none" : "auto"}
           >
-            <ThemedText
+            <CaptionInput
               ref={captionInputRef}
               type="caption"
               isInput
@@ -132,12 +120,11 @@ export function GalleryItem({
               onBlur={() => setIsEditingCaption(false)}
               placeholder={editMode ? "In this picture..." : undefined}
               colorSwitch={{ active: editMode, colors: ["white", "text"] }}
-              style={{ padding: 5 }}
               pointerEvents={captionEditing ? "auto" : "none"}
             />
-          </Pressable>
-        </Animated.View>
+          </CaptionTextBox>
+        </CaptionRevealRow>
       )}
-    </View>
+    </GallerySlot>
   );
 }

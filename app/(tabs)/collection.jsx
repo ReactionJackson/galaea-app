@@ -1,10 +1,10 @@
 import { CollectionItem } from "@/components/CollectionItem";
-import { getImageFocus, getImageUri } from "@/components/gallery/Gallery";
-import { ItemHero } from "@/components/ItemHero";
-import { Lightbox } from "@/components/Lightbox";
+import { getImageFocus, getImageUri } from "@/components/gallery/shared";
 import { AnimatedSpacer } from "@/components/interface/AnimateHeight";
 import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
 import { ThemedText } from "@/components/interface/ThemedText";
+import { ItemHero } from "@/components/ItemHero";
+import { Lightbox } from "@/components/Lightbox";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
 import { CollectionTrack } from "@/components/track/CollectionTrack";

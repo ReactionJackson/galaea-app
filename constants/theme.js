@@ -1,6 +1,7 @@
 import { css } from "styled-components/native";
 
 export const Colors = {
+  transparent: "rgba(0, 0, 0, 0)",
   white: "#fff",
   black: "#000",
   title: "#000",
