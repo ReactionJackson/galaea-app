@@ -28,9 +28,7 @@ const ScrollContainer = styled(Animated.ScrollView)`
 export function ItemPickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
   const { state } = useApp();
   const items = state.items;
-
   const itemWidths = useItemCardSizes(items, ITEM_HEIGHT);
-  // Same order/length as itemWidths — see useSnapTrack's itemIds param.
   const itemIds = useMemo(() => items.map((it) => it.itemId), [items]);
 
   const {
@@ -85,7 +83,6 @@ export function ItemPickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
             <ItemCard
               key={item.itemId}
               cardImage={item.cardImage}
-              itemWidth={itemWidths[i]}
               active={!attached && (isScrolling || activeIndex === i)}
               inactiveOpacity={attached ? 0.1 : 0.5}
               onPress={() => goToIndex(i)}

@@ -1,4 +1,3 @@
-import { daysData, itemsData, tagsData } from "@/data/entries";
 import { loadPersistedState, savePersistedState } from "@/utils/storage";
 import {
   createContext,
@@ -28,55 +27,22 @@ function buildNewEntry() {
   };
 }
 
-// A blank day/item to fall back on whenever entries or items would
-// otherwise be empty — first-ever launch (no bundled seed data left in
-// data/entries.js), or a persisted store that's been emptied out. Without
-// this, an empty entries array has no "last" day for committed to point at,
-// and an empty items array leaves the collection track with nothing to
-// show. dayId/itemId of 1 is safe here precisely because it's only ever
-// used when there's nothing else already occupying that id.
-function buildDefaultDay() {
-  return {
-    dayId: 1,
-    date: new Date().toISOString(),
-    title: "",
-    text: "",
-    tags: [],
-    items: [],
-  };
-}
-
-function buildDefaultItem() {
-  return {
-    itemId: 1,
-    title: "",
-    coverImage: null,
-    cardImage: null,
-    entries: [],
-  };
-}
-
 function sanitizeGallery(gallery) {
   if (!Array.isArray(gallery)) return [];
-  return gallery.filter((image) =>
-    typeof image === "string" ? !!image : !!image?.uri,
-  );
+  return gallery.filter((image) => !!image?.uri);
 }
 
-function ensureSeedData(entries, items) {
-  const safeItems = (items.length ? items : [buildDefaultItem()]).map(
-    (item) => ({
-      ...item,
-      entries: (item.entries ?? []).map((entry) => ({
-        ...entry,
-        gallery: sanitizeGallery(entry.gallery),
-      })),
-    }),
-  );
-  return {
-    entries: entries.length ? entries : [buildDefaultDay()],
-    items: safeItems,
-  };
+// Cleans up whatever items came out of persisted storage — no longer backed
+// by a default blank day/item fallback, since the app is fine starting from
+// genuinely empty state (first launch, or every item deleted).
+function sanitizeItems(items) {
+  return items.map((item) => ({
+    ...item,
+    entries: (item.entries ?? []).map((entry) => ({
+      ...entry,
+      gallery: sanitizeGallery(entry.gallery),
+    })),
+  }));
 }
 
 // The one process any item-entry mutation must go through to actually reach
@@ -205,19 +171,17 @@ function stripRemovedItemEntries(day, itemId, removedEntryIds) {
 // Reducer
 // ---------------------------------------------------------------------------
 
-const seeded = ensureSeedData([...daysData], deepClone(itemsData));
-
 const initialState = {
-  entries: seeded.entries,
-  committed: seeded.entries[seeded.entries.length - 1],
+  entries: [],
+  committed: undefined,
   draft: null,
   editMode: false,
   cancelling: false,
-  tags: tagsData.map((t) => ({ ...t, archived: false })),
+  tags: [],
   // The single source of truth for every collection item and its entries.
   // Journal days only ever hold { itemId, entryId } references into this —
   // see SAVE_EDIT, which is responsible for keeping that split intact.
-  items: seeded.items,
+  items: [],
   // Collection's own edit cycle — the same draft/committed shape as the
   // journal day above, just scoped to a single item record (including its
   // own entries) instead of a day. editingItemId is null while creating a
@@ -445,13 +409,9 @@ function appReducer(state, action) {
       const item = state.items.find((it) => it.itemId === itemId);
       const removedEntryIds = item ? item.entries.map((e) => e.entryId) : [];
 
-      const remainingItems = state.items.filter((it) => it.itemId !== itemId);
-      // Same safety net as initialState/HYDRATE (see ensureSeedData) —
-      // deleting the last remaining item would otherwise leave items
-      // empty, which nothing downstream is built to render.
-      const items = remainingItems.length
-        ? remainingItems
-        : [buildDefaultItem()];
+      // Genuinely empty is fine — the app no longer backfills a default
+      // blank item when the last one is deleted.
+      const items = state.items.filter((it) => it.itemId !== itemId);
 
       const entries = state.entries.map((day) =>
         stripRemovedItemEntries(day, itemId, removedEntryIds),
@@ -559,13 +519,13 @@ function appReducer(state, action) {
     // normal fresh-launch default.
     case "HYDRATE": {
       const { entries, items, tags } = action.persisted;
-      const seeded = ensureSeedData(entries ?? [], items ?? []);
+      const safeEntries = entries ?? [];
       return {
         ...state,
-        entries: seeded.entries,
-        items: seeded.items,
-        tags,
-        committed: seeded.entries[seeded.entries.length - 1],
+        entries: safeEntries,
+        items: sanitizeItems(items ?? []),
+        tags: tags ?? [],
+        committed: safeEntries[safeEntries.length - 1],
       };
     }
 
@@ -582,8 +542,8 @@ const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
-  // Starts false so we never render a frame of the bundled seed data before
-  // checking whether there's real, previously-saved content to show instead.
+  // Starts false so we never render a frame of the blank default state
+  // before checking whether there's real, previously-saved content to show.
   const [ready, setReady] = useState(false);
   const persistTimerRef = useRef(null);
 

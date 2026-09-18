@@ -1,11 +1,11 @@
 import { Colors } from "@/constants/theme";
 import { ITEM_ASPECT_RATIO } from "@/constants/values";
-import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { Easing } from "react-native-reanimated";
 import styled from "styled-components/native";
 
 export const GALLERY_ITEM_GAP = 10;
+export const GALLERY_ITEM_RADIUS = 15;
 export const CAPTION_REVEAL_HEIGHT = 60;
 export const CAPTION_REVEAL_EASING = Easing.out(Easing.quad);
 
@@ -13,7 +13,7 @@ export const Item = styled.View`
   width: ${({ $width }) => $width}px;
   flex-shrink: 0;
   aspect-ratio: ${ITEM_ASPECT_RATIO};
-  border-radius: 15px;
+  border-radius: ${GALLERY_ITEM_RADIUS}px;
   overflow: hidden;
   background-color: ${Colors.white};
 `;
@@ -21,11 +21,6 @@ export const Item = styled.View`
 export const GallerySlot = styled.View`
   width: ${({ $width }) => $width}px;
   height: ${({ $height }) => $height}px;
-`;
-
-export const Image = styled(ExpoImage).attrs({ transition: 200 })`
-  width: 100%;
-  height: 100%;
 `;
 
 export const EditableView = styled.View`
@@ -48,21 +43,8 @@ export const CaptionTray = styled(Animated.View).attrs({
   left: 0px;
   right: 0px;
   height: ${({ $height }) => $height}px;
-  border-radius: 15px;
+  border-radius: ${GALLERY_ITEM_RADIUS}px;
   border-width: 1px;
   border-color: ${Colors.border};
   background-color: ${Colors.surfaceTint};
 `;
-
-export function getImageUri(item) {
-  if (!item) return null;
-  return typeof item === "string" ? item : item.uri;
-}
-export function getImageFocus(item) {
-  if (!item) return null;
-  return typeof item === "string" ? null : (item.focus ?? null);
-}
-export function getImageCaption(item) {
-  if (!item) return "";
-  return typeof item === "string" ? "" : (item.caption ?? "");
-}

@@ -1,34 +1,17 @@
-import { Colors, cardShadow } from "@/constants/theme";
+import { Image } from "@/components/image/Image";
+import { Colors } from "@/constants/theme";
 import {
   CARD_SHADOW_OPACITY,
   CARD_SHADOW_RADIUS,
   EMPTY_CARD_WIDTH,
   ITEM_HEIGHT,
 } from "@/constants/values";
-import { useResizedImage } from "@/hooks/useResizedImage";
-import { Image as ExpoImage } from "expo-image";
 import { Pressable } from "react-native";
 import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
 import styled from "styled-components/native";
-
-const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
-
-const CardShadow = styled(Animated.View)`
-  width: ${({ itemWidth }) => itemWidth}px;
-  height: ${ITEM_HEIGHT}px;
-  border-radius: 8px;
-  ${({ shadowRadius, shadowOpacity }) =>
-    cardShadow(shadowRadius, shadowOpacity)}
-`;
-
-export const Card = styled(AnimatedImage).attrs({ transition: 200 })`
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-`;
 
 const EmptyCard = styled.View`
   width: ${EMPTY_CARD_WIDTH}px;
@@ -49,7 +32,6 @@ export function useFadeStyle(active, inactiveOpacity) {
 
 export function ItemCard({
   cardImage,
-  itemWidth,
   active,
   inactiveOpacity,
   onPress,
@@ -58,21 +40,18 @@ export function ItemCard({
   shadowOpacity = CARD_SHADOW_OPACITY,
 }) {
   const style = useFadeStyle(active, inactiveOpacity);
-  // Track thumbnails are small — no need to decode the full source image
-  // (which may be several thousand pixels wide straight from a camera) just
-  // to show it at itemWidth x ITEM_HEIGHT.
-  const displayImage = useResizedImage(cardImage, itemWidth, ITEM_HEIGHT);
   return (
     <Pressable onPress={onPress} disabled={disabled}>
       {cardImage ? (
-        <CardShadow
-          itemWidth={itemWidth}
-          shadowRadius={shadowRadius}
-          shadowOpacity={shadowOpacity}
-          style={style}
-        >
-          <Card source={{ uri: displayImage }} contentFit="cover" />
-        </CardShadow>
+        <Animated.View style={style}>
+          <Image
+            {...cardImage}
+            height={ITEM_HEIGHT}
+            shadowRadius={shadowRadius}
+            shadowOpacity={shadowOpacity}
+            radius={8}
+          />
+        </Animated.View>
       ) : (
         <Animated.View style={style}>
           <EmptyCard />

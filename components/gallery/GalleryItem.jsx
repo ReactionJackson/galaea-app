@@ -1,3 +1,4 @@
+import { CoverImage } from "@/components/image/CoverImage";
 import { Colors } from "@/constants/theme";
 import { useRef, useState } from "react";
 import { Pressable } from "react-native";
@@ -9,11 +10,7 @@ import {
   CaptionGradient,
   CaptionTray,
   GallerySlot,
-  Image,
   Item,
-  getImageCaption,
-  getImageFocus,
-  getImageUri,
 } from "./shared";
 
 const CAPTION_FADE_HEIGHT = 60;
@@ -46,7 +43,7 @@ const CaptionInput = styled(ThemedText)`
 `;
 
 export function GalleryItem({
-  item,
+  image,
   index,
   containerWidth,
   trackHeight,
@@ -68,8 +65,7 @@ export function GalleryItem({
     bottom: 14 + CAPTION_REVEAL_HEIGHT - 5 - revealShift.value,
   }));
 
-  const uri = getImageUri(item);
-  const caption = getImageCaption(item);
+  const caption = image?.caption ?? "";
   const captionEditing = isEditingCaption && editMode;
 
   return (
@@ -81,15 +77,11 @@ export function GalleryItem({
 
       <Item $width={containerWidth}>
         <Pressable
-          onPress={() => onPressView(uri, caption)}
+          onPress={() => onPressView(image, index)}
           disabled={editMode}
           style={{ flex: 1 }}
         >
-          <Image
-            contentFit="cover"
-            contentPosition={getImageFocus(item) ?? undefined}
-            source={{ uri }}
-          />
+          <CoverImage {...image} />
         </Pressable>
         {!!caption && (
           <CaptionFade style={fadeStyle}>

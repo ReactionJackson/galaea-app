@@ -59,11 +59,7 @@ export function CollectionTrack({
 }) {
   const { state, dispatch } = useApp();
   const items = state.items;
-
   const itemWidths = useItemCardSizes(items, ITEM_HEIGHT);
-  // Same order/length as itemWidths — see useSnapTrack's itemIds param. Lets
-  // the hook keep the same item "active" by identity when the edit panel's
-  // arrow buttons swap it with a neighbour, rather than by raw position.
   const itemIds = useMemo(() => items.map((it) => it.itemId), [items]);
 
   const {
@@ -107,10 +103,6 @@ export function CollectionTrack({
     onCancelAdd: onCancelAddItem,
   });
 
-  // Repositions the currently active item one slot left/right — the edit
-  // panel's only way to reorder now. useSnapTrack's own reorder-follow
-  // effect (driven by itemIds changing) keeps the track scrolled to the
-  // same item as it moves.
   const handleSwap = (direction) => {
     const item = items[activeIndex];
     if (!item) return;
@@ -164,7 +156,6 @@ export function CollectionTrack({
           >
             <ItemCard
               cardImage={item.cardImage}
-              itemWidth={itemWidths[i]}
               active={isScrolling || activeIndex === i}
               inactiveOpacity={editMode ? 0.1 : 0.5}
               onPress={() => goToIndex(i)}

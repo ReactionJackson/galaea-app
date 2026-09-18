@@ -1,13 +1,8 @@
 import { ITEM_ASPECT_RATIO } from "@/constants/values";
-import { storePickedImage } from "@/utils/imageStorage";
+import { storePickedImage } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
 import { memo, useEffect, useRef, useState } from "react";
-import {
-  Pressable,
-  Image as RNImage,
-  ScrollView,
-  useWindowDimensions,
-} from "react-native";
+import { Pressable, ScrollView, useWindowDimensions } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -15,9 +10,10 @@ import Animated, {
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import styled, { css } from "styled-components/native";
-import { Lightbox } from "../Lightbox";
 import { InteractionControls } from "../interface/InteractionControls";
 import { ThemedText } from "../interface/ThemedText";
+import { EditLightbox } from "../lightbox/EditLightbox";
+import { ViewerLightbox } from "../lightbox/ViewerLightbox";
 import { GalleryItem } from "./GalleryItem";
 import { GalleryPagination } from "./GalleryPagination";
 import {
@@ -28,9 +24,6 @@ import {
   GALLERY_ITEM_GAP,
   GallerySlot,
   Item,
-  getImageCaption,
-  getImageFocus,
-  getImageUri,
 } from "./shared";
 
 const GalleryScrollView = styled(ScrollView)`
@@ -76,8 +69,7 @@ export const Gallery = memo(function Gallery({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
-  const [lightbox, setLightbox] = useState(null);
-  const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [openItem, setOpenItem] = useState(null); // { mode: "edit" | "view", image, index }
 
   const containerWidth = useWindowDimensions().width - horizontalPadding;
   const scrollRef = useRef(null);
@@ -109,7 +101,7 @@ export const Gallery = memo(function Gallery({
     setActiveIndex((i) => Math.min(i, Math.max(itemCount - 1, 0)));
   }, [itemCount]);
 
-  const pickAndOpenLightbox = async (index) => {
+  const handleAddImage = async () => {
     if (!(await ImagePicker.requestMediaLibraryPermissionsAsync()).granted)
       return;
 
@@ -122,71 +114,40 @@ export const Gallery = memo(function Gallery({
     const asset = result.assets?.[0];
     if (!asset?.uri) return;
     const stored = await storePickedImage(asset);
-    setLightboxIndex(index);
-    setLightbox({
-      mode: "edit",
-      uri: stored.uri,
-      width: stored.width,
-      height: stored.height,
-      focus: null,
-    });
+    setOpenItem({ mode: "edit", image: stored, index: null });
   };
 
-  const openEditExisting = (item, index) => {
-    const uri = getImageUri(item);
-    if (!uri) return;
-    const focus = getImageFocus(item);
-    RNImage.getSize(
+  const handleEditImage = (index) => {
+    setOpenItem({ mode: "edit", image: images[index], index });
+  };
+
+  const handleViewImage = (image, index) => {
+    setOpenItem({ mode: "view", image, index });
+  };
+
+  const handleSaveEdit = (focus) => {
+    if (!openItem) return;
+    const { uri, rawWidth, rawHeight, aspectRatio, caption } = openItem.image;
+    const image = {
       uri,
-      (width, height) => {
-        setLightboxIndex(index);
-        setLightbox({ mode: "edit", uri, width, height, focus });
-      },
-      () => {
-        setLightboxIndex(index);
-        setLightbox({ mode: "edit", uri, width: null, height: null, focus });
-      },
-    );
-  };
-
-  const openView = (uri, caption) => {
-    if (!uri) return;
-    RNImage.getSize(
-      uri,
-      (width, height) =>
-        setLightbox({ mode: "view", uri, width, height, caption }),
-      () => setLightbox({ mode: "view", uri, caption }),
-    );
-  };
-
-  const handleSaveLightbox = (focus) => {
-    if (!lightbox) return;
-    const caption = getImageCaption(
-      lightboxIndex != null ? images[lightboxIndex] : null,
-    );
-    const item = focus
-      ? { uri: lightbox.uri, focus, ...(caption ? { caption } : {}) }
-      : caption
-        ? { uri: lightbox.uri, caption }
-        : lightbox.uri;
-    if (lightboxIndex == null) {
-      onAddImage?.(item);
+      rawWidth,
+      rawHeight,
+      aspectRatio,
+      ...(focus ? { focus } : {}),
+      ...(caption ? { caption } : {}),
+    };
+    if (openItem.index == null) {
+      onAddImage?.(image);
     } else {
-      onUpdateImage?.(lightboxIndex, item);
+      onUpdateImage?.(openItem.index, image);
     }
-    setLightbox(null);
+    setOpenItem(null);
   };
 
-  const handleCloseLightbox = () => {
-    setLightbox(null);
-  };
+  const handleClose = () => setOpenItem(null);
 
   const handleChangeCaption = (index, text) => {
-    const item = images[index];
-    onUpdateImage?.(index, {
-      ...(typeof item === "string" ? { uri: item } : { ...item }),
-      caption: text,
-    });
+    onUpdateImage?.(index, { ...images[index], caption: text });
   };
 
   const handleScroll = (e) => {
@@ -237,19 +198,18 @@ export const Gallery = memo(function Gallery({
             paddingInlineEnd: 20,
           }}
         >
-          {images.map((item, i) => {
-            if (!item) return null;
-            const uri = getImageUri(item);
+          {images.map((image, i) => {
+            if (!image) return null;
             return (
               <GalleryItem
-                key={uri}
-                item={item}
+                key={image.uri}
+                image={image}
                 index={i}
                 containerWidth={containerWidth}
                 trackHeight={trackHeight}
                 editMode={editMode}
                 revealShift={revealShift}
-                onPressView={openView}
+                onPressView={handleViewImage}
                 onChangeCaption={handleChangeCaption}
               />
             );
@@ -261,10 +221,7 @@ export const Gallery = memo(function Gallery({
             >
               <CaptionTray $height={trackHeight / 2} style={addTileTrayStyle} />
               <Item $width={containerWidth}>
-                <Pressable
-                  onPress={() => pickAndOpenLightbox(null)}
-                  style={{ flex: 1 }}
-                >
+                <Pressable onPress={handleAddImage} style={{ flex: 1 }}>
                   <EditableView>
                     <ThemedText>Add Image</ThemedText>
                   </EditableView>
@@ -275,7 +232,7 @@ export const Gallery = memo(function Gallery({
         </GalleryScrollView>
         {editMode && !onAddTile && (
           <ControlsOverlay
-            onEdit={() => openEditExisting(images[activeIndex], activeIndex)}
+            onEdit={() => handleEditImage(activeIndex)}
             onDelete={() => onDeleteImage?.(activeIndex)}
             $width={containerWidth}
           />
@@ -290,10 +247,14 @@ export const Gallery = memo(function Gallery({
           />
         )}
       </RevealContainer>
-      <Lightbox
-        state={lightbox}
-        onClose={handleCloseLightbox}
-        onSave={handleSaveLightbox}
+      <EditLightbox
+        image={openItem?.mode === "edit" ? openItem.image : null}
+        onClose={handleClose}
+        onSave={handleSaveEdit}
+      />
+      <ViewerLightbox
+        image={openItem?.mode === "view" ? openItem.image : null}
+        onClose={handleClose}
       />
     </>
   );

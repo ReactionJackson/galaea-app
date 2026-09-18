@@ -1,11 +1,7 @@
-import { Colors, cardShadow } from "@/constants/theme";
+import { CoverImage } from "@/components/image/CoverImage";
+import { Image } from "@/components/image/Image";
+import { Colors } from "@/constants/theme";
 import { PAGE_INTRO_FADE } from "@/constants/values";
-import {
-  getCachedAspectRatio,
-  loadAspectRatio,
-} from "@/hooks/useImageAspectRatio";
-import { useResizedImage } from "@/hooks/useResizedImage";
-import { Image as ExpoImage } from "expo-image";
 import { useEffect, useState } from "react";
 import { useWindowDimensions } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -47,47 +43,13 @@ const CoverBackground = styled.View`
     nestedInCard ? Colors.surfaceTint : Colors.black};
 `;
 
-const CoverImage = styled(ExpoImage).attrs({ transition: 200 })`
-  width: 100%;
-  height: 100%;
-`;
-
-const CoverOverlay = styled.View`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: ${Colors.imageOverlay};
-`;
-
 const CardWrap = styled.View`
   position: relative;
 `;
 
-const CardShadow = styled.View`
-  width: ${({ cardWidth }) => cardWidth}px;
-  height: ${({ cardHeight }) => cardHeight}px;
-  border-radius: 4px;
-  ${({ shadowRadius, shadowOpacity }) =>
-    cardShadow(shadowRadius, shadowOpacity)}
-`;
-
-const CardFrame = styled.View`
-  width: 100%;
-  height: 100%;
-  border-radius: 4px;
-  overflow: hidden;
-`;
-
-const CardImage = styled(ExpoImage).attrs({ transition: 200 })`
-  width: 100%;
-  height: 100%;
-`;
-
 const CardPlaceholder = styled.View`
-  width: ${({ cardWidth }) => cardWidth}px;
-  height: ${({ cardHeight }) => cardHeight}px;
+  height: 100%;
+  aspect-ratio: ${DEFAULT_ASPECT_RATIO};
   border: 2px dashed ${Colors.disabled};
   border-radius: 4px;
 `;
@@ -107,7 +69,6 @@ export function ItemHero({
   spacing = 0,
   cardImage,
   coverImage,
-  coverFocus,
   editable = false,
   animateCoverReveal = false,
   nestedInCard = false,
@@ -125,40 +86,6 @@ export function ItemHero({
     if (animateCoverReveal) setCoverLoaded(false);
   }, [coverImage, animateCoverReveal]);
 
-  const [aspectRatio, setAspectRatio] = useState(
-    () => getCachedAspectRatio(cardImage) ?? DEFAULT_ASPECT_RATIO,
-  );
-
-  useEffect(() => {
-    if (!cardImage) {
-      setAspectRatio(DEFAULT_ASPECT_RATIO);
-      return;
-    }
-    // If this image's ratio is already known (it's been shown elsewhere this
-    // session), size correctly straight away instead of flashing back to the
-    // default ratio and re-fetching.
-    const cachedRatio = getCachedAspectRatio(cardImage);
-    setAspectRatio(cachedRatio ?? DEFAULT_ASPECT_RATIO);
-    let cancelled = false;
-    loadAspectRatio(cardImage, (ratio) => {
-      if (!cancelled) setAspectRatio(ratio);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [cardImage]);
-
-  const cardWidth = Math.round(cardHeight * aspectRatio);
-
-  // The box art's target box is derived from its own aspect ratio (see
-  // cardWidth above), so resizing it down to exactly that box never
-  // distorts it. The cover's target box (screenWidth x height) has no
-  // relation to the cover photo's own ratio though — pre-resizing it to
-  // that exact box would stretch it non-uniformly, so it's left to render
-  // at its already-capped stored size via contentFit="cover" instead,
-  // which crops to fill without distorting.
-  const displayCardImage = useResizedImage(cardImage, cardWidth, cardHeight);
-
   return (
     <HeroContainer
       height={height}
@@ -169,9 +96,7 @@ export function ItemHero({
         <CoverBackground nestedInCard={nestedInCard} />
         {coverImage && !coverLoaded && (
           <CoverImage
-            source={{ uri: coverImage }}
-            contentFit="cover"
-            contentPosition={coverFocus ?? undefined}
+            {...coverImage}
             style={{ opacity: 0 }}
             onLoad={() => setCoverLoaded(true)}
           />
@@ -181,30 +106,22 @@ export function ItemHero({
             entering={FadeIn.duration(PAGE_INTRO_FADE)}
             style={{ width: "100%", height: "100%" }}
           >
-            <CoverImage
-              source={{ uri: coverImage }}
-              contentFit="cover"
-              contentPosition={coverFocus ?? undefined}
-            />
-            <CoverOverlay />
+            <CoverImage {...coverImage} addOverlay />
           </Animated.View>
         )}
       </CoverFill>
 
-      <CardWrap>
+      <CardWrap style={{ height: cardHeight }}>
         {cardImage ? (
-          <CardShadow
-            cardWidth={cardWidth}
-            cardHeight={cardHeight}
+          <Image
+            {...cardImage}
+            height={cardHeight}
             shadowRadius={shadowRadius}
             shadowOpacity={shadowOpacity}
-          >
-            <CardFrame>
-              <CardImage source={{ uri: displayCardImage }} />
-            </CardFrame>
-          </CardShadow>
+            radius={4}
+          />
         ) : (
-          <CardPlaceholder cardWidth={cardWidth} cardHeight={cardHeight} />
+          <CardPlaceholder />
         )}
         {editable && (
           <EditOverlay>

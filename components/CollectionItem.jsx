@@ -12,7 +12,6 @@ import { useApp } from "@/context/AppContext";
 import { memo } from "react";
 import styled, { css } from "styled-components/native";
 import { Gallery } from "./gallery/Gallery";
-import { getImageFocus, getImageUri } from "./gallery/shared";
 import { ThemedText } from "./interface/ThemedText";
 import { ItemHero } from "./ItemHero";
 import { Tags } from "./Tags";
@@ -166,8 +165,7 @@ export const CollectionItem = memo(function CollectionItem({
               height={HERO_HEIGHT}
               spacing={15}
               cardImage={cardImage}
-              coverImage={getImageUri(coverImage)}
-              coverFocus={getImageFocus(coverImage)}
+              coverImage={coverImage}
               animateCoverReveal={isNew}
               nestedInCard
               shadowRadius={CARD_SHADOW_RADIUS}
