@@ -1,4 +1,4 @@
-import { CollectionItem } from "@/components/CollectionItem";
+import { CollectionItemBubble } from "@/components/collection-item/CollectionItemBubble";
 import {
   AnimateHeight,
   AnimatedSpacer,
@@ -76,11 +76,7 @@ function JournalScreen() {
   };
 
   const handleCancelEdit = () => {
-    // Phase 1: exit edit mode so animations start (controls slide away,
-    // new item entries collapse, draft-only text closes, etc.)
     dispatch({ type: "BEGIN_CANCEL" });
-    // Phase 2: once animations have had time to finish, clear the draft.
-    // The delay matches the AnimateHeight duration with a small buffer.
     cancelTimerRef.current = setTimeout(() => {
       cancelTimerRef.current = null;
       dispatch({ type: "COMPLETE_CANCEL" });
@@ -168,7 +164,7 @@ function JournalScreen() {
                     }
                   >
                     <AnimateHeight visible={itemVisible}>
-                      <CollectionItem
+                      <CollectionItemBubble
                         itemId={itemId}
                         entryId={entryId}
                         index={i}

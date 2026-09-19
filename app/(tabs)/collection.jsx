@@ -1,8 +1,8 @@
-import { CollectionItem } from "@/components/CollectionItem";
+import { CollectionItem } from "@/components/collection-item/CollectionItem";
+import { CollectionItemHero } from "@/components/collection-item/CollectionItemHero";
 import { AnimatedSpacer } from "@/components/interface/AnimateHeight";
 import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { ItemHero } from "@/components/ItemHero";
 import { EditLightbox } from "@/components/lightbox/EditLightbox";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
@@ -133,7 +133,7 @@ export default function CollectionScreen() {
         resetKey={contentKey}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
       >
-        <ItemHero
+        <CollectionItemHero
           height={COLLECTION_HERO_HEIGHT}
           spacing={COLLECTION_HERO_SPACING}
           cardImage={displayItem.cardImage}
@@ -180,9 +180,7 @@ export default function CollectionScreen() {
             {orderedEntries.map((entry) => (
               <CollectionItem
                 key={entry.entryId}
-                isMinimal
                 editable={editMode}
-                entryId={entry.entryId}
                 date={entry.date}
                 text={entry.text}
                 tagIds={entry.tags}

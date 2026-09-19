@@ -1,12 +1,12 @@
 import { CoverImage } from "@/components/image/CoverImage";
 import { Image } from "@/components/image/Image";
+import { InteractionControls } from "@/components/interface/InteractionControls";
 import { Colors } from "@/constants/theme";
 import { PAGE_INTRO_FADE } from "@/constants/values";
 import { useState } from "react";
 import { useWindowDimensions } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { InteractionControls } from "./interface/InteractionControls";
 
 const DEFAULT_ASPECT_RATIO = 2 / 3;
 const BLEED = 20;
@@ -64,7 +64,7 @@ const EditOverlay = styled.View`
   align-items: center;
 `;
 
-export function ItemHero({
+export function CollectionItemHero({
   height,
   spacing = 0,
   cardImage,
