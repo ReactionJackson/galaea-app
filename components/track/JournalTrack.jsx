@@ -1,9 +1,11 @@
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
+import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
 import { useEffect, useMemo } from "react";
+import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedScrollHandler,
@@ -62,6 +64,33 @@ const DateCircle = styled.Pressable`
   justify-content: center;
   align-items: center;
 `;
+
+function TrackDigit({ highlighted, dimmed, children }) {
+  const highlightStyle = useAnimatedTransition(highlighted, {
+    opacity: [0, 1],
+  });
+
+  return (
+    <View>
+      <ThemedText
+        type="date-number"
+        colorSwitch={{
+          colors: [Colors.black, Colors.disabled],
+          active: dimmed,
+        }}
+      >
+        {children}
+      </ThemedText>
+      <ThemedText
+        type="date-number"
+        color="white"
+        style={[StyleSheet.absoluteFill, highlightStyle]}
+      >
+        {children}
+      </ThemedText>
+    </View>
+  );
+}
 
 // Component:
 
@@ -142,6 +171,7 @@ export function JournalTrack({
     ADD_INDEX,
     activeIndex,
     isScrolling,
+    isInternalScroll,
     basePadding,
     paddingEnd,
     offsets,
@@ -175,18 +205,7 @@ export function JournalTrack({
       }
       if (entries[index]) {
         const dayId = entries[index].dayId;
-        // The indicator's own settle animation (scale/opacity back to 1)
-        // starts on this same tick. Landing on a heavier day mounts a burst
-        // of new native views right away, which competes for the same
-        // frames and makes that animation stutter even though it's a
-        // separate, already-mounted component. Pushing the dispatch two
-        // frames out lets the settle animation actually get painted first,
-        // instead of racing the mount.
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            dispatch({ type: "CHANGE_DAY", dayId });
-          });
-        });
+        dispatch({ type: "CHANGE_DAY", dayId });
       }
     },
     onAdd: () => dispatch({ type: "ADD_DAY" }),
@@ -214,10 +233,6 @@ export function JournalTrack({
 
   const indicatorScale = useSharedValue(1);
   const indicatorOpacity = useSharedValue(1);
-  const indicatorStyle = useAnimatedStyle(() => ({
-    opacity: indicatorOpacity.value,
-    transform: [{ scale: indicatorScale.value }],
-  }));
 
   useEffect(() => {
     if (isScrolling) {
@@ -229,7 +244,13 @@ export function JournalTrack({
       indicatorScale.value = withTiming(1, config);
       indicatorOpacity.value = withTiming(1, config);
     }
-  }, [isScrolling, indicatorScale, indicatorOpacity]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isScrolling]);
+
+  const indicatorStyle = useAnimatedStyle(() => ({
+    opacity: indicatorOpacity.value,
+    transform: [{ scale: indicatorScale.value }],
+  }));
 
   // Render:
 
@@ -292,19 +313,14 @@ export function JournalTrack({
               onPress={() => goToIndex(i)}
               disabled={editMode}
             >
-              <ThemedText
-                type="date-number"
-                colorSwitch={
-                  activeIndex !== i || isScrolling
-                    ? {
-                        colors: [Colors.black, Colors.disabled],
-                        active: editMode,
-                      }
-                    : undefined
+              <TrackDigit
+                highlighted={
+                  activeIndex === i && !(isScrolling && !isInternalScroll)
                 }
+                dimmed={editMode}
               >
                 {dayNumber}
-              </ThemedText>
+              </TrackDigit>
             </DateCircle>
           ))}
           {showAddButton && (
@@ -313,19 +329,15 @@ export function JournalTrack({
               onPress={() => goToIndex(ADD_INDEX)}
               disabled={editMode}
             >
-              <ThemedText
-                type="date-number"
-                colorSwitch={
-                  activeIndex !== ADD_INDEX || isScrolling
-                    ? {
-                        colors: [Colors.black, Colors.disabled],
-                        active: editMode,
-                      }
-                    : undefined
+              <TrackDigit
+                highlighted={
+                  activeIndex === ADD_INDEX &&
+                  !(isScrolling && !isInternalScroll)
                 }
+                dimmed={editMode}
               >
                 +
-              </ThemedText>
+              </TrackDigit>
             </DateCircle>
           )}
         </ScrollContainer>
