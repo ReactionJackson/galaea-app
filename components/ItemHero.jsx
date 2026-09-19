@@ -2,7 +2,7 @@ import { CoverImage } from "@/components/image/CoverImage";
 import { Image } from "@/components/image/Image";
 import { Colors } from "@/constants/theme";
 import { PAGE_INTRO_FADE } from "@/constants/values";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useWindowDimensions } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import styled from "styled-components/native";
@@ -82,9 +82,17 @@ export function ItemHero({
   const { width: screenWidth } = useWindowDimensions();
   const cardHeight = height - spacing * 2;
   const [coverLoaded, setCoverLoaded] = useState(!animateCoverReveal);
-  useEffect(() => {
+  const [prevCoverImage, setPrevCoverImage] = useState(coverImage);
+  const [prevAnimateCoverReveal, setPrevAnimateCoverReveal] =
+    useState(animateCoverReveal);
+  if (
+    coverImage !== prevCoverImage ||
+    animateCoverReveal !== prevAnimateCoverReveal
+  ) {
+    setPrevCoverImage(coverImage);
+    setPrevAnimateCoverReveal(animateCoverReveal);
     if (animateCoverReveal) setCoverLoaded(false);
-  }, [coverImage, animateCoverReveal]);
+  }
 
   return (
     <HeroContainer
@@ -96,6 +104,7 @@ export function ItemHero({
         <CoverBackground nestedInCard={nestedInCard} />
         {coverImage && !coverLoaded && (
           <CoverImage
+            key={coverImage.uri}
             {...coverImage}
             style={{ opacity: 0 }}
             onLoad={() => setCoverLoaded(true)}
@@ -106,7 +115,7 @@ export function ItemHero({
             entering={FadeIn.duration(PAGE_INTRO_FADE)}
             style={{ width: "100%", height: "100%" }}
           >
-            <CoverImage {...coverImage} addOverlay />
+            <CoverImage key={coverImage.uri} {...coverImage} addOverlay />
           </Animated.View>
         )}
       </CoverFill>
@@ -114,6 +123,7 @@ export function ItemHero({
       <CardWrap style={{ height: cardHeight }}>
         {cardImage ? (
           <Image
+            key={cardImage.uri}
             {...cardImage}
             height={cardHeight}
             shadowRadius={shadowRadius}

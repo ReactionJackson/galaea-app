@@ -15,7 +15,7 @@ import {
 import { useApp } from "@/context/AppContext";
 import { pickAndStoreImage } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
 
@@ -48,6 +48,7 @@ export default function CollectionScreen() {
 
   const activeItem = itemsById[activeItemId] ?? items[0];
   const displayItem = itemDraft ?? activeItem;
+  const contentKey = editMode ? (editingItemId ?? "new-item") : activeItemId;
   const orderedEntries = displayItem
     ? [...displayItem.entries].sort(
         (a, b) => new Date(b.date) - new Date(a.date),
@@ -129,7 +130,7 @@ export default function CollectionScreen() {
   return (
     <Container>
       <PageScroll
-        resetKey={editMode ? (editingItemId ?? "new-item") : activeItemId}
+        resetKey={contentKey}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
       >
         <ItemHero
@@ -175,27 +176,29 @@ export default function CollectionScreen() {
         </PageHeader>
 
         <FadeInOnMount>
-          {orderedEntries.map((entry) => (
-            <CollectionItem
-              key={entry.entryId}
-              isMinimal
-              editable={editMode}
-              entryId={entry.entryId}
-              date={entry.date}
-              text={entry.text}
-              tagIds={entry.tags}
-              gallery={entry.gallery}
-              onUpdate={(changes) =>
-                dispatch({
-                  type: "UPDATE_ITEM_DRAFT_ENTRY",
-                  entryId: entry.entryId,
-                  changes,
-                })
-              }
-            />
-          ))}
+          <Fragment key={contentKey}>
+            {orderedEntries.map((entry) => (
+              <CollectionItem
+                key={entry.entryId}
+                isMinimal
+                editable={editMode}
+                entryId={entry.entryId}
+                date={entry.date}
+                text={entry.text}
+                tagIds={entry.tags}
+                gallery={entry.gallery}
+                onUpdate={(changes) =>
+                  dispatch({
+                    type: "UPDATE_ITEM_DRAFT_ENTRY",
+                    entryId: entry.entryId,
+                    changes,
+                  })
+                }
+              />
+            ))}
 
-          <AnimatedSpacer visible={editMode} height={50} />
+            <AnimatedSpacer visible={editMode} height={50} />
+          </Fragment>
         </FadeInOnMount>
       </PageScroll>
 

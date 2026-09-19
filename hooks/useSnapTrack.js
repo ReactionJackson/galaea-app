@@ -43,7 +43,7 @@ export function useSnapTrack({
   const prevItemWidthsRef = useRef(itemWidths);
   const hasScrolledToInitial = useRef(false);
   const activeItemIdRef = useRef(itemIds[activeIndex] ?? null);
-  const isInternalScrollRef = useRef(false);
+  const [isInternalScroll, setIsInternalScroll] = useState(false);
 
   const leftEdges = useMemo(() => {
     const edges = [];
@@ -118,7 +118,7 @@ export function useSnapTrack({
         onCancelAdd();
         setIsScrolling(true);
         hapticLight();
-        isInternalScrollRef.current = false;
+        setIsInternalScroll(false);
         scrollToIndex(itemCount - 1, true);
         return;
       }
@@ -128,13 +128,13 @@ export function useSnapTrack({
     setIsScrolling(true);
     hapticLight();
     if (index === ADD_INDEX) {
-      isInternalScrollRef.current = false;
+      setIsInternalScroll(false);
       setAddActive(true);
       scrollToAddAfterResize.current = true;
       return;
     }
     // Load content immediately if we tap directly to an index
-    isInternalScrollRef.current = true;
+    setIsInternalScroll(true);
     setActiveIndex(index);
     activeItemIdRef.current = itemIds[index] ?? null;
     scrollToIndex(index);
@@ -179,7 +179,7 @@ export function useSnapTrack({
 
   const handleScrollBeginDrag = () => {
     scrollToAddAfterResize.current = false;
-    isInternalScrollRef.current = false;
+    setIsInternalScroll(false);
     setIsScrolling(true);
     hapticLight();
   };
@@ -192,8 +192,8 @@ export function useSnapTrack({
   };
 
   const handleMomentumScrollEnd = (event) => {
-    if (isInternalScrollRef.current) {
-      isInternalScrollRef.current = false;
+    if (isInternalScroll) {
+      setIsInternalScroll(false);
       setIsScrolling(false);
       return;
     }
@@ -210,7 +210,7 @@ export function useSnapTrack({
       setAddActive(false);
       setActiveIndex(newIndex);
       activeItemIdRef.current = itemIds[newIndex] ?? null;
-      isInternalScrollRef.current = true;
+      setIsInternalScroll(true);
       scrollToIndex(newIndex, true);
     } else if (itemCount < prevItemCountRef.current) {
       const newIndex = Math.max(0, Math.min(activeIndex - 1, itemCount - 1));
@@ -230,7 +230,7 @@ export function useSnapTrack({
 
       setActiveIndex(newIndex);
       activeItemIdRef.current = itemIds[newIndex] ?? null;
-      isInternalScrollRef.current = true;
+      setIsInternalScroll(true);
       scrollToIndex(newIndex, true);
     } else {
       prevItemCountRef.current = itemCount;
@@ -288,7 +288,7 @@ export function useSnapTrack({
     if (resolvedIndex === -1 || resolvedIndex === activeIndex) return;
 
     setActiveIndex(resolvedIndex);
-    isInternalScrollRef.current = true;
+    setIsInternalScroll(true);
     scrollToIndex(resolvedIndex, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemIds]);
@@ -297,6 +297,7 @@ export function useSnapTrack({
     ADD_INDEX,
     activeIndex,
     isScrolling,
+    isInternalScroll,
     addActive,
     basePadding,
     paddingEnd,

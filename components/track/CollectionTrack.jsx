@@ -43,6 +43,7 @@ export function CollectionTrack({
     ADD_INDEX,
     activeIndex,
     isScrolling,
+    isInternalScroll,
     basePadding,
     paddingEnd,
     offsets,
@@ -138,7 +139,7 @@ export function CollectionTrack({
           >
             <ItemCard
               cardImage={item.cardImage}
-              active={isScrolling || activeIndex === i}
+              active={(isScrolling && !isInternalScroll) || activeIndex === i}
               inactiveOpacity={editMode ? 0.1 : 0.5}
               onPress={() => goToIndex(i)}
               disabled={editMode}

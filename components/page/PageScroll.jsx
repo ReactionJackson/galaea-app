@@ -3,6 +3,7 @@ import {
   Children,
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -38,6 +39,10 @@ export const PageScroll = forwardRef(function PageScroll(
     }, []),
   );
 
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [resetKey]);
+
   const stickyHeaderIndices = useMemo(() => {
     const index = Children.toArray(children).findIndex(
       (child) => child?.type === PageHeader,
@@ -47,7 +52,6 @@ export const PageScroll = forwardRef(function PageScroll(
 
   return (
     <ScrollContainer
-      key={resetKey}
       ref={scrollRef}
       stickyHeaderIndices={stickyHeaderIndices}
       contentContainerStyle={
