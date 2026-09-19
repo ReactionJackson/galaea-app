@@ -1,5 +1,4 @@
 import { ThemedText } from "@/components/interface/ThemedText";
-import { Colors } from "@/constants/theme";
 import { EMPTY_CARD_WIDTH, ITEM_HEIGHT } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
@@ -9,7 +8,7 @@ import { useMemo } from "react";
 import { Pressable } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { ItemCard, useFadeStyle } from "./ItemCard";
+import { EmptyCard, ItemCard, useFadeStyle } from "./ItemCard";
 import { Track } from "./Track";
 
 // Constants:
@@ -23,28 +22,6 @@ const ScrollContainer = styled(Animated.ScrollView)`
   width: 100%;
   height: 100%;
 `;
-
-const AddButtonBox = styled(Animated.View)`
-  width: ${EMPTY_CARD_WIDTH}px;
-  height: ${ITEM_HEIGHT}px;
-  border-radius: 8px;
-  border: 2px solid ${Colors.dateBorder};
-  justify-content: center;
-  align-items: center;
-`;
-
-function CollectionAddButton({ active, editMode, onPress, disabled }) {
-  const style = useFadeStyle(active, editMode ? 0.1 : 0.5);
-  return (
-    <Pressable onPress={onPress} disabled={disabled}>
-      <AddButtonBox style={style}>
-        <ThemedText type="date-number" color="black">
-          +
-        </ThemedText>
-      </AddButtonBox>
-    </Pressable>
-  );
-}
 
 // Component:
 
@@ -116,6 +93,11 @@ export function CollectionTrack({
   const canSwapRight =
     activeIndex !== ADD_INDEX && activeIndex < items.length - 1;
 
+  const addButtonStyle = useFadeStyle(
+    isScrolling || activeIndex === ADD_INDEX,
+    editMode ? 0.1 : 0.5,
+  );
+
   return (
     <Track
       editMode={editMode}
@@ -164,12 +146,13 @@ export function CollectionTrack({
           </Animated.View>
         ))}
         <Animated.View layout={LinearTransition.duration(220)}>
-          <CollectionAddButton
-            active={isScrolling || activeIndex === ADD_INDEX}
-            editMode={editMode}
-            onPress={() => goToIndex(ADD_INDEX)}
-            disabled={editMode}
-          />
+          <Pressable onPress={() => goToIndex(ADD_INDEX)} disabled={editMode}>
+            <EmptyCard style={addButtonStyle}>
+              <ThemedText type="date-number" color="black">
+                +
+              </ThemedText>
+            </EmptyCard>
+          </Pressable>
         </Animated.View>
       </ScrollContainer>
     </Track>

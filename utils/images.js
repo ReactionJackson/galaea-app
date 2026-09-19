@@ -11,26 +11,20 @@ const STORAGE_DIR_NAME = "picked-images";
 const MAX_DIMENSION = 1440;
 const DEFAULT_COMPRESS_QUALITY = 0.7;
 
-const IMAGE_PRESETS = {
-  card: {
-    quality: 0.7,
-    resizeHeight: COLLECTION_HERO_HEIGHT - 2 * COLLECTION_HERO_SPACING,
-  },
-  cover: { quality: 0.4 },
-  gallery: { quality: 0.5 },
-};
-
 function resolveOptions(kind) {
   const { width: screenWidth } = Dimensions.get("window");
-  const preset = IMAGE_PRESETS[kind];
   switch (kind) {
     case "card":
-      return { quality: preset.quality, resizeHeight: preset.resizeHeight };
+      return {
+        quality: 0.4,
+        resizeHeight:
+          (COLLECTION_HERO_HEIGHT - 2 * COLLECTION_HERO_SPACING) * 2,
+      };
     case "cover":
-      return { quality: preset.quality, resizeWidth: screenWidth };
+      return { quality: 0.4, resizeWidth: screenWidth };
     case "gallery":
       return {
-        quality: preset.quality,
+        quality: 0.5,
         resizeWidth: screenWidth - LIGHTBOX_PADDING * 2,
       };
     default:
@@ -54,6 +48,13 @@ export function fileExists(uri) {
     return !!uri && new File(uri).exists;
   } catch {
     return false;
+  }
+}
+
+export function deleteAllStoredImages() {
+  const dir = storageDir();
+  for (const entry of dir.list()) {
+    entry.delete();
   }
 }
 
