@@ -41,7 +41,8 @@ export const InteractCircle = styled.View`
 export function InteractButton({
   variant,
   pill = false,
-  haptic = false,
+  haptic = true,
+  hapticStyle = "light",
   disabled = false,
   onPress,
   style,
@@ -58,15 +59,15 @@ export function InteractButton({
   const handlePress = () => {
     if (disabled) return;
     if (haptic && process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      Haptics.impactAsync(
+        hapticStyle === "heavy"
+          ? Haptics.ImpactFeedbackStyle.Heavy
+          : Haptics.ImpactFeedbackStyle.Light,
+      );
     }
     onPress?.();
   };
 
-  // The mount/unmount fade (entering/exiting) and the disabled dim both
-  // animate opacity, but on the same node the entrance transition stomps
-  // the dimmed value once it finishes — so they're split across two
-  // layered views, each owning one.
   return (
     <Animated.View
       entering={FadeIn.duration(200)}

@@ -3,8 +3,8 @@ import {
   AnimatedSpacer,
 } from "@/components/interface/AnimateHeight";
 import { FadeTrack } from "@/components/interface/FadeTrack";
-import { InteractButton } from "@/components/interface/InteractButton";
 import { CrossIcon } from "@/components/interface/icons/CrossIcon";
+import { InteractButton } from "@/components/interface/InteractButton";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { TagEditRow } from "@/components/TagEditRow";
 import { Colors } from "@/constants/theme";
@@ -56,19 +56,24 @@ export function Tags({
   const [editingTagId, setEditingTagId] = useState(null);
   const [draftName, setDraftName] = useState("");
   const [draftColor, setDraftColor] = useState("default");
+  const [prevEditMode, setPrevEditMode] = useState(editMode);
   const editRowRef = useRef(null);
   const tagPickerRef = useRef(null);
 
   const activeTags = tags.filter((t) => !t.archived);
 
-  useEffect(() => {
+  if (editMode !== prevEditMode) {
+    setPrevEditMode(editMode);
     if (!editMode) {
-      editRowRef.current?.blur();
       setEditRowOpen(false);
       setEditingTagId(null);
       setDraftName("");
       setDraftColor("default");
     }
+  }
+
+  useEffect(() => {
+    if (!editMode) editRowRef.current?.blur();
   }, [editMode]);
 
   const openEditRow = (tagId = null) => {

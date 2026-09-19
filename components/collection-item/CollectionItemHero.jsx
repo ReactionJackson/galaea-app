@@ -146,7 +146,7 @@ export function CollectionItemHero({
 
       {editable && (
         <InteractionControls
-          onAdd={onPressCover}
+          onAdd={coverImage ? undefined : onPressCover}
           onEdit={coverImage ? onEditCover : undefined}
           onDelete={coverImage ? onRemoveCover : undefined}
           style={{ position: "absolute", top: 10, right: 10 }}

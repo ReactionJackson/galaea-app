@@ -13,7 +13,7 @@ export function InteractionControls({ onAdd, onEdit, onDelete, style }) {
   return (
     <Column style={style}>
       {onDelete && (
-        <InteractButton variant="danger" haptic onPress={onDelete}>
+        <InteractButton variant="danger" hapticStyle="heavy" onPress={onDelete}>
           <CrossIcon rotation={45} />
         </InteractButton>
       )}

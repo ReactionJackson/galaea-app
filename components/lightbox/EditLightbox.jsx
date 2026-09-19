@@ -2,6 +2,7 @@ import { GALLERY_ITEM_RADIUS } from "@/components/gallery/shared";
 import { Image } from "@/components/image/Image";
 import { Colors } from "@/constants/theme";
 import { ITEM_ASPECT_RATIO } from "@/constants/values";
+import * as Haptics from "expo-haptics";
 import { useEffect, useRef, useState } from "react";
 import { PanResponder, View } from "react-native";
 import styled from "styled-components/native";
@@ -17,9 +18,6 @@ const CropBox = styled.View`
   background-color: ${Colors.accentFaded};
 `;
 
-// The crop box is always the shape of the target aspect ratio (a gallery
-// thumbnail). Whichever image dimension has slack once that shape is fit
-// inside the rendered image frame becomes the draggable axis.
 function getCropGeometry(rect, targetAspectRatio) {
   if (!rect) return null;
   const imageRatio = rect.width / rect.height;
@@ -62,35 +60,55 @@ export function EditLightbox({
   const [rect, setRect] = useState(null);
   const [focusPercent, setFocusPercent] = useState(null);
   const [displayImage, setDisplayImage] = useState(image);
+  const [prevImage, setPrevImage] = useState(image);
+
+  if (image !== prevImage) {
+    setPrevImage(image);
+    if (image) {
+      setDisplayImage(image);
+      setRect(null);
+      setFocusPercent(parseFocus(image.focus));
+    }
+  }
 
   const cropRef = useRef(null);
   const focusPercentRef = useRef(focusPercent);
-  focusPercentRef.current = focusPercent;
   const dragStartPercentRef = useRef(50);
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => !!cropRef.current?.axis,
-      onMoveShouldSetPanResponder: () => !!cropRef.current?.axis,
-      onPanResponderGrant: () => {
-        dragStartPercentRef.current = focusPercentRef.current ?? 50;
-      },
-      onPanResponderMove: (_, gestureState) => {
-        const current = cropRef.current;
-        if (!current?.axis || !current.maxOffset) return;
-        const deltaPx =
-          current.axis === "x" ? gestureState.dx : gestureState.dy;
-        const deltaPercent = (deltaPx / current.maxOffset) * 100;
-        const next = Math.min(
-          Math.max(dragStartPercentRef.current + deltaPercent, 0),
-          100,
-        );
-        setFocusPercent(next);
-      },
-    }),
-  ).current;
+  const [panResponder, setPanResponder] = useState(null);
+
+  useEffect(() => {
+    focusPercentRef.current = focusPercent;
+  });
+
+  useEffect(() => {
+    setPanResponder(
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => !!cropRef.current?.axis,
+        onMoveShouldSetPanResponder: () => !!cropRef.current?.axis,
+        onPanResponderGrant: () => {
+          dragStartPercentRef.current = focusPercentRef.current ?? 50;
+        },
+        onPanResponderMove: (_, gestureState) => {
+          const current = cropRef.current;
+          if (!current?.axis || !current.maxOffset) return;
+          const deltaPx =
+            current.axis === "x" ? gestureState.dx : gestureState.dy;
+          const deltaPercent = (deltaPx / current.maxOffset) * 100;
+          const next = Math.min(
+            Math.max(dragStartPercentRef.current + deltaPercent, 0),
+            100,
+          );
+          setFocusPercent(next);
+        },
+      }),
+    );
+  }, []);
 
   const crop = getCropGeometry(rect, targetAspectRatio);
-  cropRef.current = crop;
+  useEffect(() => {
+    cropRef.current = crop;
+  });
+
   const boxStyle =
     rect && crop
       ? {
@@ -109,20 +127,15 @@ export function EditLightbox({
         }
       : null;
 
-  useEffect(() => {
-    if (!image) return;
-    setDisplayImage(image);
-    setRect(null);
-    setFocusPercent(parseFocus(image.focus));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [image]);
-
   const handleFrameLayout = (e) => {
     const { x, y, width, height } = e.nativeEvent.layout;
     setRect({ x, y, width, height });
   };
 
   const handleSave = () => {
+    if (process.env.EXPO_OS === "ios") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
     const percent = focusPercent ?? 50;
     const focus =
       crop?.axis === "x"
@@ -133,9 +146,16 @@ export function EditLightbox({
     onSave?.(focus);
   };
 
+  const handleCancel = () => {
+    if (process.env.EXPO_OS === "ios") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    onClose?.();
+  };
+
   return (
     <Lightbox visible={!!image} onClose={onClose}>
-      <View {...panResponder.panHandlers}>
+      <View {...panResponder?.panHandlers}>
         <Image
           {...displayImage}
           width="100%"
@@ -146,7 +166,7 @@ export function EditLightbox({
       </View>
 
       <Lightbox.Controls>
-        <GhostButton onPress={onClose}>
+        <GhostButton onPress={handleCancel}>
           <ThemedText color="white">Cancel</ThemedText>
         </GhostButton>
         <PrimaryButton onPress={handleSave}>
