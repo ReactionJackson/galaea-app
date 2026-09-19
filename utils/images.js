@@ -21,20 +21,17 @@ const IMAGE_PRESETS = {
 };
 
 function resolveOptions(kind) {
-  const { width: screenWidth, scale } = Dimensions.get("window");
+  const { width: screenWidth } = Dimensions.get("window");
   const preset = IMAGE_PRESETS[kind];
   switch (kind) {
     case "card":
-      return {
-        quality: preset.quality,
-        resizeHeight: preset.resizeHeight * scale,
-      };
+      return { quality: preset.quality, resizeHeight: preset.resizeHeight };
     case "cover":
-      return { quality: preset.quality, resizeWidth: screenWidth * scale };
+      return { quality: preset.quality, resizeWidth: screenWidth };
     case "gallery":
       return {
         quality: preset.quality,
-        resizeWidth: (screenWidth - LIGHTBOX_PADDING * 2) * scale,
+        resizeWidth: screenWidth - LIGHTBOX_PADDING * 2,
       };
     default:
       throw new Error(`Unknown image kind: ${kind}`);
@@ -50,6 +47,14 @@ function storageDir() {
 function isGif({ mimeType, uri } = {}) {
   if (mimeType) return mimeType === "image/gif";
   return /\.gif(\?|$)/i.test(uri ?? "");
+}
+
+export function fileExists(uri) {
+  try {
+    return !!uri && new File(uri).exists;
+  } catch {
+    return false;
+  }
 }
 
 async function storePickedImage(

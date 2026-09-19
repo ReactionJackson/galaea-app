@@ -1,5 +1,7 @@
 import { cardShadow } from "@/constants/theme";
+import { fileExists } from "@/utils/images";
 import { Image as ExpoImage } from "expo-image";
+import { useMemo } from "react";
 import styled from "styled-components/native";
 
 const toDimension = (value) =>
@@ -34,6 +36,8 @@ export function Image({
   style,
   ...rest
 }) {
+  const exists = useMemo(() => fileExists(uri), [uri]);
+
   if (!uri) return null;
 
   return (
@@ -46,7 +50,7 @@ export function Image({
       shadowOpacity={shadowOpacity}
       style={style}
     >
-      <StyledImage source={{ uri }} radius={radius} {...rest} />
+      {exists && <StyledImage source={{ uri }} radius={radius} {...rest} />}
     </ShadowWrap>
   );
 }
