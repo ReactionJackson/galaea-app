@@ -9,65 +9,36 @@ import Animated, {
 
 const OPEN_MAX_HEIGHT = 9999;
 
-export function AnimatedSpacer({
+function AnimateHeightActive({
   visible,
-  height = 20,
-  animateOnMount = false,
-}) {
-  return (
-    <AnimateHeight visible={visible} animateOnMount={animateOnMount}>
-      <View style={{ height }} />
-    </AnimateHeight>
-  );
-}
-
-export function AnimateHeight({
-  visible,
-  children,
-  duration = 250,
-  animateOnMount = false,
+  bornVisible,
+  duration,
   style,
+  children,
 }) {
   const heightValue = useSharedValue(0);
   const naturalHeight = useRef(0);
   const measured = useRef(false);
-  // True only while the component is sitting at OPEN_MAX_HEIGHT (fully open).
-  // naturalHeight is only updated during the initial pre-ready measurement OR
-  // while fully open — intermediate/constrained layout passes (e.g. the
-  // re-layout that fires after maxHeight collapses to 0) give wrong values and
-  // must be ignored, otherwise the animation targets a corrupted height.
   const isFullyOpen = useRef(false);
   const [ready, setReady] = useState(false);
   const visibleRef = useRef(visible);
-  visibleRef.current = visible;
-  // Track whether the component was visible from its very first render.
-  // Used to distinguish "has existing content, open immediately" from
-  // "visible changed to true before onLayout fired" (race condition).
-  // animateOnMount overrides this so newly inserted items animate in even
-  // when mounted with visible=true.
-  const wasInitiallyVisible = useRef(animateOnMount ? false : visible);
+  useEffect(() => {
+    visibleRef.current = visible;
+  });
 
   const onLayout = (e) => {
     const h = e.nativeEvent.layout.height;
     if (!h) return;
-    // Only trust measurements taken during the initial pre-ready pass or while
-    // the component is fully open. Once we've collapsed (maxHeight=0) React
-    // Native re-lays out the inner view inside a 0-height parent; any non-zero
-    // value it reports is a constrained artefact, not the true content height.
     if (!measured.current || isFullyOpen.current) {
       naturalHeight.current = h;
     }
     if (!measured.current) {
       measured.current = true;
       if (visibleRef.current) {
-        if (wasInitiallyVisible.current) {
-          // Visible from the start (entry already has content) — snap open,
-          // no entrance animation needed.
+        if (bornVisible) {
           isFullyOpen.current = true;
           heightValue.value = OPEN_MAX_HEIGHT;
         } else {
-          // visible became true before onLayout had a chance to fire.
-          // Animate the entrance now rather than snapping to full height.
           heightValue.value = withTiming(
             h,
             { duration, easing: Easing.out(Easing.quad) },
@@ -79,6 +50,12 @@ export function AnimateHeight({
             },
           );
         }
+      } else if (bornVisible) {
+        heightValue.value = h;
+        heightValue.value = withTiming(0, {
+          duration,
+          easing: Easing.out(Easing.quad),
+        });
       } else {
         heightValue.value = 0;
       }
@@ -89,7 +66,6 @@ export function AnimateHeight({
   useEffect(() => {
     if (!measured.current) return;
     if (visible) {
-      // Animate to natural height, then open up to allow free growth.
       heightValue.value = withTiming(
         naturalHeight.current,
         { duration, easing: Easing.out(Easing.quad) },
@@ -101,24 +77,16 @@ export function AnimateHeight({
         },
       );
     } else {
-      // Mark as closing before the snap so onLayout can't mistake the
-      // constrained re-layout for a valid open measurement.
       isFullyOpen.current = false;
-      // Capture actual current height before collapsing — content may have
-      // grown or shrunk while open.
       heightValue.value = naturalHeight.current;
       heightValue.value = withTiming(0, {
         duration,
         easing: Easing.out(Easing.quad),
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
-  // Only actually needs to clip while the height is constrained below the
-  // content's natural size (i.e. mid-animation) — once fully open (snapped
-  // to OPEN_MAX_HEIGHT) there's nothing left to hide, and clipping anyway
-  // was cutting off anything a child rendered outside its own bounds, like
-  // a drop shadow.
   const animatedStyle = useAnimatedStyle(() => ({
     maxHeight: heightValue.value,
     overflow: heightValue.value >= OPEN_MAX_HEIGHT ? "visible" : "hidden",
@@ -127,11 +95,73 @@ export function AnimateHeight({
   return (
     <Animated.View
       style={[
-        ready ? animatedStyle : { overflow: "hidden", opacity: 0 },
+        ready
+          ? animatedStyle
+          : { position: "absolute", width: "100%", opacity: 0 },
         style,
       ]}
     >
       <View onLayout={onLayout}>{children}</View>
     </Animated.View>
   );
+}
+
+export function AnimateHeight({
+  visible,
+  children,
+  duration = 250,
+  animateOnMount = false,
+  style,
+}) {
+  const [activated, setActivated] = useState(animateOnMount);
+  const [bornVisible, setBornVisible] = useState(
+    animateOnMount ? false : visible,
+  );
+  const [prevVisible, setPrevVisible] = useState(visible);
+
+  if (!activated && visible !== prevVisible) {
+    setActivated(true);
+    setBornVisible(prevVisible);
+    setPrevVisible(visible);
+  }
+
+  if (!activated) {
+    return visible ? <View style={style}>{children}</View> : null;
+  }
+
+  return (
+    <AnimateHeightActive
+      visible={visible}
+      bornVisible={bornVisible}
+      duration={duration}
+      style={style}
+    >
+      {children}
+    </AnimateHeightActive>
+  );
+}
+
+export function AnimatedSpacer({
+  visible,
+  height = 20,
+  animateOnMount = false,
+}) {
+  const heightValue = useSharedValue(animateOnMount ? 0 : visible ? height : 0);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      if (!animateOnMount) return;
+    }
+    heightValue.value = withTiming(visible ? height : 0, {
+      duration: 250,
+      easing: Easing.out(Easing.quad),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
+  const animatedStyle = useAnimatedStyle(() => ({ height: heightValue.value }));
+
+  return <Animated.View style={animatedStyle} />;
 }
