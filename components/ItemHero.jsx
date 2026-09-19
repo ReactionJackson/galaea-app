@@ -110,14 +110,18 @@ export function ItemHero({
             onLoad={() => setCoverLoaded(true)}
           />
         )}
-        {coverImage && coverLoaded && (
-          <Animated.View
-            entering={FadeIn.duration(PAGE_INTRO_FADE)}
-            style={{ width: "100%", height: "100%" }}
-          >
+        {coverImage &&
+          coverLoaded &&
+          (animateCoverReveal ? (
+            <Animated.View
+              entering={FadeIn.duration(PAGE_INTRO_FADE)}
+              style={{ width: "100%", height: "100%" }}
+            >
+              <CoverImage key={coverImage.uri} {...coverImage} addOverlay />
+            </Animated.View>
+          ) : (
             <CoverImage key={coverImage.uri} {...coverImage} addOverlay />
-          </Animated.View>
-        )}
+          ))}
       </CoverFill>
 
       <CardWrap style={{ height: cardHeight }}>
