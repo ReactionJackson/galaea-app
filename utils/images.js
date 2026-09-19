@@ -24,8 +24,8 @@ function resolveOptions(kind) {
       return { quality: 0.4, resizeWidth: screenWidth };
     case "gallery":
       return {
-        quality: 0.5,
-        resizeWidth: screenWidth - LIGHTBOX_PADDING * 2,
+        quality: 0.4,
+        resizeWidth: (screenWidth - LIGHTBOX_PADDING * 2) * 2,
       };
     default:
       throw new Error(`Unknown image kind: ${kind}`);
