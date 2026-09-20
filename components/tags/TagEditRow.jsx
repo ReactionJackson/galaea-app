@@ -1,4 +1,7 @@
 import { FadeTrack } from "@/components/interface/FadeTrack";
+import { InteractButton } from "@/components/interface/InteractButton";
+import { CrossIcon } from "@/components/interface/icons/CrossIcon";
+import { TickIcon } from "@/components/interface/icons/TickIcon";
 import { Colors, Fonts } from "@/constants/theme";
 import { useTagColorTransition } from "@/hooks/useTagColorTransition";
 import { forwardRef, useImperativeHandle, useRef } from "react";
@@ -26,25 +29,6 @@ const Row = styled.View`
   gap: 8px;
 `;
 
-const CircleButton = styled.View`
-  width: 26px;
-  height: 26px;
-  border-radius: 13px;
-  align-items: center;
-  justify-content: center;
-  border-width: 2px;
-  flex-shrink: 0;
-`;
-
-const CancelCircle = styled(CircleButton)`
-  border-color: ${Colors.buttonBorder};
-`;
-
-const SaveCircle = styled(CircleButton)`
-  border-color: ${Colors.accent};
-  background-color: ${Colors.accent};
-`;
-
 const ColorDot = styled.View`
   width: 22px;
   height: 22px;
@@ -58,7 +42,7 @@ const ColorDot = styled.View`
 `;
 
 const EditRowWrapper = styled.View`
-  padding-top: 8px;
+  padding-top: 10px;
 `;
 
 const HiddenInput = styled(TextInput)`
@@ -87,16 +71,6 @@ const NameLabel = styled(Animated.Text)`
   opacity: ${({ hasName }) => (hasName ? 1 : 0.45)};
 `;
 
-const Glyph = styled(Animated.Text)`
-  font-family: ${Fonts.bold};
-  font-size: ${({ size = 14 }) => size}px;
-  line-height: ${({ size = 14 }) => size + 2}px;
-  color: ${({ color }) => color};
-`;
-
-// The inline add/rename form for a tag — name field, colour picker, cancel/
-// save. Exposes focus()/blur() via ref so the parent can drive the hidden
-// text input without reaching into this component's internals.
 export const TagEditRow = forwardRef(function TagEditRow(
   { name, color, onChangeName, onChangeColor, onCancel, onSave },
   ref,
@@ -125,7 +99,7 @@ export const TagEditRow = forwardRef(function TagEditRow(
         <NameButton onPress={() => inputRef.current?.focus()}>
           <NamePill style={borderStyle}>
             <NameLabel hasName={!!name} style={textStyle}>
-              {name || "Tag name"}
+              {name || "Tag Name"}
             </NameLabel>
           </NamePill>
         </NameButton>
@@ -144,19 +118,13 @@ export const TagEditRow = forwardRef(function TagEditRow(
           ))}
         </FadeTrack>
 
-        <Pressable onPress={onCancel}>
-          <CancelCircle>
-            <Glyph color={Colors.faded}>×</Glyph>
-          </CancelCircle>
-        </Pressable>
+        <InteractButton variant="secondary" onPress={onCancel}>
+          <CrossIcon rotation={45} />
+        </InteractButton>
 
-        <Pressable onPress={onSave}>
-          <SaveCircle>
-            <Glyph size={12} color={Colors.white}>
-              ✓
-            </Glyph>
-          </SaveCircle>
-        </Pressable>
+        <InteractButton variant="primary" haptics="Medium" onPress={onSave}>
+          <TickIcon />
+        </InteractButton>
       </Row>
     </EditRowWrapper>
   );

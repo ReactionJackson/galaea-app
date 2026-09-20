@@ -1,11 +1,12 @@
 import { Colors } from "@/constants/theme";
 import Svg, { Path } from "react-native-svg";
 
-// A right-pointing chevron by default (rotation 0) — pass rotation={180}
-// for the same shape reading as "left" instead, same idea as CrossIcon's
-// plus/cross pairing.
+// A right-pointing arrow by default (rotation 0) — pass rotation={180} for
+// the same shape reading as "left" instead, same idea as CrossIcon's
+// plus/cross pairing. Drawn as a chevron with a trailing shaft so it reads
+// like the ←/→ glyphs rather than a bare "<"/">" chevron.
 export function ArrowIcon({
-  size = 12,
+  size = 14,
   color = Colors.tags.default.primary,
   strokeWidth = 2,
   rotation = 0,
@@ -19,7 +20,7 @@ export function ArrowIcon({
       style={{ transform: [{ rotate: `${rotation}deg` }] }}
     >
       <Path
-        d="M4 2L8 6L4 10"
+        d="M2.5 6L9.5 6M5.5 2L9.5 6L5.5 10"
         stroke={color}
         strokeWidth={strokeWidth}
         strokeLinecap="round"

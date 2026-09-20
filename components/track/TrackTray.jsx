@@ -1,8 +1,11 @@
 import { BlurView } from "@/components/interface/BlurView";
 import { Button } from "@/components/interface/Button";
-import { ThemedText } from "@/components/interface/ThemedText";
+import { ArrowIcon } from "@/components/interface/icons/ArrowIcon";
 import { Colors } from "@/constants/theme";
-import { SLIDE_TRANSITION_DURATION } from "@/constants/values";
+import {
+  COLOR_TRANSITION_DURATION,
+  SLIDE_TRANSITION_DURATION,
+} from "@/constants/values";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
@@ -46,8 +49,25 @@ const CircleButton = styled.Pressable`
   justify-content: center;
   align-items: center;
   border: 2px solid ${Colors.buttonBorder};
-  opacity: ${({ disabled }) => (disabled ? 0.3 : 1)};
 `;
+
+// Fades in/out smoothly on disable rather than snapping, since a plain
+// CSS opacity interpolation on a Pressable has no transition in RN.
+function SwapButton({ onPress, disabled, children }) {
+  const dimmedStyle = useAnimatedTransition(
+    !disabled,
+    { opacity: [0.3, 1] },
+    { duration: COLOR_TRANSITION_DURATION },
+  );
+
+  return (
+    <Animated.View style={dimmedStyle}>
+      <CircleButton onPress={onPress} disabled={disabled}>
+        {children}
+      </CircleButton>
+    </Animated.View>
+  );
+}
 
 export function TrackTray({
   editMode = false,
@@ -80,12 +100,15 @@ export function TrackTray({
         <ControlsContainer>
           {onSwapLeft && onSwapRight && (
             <MoveButtonsContainer>
-              <CircleButton onPress={onSwapLeft} disabled={!canSwapLeft}>
-                <ThemedText color="black">←</ThemedText>
-              </CircleButton>
-              <CircleButton onPress={onSwapRight} disabled={!canSwapRight}>
-                <ThemedText color="black">→</ThemedText>
-              </CircleButton>
+              <SwapButton onPress={onSwapLeft} disabled={!canSwapLeft}>
+                <ArrowIcon
+                  rotation={180}
+                  color={Colors.button.secondary.text}
+                />
+              </SwapButton>
+              <SwapButton onPress={onSwapRight} disabled={!canSwapRight}>
+                <ArrowIcon color={Colors.button.secondary.text} />
+              </SwapButton>
             </MoveButtonsContainer>
           )}
           <Button variant="secondary" onPress={onCancel}>

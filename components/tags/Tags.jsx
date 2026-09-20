@@ -6,8 +6,8 @@ import { FadeTrack } from "@/components/interface/FadeTrack";
 import { CrossIcon } from "@/components/interface/icons/CrossIcon";
 import { InteractButton } from "@/components/interface/InteractButton";
 import { ThemedText } from "@/components/interface/ThemedText";
+import { Tag } from "@/components/tags/Tag";
 import { TagEditRow } from "@/components/tags/TagEditRow";
-import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, View } from "react-native";
@@ -23,20 +23,6 @@ const ActiveTags = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
   gap: 10px;
-`;
-
-const Tag = styled.View`
-  align-items: center;
-  justify-content: center;
-  height: 26px;
-  border-radius: 13px;
-  padding: 0 10px;
-  border-width: 2px;
-  border-style: solid;
-  ${({ color = "default" }) => `
-    border-color: ${Colors.tags[color].primary};
-    background-color: ${Colors.tags[color].secondary};
-  `}
 `;
 
 export function Tags({
@@ -128,7 +114,7 @@ export function Tags({
       <AnimateHeight visible={editMode}>
         <Row>
           <InteractButton onPress={() => openEditRow(null)}>
-            <CrossIcon color={Colors.tags.default.primary} />
+            <CrossIcon />
           </InteractButton>
 
           <FadeTrack ref={tagPickerRef} contentContainerStyle={{ gap: 10 }}>

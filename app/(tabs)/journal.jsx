@@ -8,8 +8,8 @@ import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
 import { Tags } from "@/components/tags/Tags";
-import { PickerTrack } from "@/components/track/PickerTrack";
 import { JournalTrack } from "@/components/track/JournalTrack";
+import { PickerTrack } from "@/components/track/PickerTrack";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { Fragment, useEffect, useRef } from "react";
@@ -181,10 +181,7 @@ function JournalScreen() {
                 );
               },
             )}
-            <AnimatedSpacer
-              visible={activeEntry.items.length > 0}
-              height={editMode ? 20 : 10}
-            />
+            <AnimatedSpacer visible={activeEntry.items.length > 0} />
 
             {(editMode || cancelling) && (
               <AnimateHeight

@@ -1,11 +1,12 @@
 import { firePressHaptic } from "@/components/interface/shared";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
+import { BUTTON_HEIGHT } from "@/constants/values";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
 const StyledButton = styled(Pressable)`
-  height: 36px;
+  height: ${BUTTON_HEIGHT}px;
   justify-content: center;
   padding: 4px 14px;
   border-radius: 20px;

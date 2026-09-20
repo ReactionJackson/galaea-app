@@ -1,4 +1,3 @@
-import { Colors } from "@/constants/theme";
 import styled from "styled-components/native";
 import { CrossIcon } from "./icons/CrossIcon";
 import { EditIcon } from "./icons/EditIcon";
@@ -13,7 +12,7 @@ export function InteractionControls({ onAdd, onEdit, onDelete, style }) {
   return (
     <Column style={style}>
       {onDelete && (
-        <InteractButton variant="danger" haptics="Heavy" onPress={onDelete}>
+        <InteractButton variant="primary" haptics="Heavy" onPress={onDelete}>
           <CrossIcon rotation={45} />
         </InteractButton>
       )}
@@ -24,7 +23,7 @@ export function InteractionControls({ onAdd, onEdit, onDelete, style }) {
       )}
       {onAdd && (
         <InteractButton onPress={onAdd}>
-          <CrossIcon color={Colors.tags.default.primary} />
+          <CrossIcon />
         </InteractButton>
       )}
     </Column>

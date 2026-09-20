@@ -9,6 +9,8 @@ export const COLLECTION_HERO_SPACING = 30;
 export const CARD_HEIGHT = COLLECTION_HERO_HEIGHT - 2 * COLLECTION_HERO_SPACING;
 export const CARD_THUMBNAIL_HEIGHT = 45;
 export const LIGHTBOX_PADDING = 20;
+export const BUTTON_HEIGHT = 36;
+export const CONDENSED_BUTTON_HEIGHT = 26;
 
 // Durations:
 

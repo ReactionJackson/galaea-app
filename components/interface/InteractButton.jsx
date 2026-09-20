@@ -2,26 +2,17 @@ import { firePressHaptic } from "@/components/interface/shared";
 import { Colors } from "@/constants/theme";
 import {
   COLOR_TRANSITION_DURATION,
+  CONDENSED_BUTTON_HEIGHT,
   FADE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
+import { Children, cloneElement, isValidElement } from "react";
 import { Pressable } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import styled, { css } from "styled-components/native";
-
-const VARIANTS = {
-  default: {
-    backgroundColor: Colors.editButtonBackground,
-    borderColor: Colors.tags.default.primary,
-  },
-  danger: {
-    backgroundColor: Colors.accent,
-    borderColor: Colors.buttonBorder,
-  },
-};
+import styled from "styled-components/native";
 
 export const InteractCircle = styled.View`
-  height: 26px;
+  height: ${CONDENSED_BUTTON_HEIGHT}px;
   border-radius: 13px;
   border-width: 2px;
   border-color: ${({ borderColor }) =>
@@ -30,28 +21,24 @@ export const InteractCircle = styled.View`
   align-items: center;
   background-color: ${({ backgroundColor }) =>
     backgroundColor ?? Colors.editButtonBackground};
-  ${({ pill }) =>
-    pill
-      ? css`
-          flex-direction: row;
-          gap: 6px;
-          padding: 0 10px;
-        `
-      : css`
-          width: 26px;
-        `}
+  width: ${CONDENSED_BUTTON_HEIGHT}px;
 `;
 
 export function InteractButton({
-  variant = "default",
-  pill = false,
+  variant = "secondary",
   haptics = "Light",
   disabled = false,
   onPress,
   style,
   children,
 }) {
-  const { backgroundColor, borderColor } = VARIANTS[variant];
+  const { fill, border, icon } = Colors.interactButton[variant];
+
+  const coloredChildren = Children.map(children, (child) =>
+    isValidElement(child)
+      ? cloneElement(child, { color: child.props.color ?? icon })
+      : child,
+  );
 
   const dimmedStyle = useAnimatedTransition(
     !disabled,
@@ -73,12 +60,8 @@ export function InteractButton({
     >
       <Animated.View style={dimmedStyle}>
         <Pressable onPress={handlePress} disabled={disabled}>
-          <InteractCircle
-            backgroundColor={backgroundColor}
-            borderColor={borderColor}
-            pill={pill}
-          >
-            {children}
+          <InteractCircle backgroundColor={fill} borderColor={border}>
+            {coloredChildren}
           </InteractCircle>
         </Pressable>
       </Animated.View>

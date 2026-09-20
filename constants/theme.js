@@ -88,6 +88,19 @@ Colors.button = {
   },
 };
 
+Colors.interactButton = {
+  primary: {
+    fill: Colors.accent,
+    border: Colors.buttonBorder,
+    icon: Colors.white,
+  },
+  secondary: {
+    fill: Colors.editButtonBackground,
+    border: Colors.tags.default.primary,
+    icon: Colors.tags.default.primary,
+  },
+};
+
 export const Fonts = {
   regular: "Outfit400",
   medium: "Outfit500",
