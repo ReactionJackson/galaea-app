@@ -142,6 +142,7 @@ export function ItemsTrack({
             key={item.itemId}
             layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
             entering={FadeIn.duration(SLIDE_TRANSITION_DURATION)}
+            style={{ zIndex: activeIndex === i ? 1 : 0 }}
           >
             <ItemCard
               cardImage={item.cardImage}
