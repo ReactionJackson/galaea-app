@@ -127,12 +127,12 @@ export function useSnapTrack({
     trackRef.current?.scrollTo({ x: offset, animated });
   };
 
-  const goToIndex = (index) => {
+  const goToIndex = (index, { haptic = true } = {}) => {
     if (index === activeIndex) {
       if (index === ADD_INDEX) {
         onCancelAdd();
         setIsScrolling(true);
-        hapticLight();
+        if (haptic) hapticLight();
         setIsInternalScroll(false);
         scrollToIndex(itemCount - 1, true);
         return;
@@ -141,7 +141,7 @@ export function useSnapTrack({
       return;
     }
     setIsScrolling(true);
-    hapticLight();
+    if (haptic) hapticLight();
     if (index === ADD_INDEX) {
       setIsInternalScroll(false);
       setAddActive(true);

@@ -54,8 +54,8 @@ const DEFAULT_COLLECTION_ID = 1;
 // the reconciliation pass that keeps already-migrated devices in sync both
 // read from the same place.
 const COLLECTION_COLORS = {
-  Games: "#f96156",
-  "Board Games": "mediumseagreen",
+  Games: "#eee",
+  "Board Games": "#eee",
 };
 
 // Runs once, at hydrate time. Every install predating collections has items
@@ -405,9 +405,11 @@ function appReducer(state, action) {
               title: "",
               cardImage: null,
               coverImage: null,
-              // Hardcoded until there's a collection to actually choose
-              // from — see the collections track work.
-              collectionId: DEFAULT_COLLECTION_ID,
+              // Whichever collection was being viewed when Add was pressed
+              // (see handleAddItem in collection.jsx) - falls back to the
+              // default collection only for a caller that doesn't know
+              // which one it's in.
+              collectionId: action.collectionId ?? DEFAULT_COLLECTION_ID,
               entries: [],
             },
         editingItemId: existing ? existing.itemId : null,

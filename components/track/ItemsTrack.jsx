@@ -1,10 +1,10 @@
+import { collectionCardColor } from "@/constants/theme";
 import {
   EMPTY_CARD_WIDTH,
   ITEM_HEIGHT,
   SLIDE_TRANSITION_DURATION,
   TRACK_GAP,
 } from "@/constants/values";
-import { collectionCardColor } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
@@ -32,11 +32,13 @@ const ScrollContainer = styled(Animated.ScrollView)`
 export const ItemsTrack = memo(function ItemsTrack({
   collectionId,
   editMode = false,
+  revealed = false,
   onChangeItem = () => {},
   onPressActiveItem = () => {},
   onAddItem = () => {},
   onCancelAddItem = () => {},
   onPressBack = () => {},
+  onViewCollectionCard = () => {},
   onControlsChange = () => {},
 }) {
   const { state, dispatch } = useApp();
@@ -47,12 +49,12 @@ export const ItemsTrack = memo(function ItemsTrack({
     () => state.items.filter((item) => item.collectionId === collectionId),
     [state.items, collectionId],
   );
+  // The first 4 items in the collection, positionally - an item with no
+  // cardThumbnail yet leaves its own slot blank (CollectionCard renders a
+  // grey placeholder there) rather than the next item's thumbnail sliding
+  // up to fill the gap.
   const collectionThumbnails = useMemo(
-    () =>
-      items
-        .map((item) => item.cardThumbnail)
-        .filter(Boolean)
-        .slice(0, 4),
+    () => items.slice(0, 4).map((item) => item.cardThumbnail),
     [items],
   );
   const realItemWidths = useItemCardSizes(items, ITEM_HEIGHT);
@@ -91,6 +93,7 @@ export const ItemsTrack = memo(function ItemsTrack({
     onSettle: (index, { alreadyActive }) => {
       if (index === 0) {
         if (alreadyActive) onPressBack();
+        else onViewCollectionCard();
         return;
       }
       const item = items[index - 1];
@@ -108,10 +111,6 @@ export const ItemsTrack = memo(function ItemsTrack({
         onChangeItem(item.itemId);
       }
     },
-    // A tap "from afar" on the leading CollectionCard doesn't go back until
-    // the jump to centre it actually finishes - a swipe that happens to
-    // settle there never reaches here, only a genuine tap does (see
-    // useSnapTrack).
     onArrive: (index) => {
       if (index === 0) onPressBack();
     },
@@ -140,6 +139,11 @@ export const ItemsTrack = memo(function ItemsTrack({
       canSwapRight,
     });
   });
+
+  useEffect(() => {
+    if (revealed && items.length > 0) goToIndex(1, { haptic: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealed]);
 
   return (
     <ScrollContainer

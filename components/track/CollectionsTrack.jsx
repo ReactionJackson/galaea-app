@@ -1,9 +1,9 @@
+import { collectionCardColor } from "@/constants/theme";
 import {
   ITEM_HEIGHT,
   SLIDE_TRANSITION_DURATION,
   TRACK_GAP,
 } from "@/constants/values";
-import { collectionCardColor } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import { memo, useMemo } from "react";
@@ -11,10 +11,6 @@ import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { CollectionCard } from "./CollectionCard";
 import { AddItemCard } from "./ItemCard";
-
-// Constants:
-
-const INACTIVE_OPACITY = 0.5;
 
 // Styled Components:
 
@@ -33,7 +29,7 @@ export const CollectionsTrack = memo(function CollectionsTrack({
   onAddCollection = () => {},
   onCancelAddCollection = () => {},
 }) {
-  const inactiveOpacity = soloed ? 0 : INACTIVE_OPACITY;
+  const inactiveOpacity = soloed ? 0 : 1;
   const { state } = useApp();
   const collections = state.collections;
   const itemsByCollection = useMemo(() => {
@@ -118,9 +114,8 @@ export const CollectionsTrack = memo(function CollectionsTrack({
     >
       {collections.map((collection, i) => {
         const thumbnails = (itemsByCollection[collection.collectionId] ?? [])
-          .map((item) => item.cardThumbnail)
-          .filter(Boolean)
-          .slice(0, 4);
+          .slice(0, 4)
+          .map((item) => item.cardThumbnail);
         return (
           <Animated.View
             key={collection.collectionId}

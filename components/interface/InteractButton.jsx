@@ -1,7 +1,6 @@
 import { firePressHaptic } from "@/components/interface/shared";
 import { Colors } from "@/constants/theme";
 import {
-  COLOR_TRANSITION_DURATION,
   CONDENSED_BUTTON_HEIGHT,
   FADE_TRANSITION_DURATION,
 } from "@/constants/values";
@@ -43,7 +42,7 @@ export function InteractButton({
   const dimmedStyle = useAnimatedTransition(
     !disabled,
     { opacity: [0.35, 1] },
-    { duration: COLOR_TRANSITION_DURATION },
+    { duration: FADE_TRANSITION_DURATION },
   );
 
   const handlePress = () => {

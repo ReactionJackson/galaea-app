@@ -1,5 +1,5 @@
-import { CrossIcon } from "@/components/interface/icons/CrossIcon";
 import { Image } from "@/components/image/Image";
+import { CrossIcon } from "@/components/interface/icons/CrossIcon";
 import { Colors } from "@/constants/theme";
 import {
   CARD_SHADOW_OPACITY,

@@ -3,7 +3,7 @@ import { Button } from "@/components/interface/Button";
 import { ArrowIcon } from "@/components/interface/icons/ArrowIcon";
 import { Colors } from "@/constants/theme";
 import {
-  COLOR_TRANSITION_DURATION,
+  FADE_TRANSITION_DURATION,
   SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
@@ -57,7 +57,7 @@ function SwapButton({ onPress, disabled, children }) {
   const dimmedStyle = useAnimatedTransition(
     !disabled,
     { opacity: [0.3, 1] },
-    { duration: COLOR_TRANSITION_DURATION },
+    { duration: FADE_TRANSITION_DURATION },
   );
 
   return (
