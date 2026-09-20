@@ -6,7 +6,10 @@ import {
   CARD_THUMBNAIL_HEIGHT,
   ITEM_HEIGHT,
 } from "@/constants/values";
+import { Pressable } from "react-native";
+import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
+import { useFadeStyle } from "./ItemCard";
 
 const GRID_GAP = 5;
 const THUMBNAIL_RADIUS = 6;
@@ -30,14 +33,26 @@ const ThumbnailWrap = styled.View`
   overflow: hidden;
 `;
 
-export function CollectionCard({ thumbnails = [] }) {
+export function CollectionCard({
+  thumbnails = [],
+  active = true,
+  inactiveOpacity = 1,
+  onPress,
+  disabled,
+}) {
+  const style = useFadeStyle(active, inactiveOpacity);
+
   return (
-    <Card>
-      {thumbnails.slice(0, 4).map((thumbnail, i) => (
-        <ThumbnailWrap key={thumbnail.uri ?? i}>
-          <CoverImage {...thumbnail} />
-        </ThumbnailWrap>
-      ))}
-    </Card>
+    <Pressable onPress={onPress} disabled={disabled}>
+      <Animated.View style={style}>
+        <Card>
+          {thumbnails.slice(0, 4).map((thumbnail, i) => (
+            <ThumbnailWrap key={thumbnail.uri ?? i}>
+              <CoverImage {...thumbnail} />
+            </ThumbnailWrap>
+          ))}
+        </Card>
+      </Animated.View>
+    </Pressable>
   );
 }
