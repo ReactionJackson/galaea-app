@@ -20,7 +20,7 @@ import { useApp } from "@/context/AppContext";
 import { pickAndStoreImage } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { useWindowDimensions } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -89,7 +89,7 @@ export default function CollectionScreen() {
   const { items, itemDraft, editingItemId } = state;
   const editMode = !!itemDraft;
 
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [activeItemId, setActiveItemId] = useState(items[0]?.itemId);
   const [coverImageToEdit, setCoverImageToEdit] = useState(null);
   const [trayControls, setTrayControls] = useState({});
@@ -262,13 +262,25 @@ export default function CollectionScreen() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
       >
         {collectionStub ? (
-          <PageHeader gap={7} style={{ marginBottom: 10 }}>
-            <PageHeader.Title
-              value={collectionStub.name}
-              editable={false}
-              onChangeText={() => {}}
+          <>
+            <PageHeader gap={7} style={{ marginBottom: 10 }}>
+              <PageHeader.Title
+                value={`${collectionStub.name} Collection`}
+                editable={false}
+                onChangeText={() => {}}
+              />
+            </PageHeader>
+            <View
+              style={{
+                height: screenHeight,
+                marginHorizontal: -20,
+                backgroundColor:
+                  collectionStub.name === "Games"
+                    ? "dodgerblue"
+                    : "mediumseagreen",
+              }}
             />
-          </PageHeader>
+          </>
         ) : (
           <>
             <CollectionItemHero

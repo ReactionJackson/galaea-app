@@ -47,11 +47,6 @@ export function useSnapTrack({
   const hasScrolledToInitial = useRef(false);
   const activeItemIdRef = useRef(itemIds[activeIndex] ?? null);
   const [isInternalScroll, setIsInternalScroll] = useState(false);
-  // Set only by a genuine tap-to-a-different-index in goToIndex below, and
-  // read once, in handleMomentumScrollEnd - so onArrive only ever fires for
-  // a deliberate tap landing, never for the other, unrelated things that
-  // also drive an internal scroll (an item being added/removed, the
-  // recenter-on-reorder effect, etc).
   const pendingArriveIndexRef = useRef(null);
 
   const leftEdges = useMemo(() => {
