@@ -4,17 +4,13 @@ import { AppProvider } from "@/context/AppContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
-// AppProvider lives here (rather than inside journal.jsx alone) so the
-// journal and collection tabs read and write the same items/tags store — an
-// item entry saved from the journal must show up on that item's own page
-// without needing a reload.
 export default function TabLayout() {
   return (
     <AppProvider>
       <Tabs
         initialRouteName="journal"
         screenOptions={{
-          tabBarActiveTintColor: Colors.tint,
+          tabBarActiveTintColor: Colors.accent,
           headerShown: false,
           tabBarButton: HapticTab,
         }}

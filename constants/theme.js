@@ -18,6 +18,7 @@ export const Colors = {
   accentFaded: "rgba(249, 97, 86, 0.2)",
   background: "#fff",
   backgroundBlurTint: "rgba(255, 255, 255, 0.4)",
+  lightboxCropBox: "rgba(255, 255, 255, 0.2)",
   surfaceTint: "rgba(0, 0, 0, 0.03)",
   emptySlotBackground: "rgba(0, 0, 0, 0.02)",
   thumbnailOverlay: "rgba(0, 0, 0, 0.05)",

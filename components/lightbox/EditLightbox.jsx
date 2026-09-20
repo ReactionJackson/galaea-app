@@ -13,7 +13,7 @@ const CropBox = styled.View`
   border-width: 2px;
   border-color: ${Colors.white};
   border-radius: ${GALLERY_ITEM_RADIUS}px;
-  background-color: ${Colors.accentFaded};
+  background-color: ${Colors.lightboxCropBox};
 `;
 
 function getCropGeometry(rect, targetAspectRatio) {
