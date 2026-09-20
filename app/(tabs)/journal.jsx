@@ -8,7 +8,7 @@ import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
 import { Tags } from "@/components/tags/Tags";
-import { ItemPickerTrack } from "@/components/track/ItemPickerTrack";
+import { PickerTrack } from "@/components/track/PickerTrack";
 import { JournalTrack } from "@/components/track/JournalTrack";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
@@ -192,7 +192,7 @@ function JournalScreen() {
                 animateOnMount
                 style={{ marginHorizontal: -20 }}
               >
-                <ItemPickerTrack
+                <PickerTrack
                   attachedItemIds={activeEntry.items.map((it) => it.itemId)}
                   onSelect={handleSelectItem}
                 />

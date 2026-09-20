@@ -9,7 +9,7 @@ import { Pressable } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { EmptyCard, ItemCard, useFadeStyle } from "./ItemCard";
-import { Track } from "./Track";
+import { TrackTray } from "./TrackTray";
 
 // Constants:
 
@@ -25,7 +25,7 @@ const ScrollContainer = styled(Animated.ScrollView)`
 
 // Component:
 
-export function CollectionTrack({
+export function ItemsTrack({
   editMode = false,
   onChangeItem = () => {},
   onPressActiveItem = () => {},
@@ -100,7 +100,7 @@ export function CollectionTrack({
   );
 
   return (
-    <Track
+    <TrackTray
       editMode={editMode}
       trackHeight={ITEM_HEIGHT + 20}
       trackPaddingTop={6}
@@ -156,6 +156,6 @@ export function CollectionTrack({
           </Pressable>
         </Animated.View>
       </ScrollContainer>
-    </Track>
+    </TrackTray>
   );
 }

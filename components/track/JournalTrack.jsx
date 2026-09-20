@@ -15,7 +15,7 @@ import Animated, {
 } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { StickyLabel } from "./StickyLabel";
-import { Track } from "./Track";
+import { TrackTray } from "./TrackTray";
 
 // Constants:
 
@@ -255,7 +255,7 @@ export function JournalTrack({
   // Render:
 
   return (
-    <Track
+    <TrackTray
       editMode={editMode}
       trackHeight={90}
       trackPaddingTop={25}
@@ -342,6 +342,6 @@ export function JournalTrack({
           )}
         </ScrollContainer>
       </>
-    </Track>
+    </TrackTray>
   );
 }

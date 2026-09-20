@@ -6,7 +6,7 @@ import { ThemedText } from "@/components/interface/ThemedText";
 import { EditLightbox } from "@/components/lightbox/EditLightbox";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
-import { CollectionTrack } from "@/components/track/CollectionTrack";
+import { ItemsTrack } from "@/components/track/ItemsTrack";
 import { Colors } from "@/constants/theme";
 import {
   COLLECTION_HERO_HEIGHT,
@@ -200,7 +200,7 @@ export default function CollectionScreen() {
         </FadeInOnMount>
       </PageScroll>
 
-      <CollectionTrack
+      <ItemsTrack
         editMode={editMode}
         onChangeItem={setActiveItemId}
         onPressActiveItem={handlePressActiveItem}

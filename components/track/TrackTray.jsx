@@ -48,7 +48,7 @@ const CircleButton = styled.Pressable`
   opacity: ${({ disabled }) => (disabled ? 0.3 : 1)};
 `;
 
-export function Track({
+export function TrackTray({
   editMode = false,
   trackHeight = 90,
   trackPaddingTop = 25,

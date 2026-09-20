@@ -25,7 +25,7 @@ const ScrollContainer = styled(Animated.ScrollView)`
   height: ${ITEM_HEIGHT + SCROLL_SLACK}px;
 `;
 
-export function ItemPickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
+export function PickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
   const { state } = useApp();
   const items = state.items;
   const itemWidths = useItemCardSizes(items, ITEM_HEIGHT);
