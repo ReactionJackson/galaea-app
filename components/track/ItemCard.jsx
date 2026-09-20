@@ -3,6 +3,7 @@ import { Colors } from "@/constants/theme";
 import {
   CARD_SHADOW_OPACITY,
   CARD_SHADOW_RADIUS,
+  COLOR_TRANSITION_DURATION,
   EMPTY_CARD_WIDTH,
   ITEM_HEIGHT,
 } from "@/constants/values";
@@ -27,7 +28,9 @@ export const EmptyCard = styled(Animated.View)`
 export function useFadeStyle(active, inactiveOpacity) {
   return useAnimatedStyle(
     () => ({
-      opacity: withTiming(active ? 1 : inactiveOpacity, { duration: 200 }),
+      opacity: withTiming(active ? 1 : inactiveOpacity, {
+        duration: COLOR_TRANSITION_DURATION,
+      }),
     }),
     [active, inactiveOpacity],
   );

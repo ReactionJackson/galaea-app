@@ -1,5 +1,10 @@
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
+import {
+  COLOR_TRANSITION_DURATION,
+  INDICATOR_DOT_SCALE_DOWN_DURATION,
+  INDICATOR_DOT_SCALE_UP_DURATION,
+} from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
@@ -66,9 +71,11 @@ const DateCircle = styled.Pressable`
 `;
 
 function TrackDigit({ highlighted, dimmed, children }) {
-  const highlightStyle = useAnimatedTransition(highlighted, {
-    opacity: [0, 1],
-  });
+  const highlightStyle = useAnimatedTransition(
+    highlighted,
+    { opacity: [0, 1] },
+    { duration: COLOR_TRANSITION_DURATION },
+  );
 
   return (
     <View>
@@ -237,11 +244,17 @@ export function JournalTrack({
 
   useEffect(() => {
     if (isScrolling) {
-      const config = { duration: 150, easing: Easing.in(Easing.quad) };
+      const config = {
+        duration: INDICATOR_DOT_SCALE_DOWN_DURATION,
+        easing: Easing.in(Easing.quad),
+      };
       indicatorScale.value = withTiming(0.6, config);
       indicatorOpacity.value = withTiming(0.2, config);
     } else {
-      const config = { duration: 200, easing: Easing.out(Easing.quad) };
+      const config = {
+        duration: INDICATOR_DOT_SCALE_UP_DURATION,
+        easing: Easing.out(Easing.quad),
+      };
       indicatorScale.value = withTiming(1, config);
       indicatorOpacity.value = withTiming(1, config);
     }

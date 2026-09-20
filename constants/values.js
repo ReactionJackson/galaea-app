@@ -1,3 +1,5 @@
+// Sizes:
+
 export const ITEM_HEIGHT = 105;
 export const EMPTY_CARD_WIDTH = 70;
 export const ITEM_ASPECT_RATIO = 3 / 2;
@@ -6,7 +8,19 @@ export const COLLECTION_HERO_HEIGHT = 250;
 export const COLLECTION_HERO_SPACING = 30;
 export const CARD_HEIGHT = COLLECTION_HERO_HEIGHT - 2 * COLLECTION_HERO_SPACING;
 export const CARD_THUMBNAIL_HEIGHT = 45;
+export const LIGHTBOX_PADDING = 20;
+
+// Durations:
+
+export const PAGE_FADE_DURATION = 450;
+export const COLOR_TRANSITION_DURATION = 200;
+export const FADE_TRANSITION_DURATION = 200;
+export const SLIDE_TRANSITION_DURATION = 250;
+export const EDGE_FADE_DURATION = 150;
+export const INDICATOR_DOT_SCALE_DOWN_DURATION = 150;
+export const INDICATOR_DOT_SCALE_UP_DURATION = 200;
+
+// Shadows:
+
 export const CARD_SHADOW_RADIUS = 3;
 export const CARD_SHADOW_OPACITY = 0.2;
-export const PAGE_INTRO_FADE = 450;
-export const LIGHTBOX_PADDING = 20;

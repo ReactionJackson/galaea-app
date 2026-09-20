@@ -1,7 +1,11 @@
 import { Colors } from "@/constants/theme";
+import { COLOR_TRANSITION_DURATION } from "@/constants/values";
 import { Easing, useAnimatedStyle, withTiming } from "react-native-reanimated";
 
-const COLOR_TIMING = { duration: 200, easing: Easing.out(Easing.quad) };
+const COLOR_TIMING = {
+  duration: COLOR_TRANSITION_DURATION,
+  easing: Easing.out(Easing.quad),
+};
 
 function resolvePrimary(key) {
   return Colors.tags[key]?.primary ?? Colors.tags.default.primary;

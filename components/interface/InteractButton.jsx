@@ -1,5 +1,9 @@
 import { firePressHaptic } from "@/components/interface/shared";
 import { Colors } from "@/constants/theme";
+import {
+  COLOR_TRANSITION_DURATION,
+  FADE_TRANSITION_DURATION,
+} from "@/constants/values";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { Pressable } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
@@ -52,7 +56,7 @@ export function InteractButton({
   const dimmedStyle = useAnimatedTransition(
     !disabled,
     { opacity: [0.35, 1] },
-    { duration: 200 },
+    { duration: COLOR_TRANSITION_DURATION },
   );
 
   const handlePress = () => {
@@ -63,8 +67,8 @@ export function InteractButton({
 
   return (
     <Animated.View
-      entering={FadeIn.duration(200)}
-      exiting={FadeOut.duration(200)}
+      entering={FadeIn.duration(FADE_TRANSITION_DURATION)}
+      exiting={FadeOut.duration(FADE_TRANSITION_DURATION)}
       style={style}
     >
       <Animated.View style={dimmedStyle}>

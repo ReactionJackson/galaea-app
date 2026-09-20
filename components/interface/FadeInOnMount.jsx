@@ -1,4 +1,4 @@
-import { PAGE_INTRO_FADE } from "@/constants/values";
+import { PAGE_FADE_DURATION } from "@/constants/values";
 import { useEffect } from "react";
 import Animated, {
   useAnimatedStyle,
@@ -6,7 +6,11 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-export function FadeInOnMount({ duration = PAGE_INTRO_FADE, style, children }) {
+export function FadeInOnMount({
+  duration = PAGE_FADE_DURATION,
+  style,
+  children,
+}) {
   const opacity = useSharedValue(0);
 
   useEffect(() => {

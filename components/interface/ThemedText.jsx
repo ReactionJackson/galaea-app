@@ -1,4 +1,5 @@
 import { Colors, Fonts } from "@/constants/theme";
+import { COLOR_TRANSITION_DURATION } from "@/constants/values";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { forwardRef } from "react";
 import { Platform, StyleSheet, TextInput } from "react-native";
@@ -51,7 +52,7 @@ export const ThemedText = forwardRef(function ThemedText(
   const animatedColorStyle = useAnimatedTransition(
     colorSwitch?.active ?? false,
     { color: [fromColor, toColor] },
-    { duration: 300 },
+    { duration: COLOR_TRANSITION_DURATION },
   );
 
   const baseStyle = [

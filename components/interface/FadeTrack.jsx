@@ -1,3 +1,4 @@
+import { EDGE_FADE_DURATION } from "@/constants/values";
 import { LinearGradient } from "expo-linear-gradient";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { ScrollView } from "react-native";
@@ -9,7 +10,6 @@ import Animated, {
 } from "react-native-reanimated";
 import styled from "styled-components/native";
 
-const FADE_DURATION = 150;
 const FADE_EASING = Easing.out(Easing.quad);
 const FADE_WHITE = "rgba(255,255,255,1)";
 const FADE_CLEAR = "rgba(255,255,255,0)";
@@ -57,7 +57,7 @@ export const FadeTrack = forwardRef(function FadeTrack(
     scrollXRef.current = scrollX;
     const maxScroll = contentWidthRef.current - containerWidthRef.current;
     const t = (val) =>
-      withTiming(val, { duration: FADE_DURATION, easing: FADE_EASING });
+      withTiming(val, { duration: EDGE_FADE_DURATION, easing: FADE_EASING });
 
     if (maxScroll <= 2) {
       leftOpacity.value = t(0);

@@ -1,6 +1,6 @@
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
-import { ITEM_HEIGHT } from "@/constants/values";
+import { ITEM_HEIGHT, SLIDE_TRANSITION_DURATION } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import { useMemo } from "react";
@@ -127,8 +127,8 @@ export function CollectionsTrack({
         return (
           <Animated.View
             key={collection.collectionId}
-            layout={LinearTransition.duration(220)}
-            entering={FadeIn.duration(220)}
+            layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
+            entering={FadeIn.duration(SLIDE_TRANSITION_DURATION)}
           >
             <CollectionCard
               thumbnails={thumbnails}
@@ -139,7 +139,9 @@ export function CollectionsTrack({
           </Animated.View>
         );
       })}
-      <Animated.View layout={LinearTransition.duration(220)}>
+      <Animated.View
+        layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
+      >
         <Pressable onPress={() => goToIndex(ADD_INDEX)}>
           <AddCard style={addCardStyle}>
             <ThemedText type="date-number" color="black">

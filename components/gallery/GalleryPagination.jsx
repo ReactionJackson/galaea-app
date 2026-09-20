@@ -1,3 +1,4 @@
+import { FADE_TRANSITION_DURATION } from "@/constants/values";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { InteractButton, InteractCircle } from "../interface/InteractButton";
@@ -19,8 +20,8 @@ export function GalleryPagination({
   return (
     <Row
       style={style}
-      entering={FadeIn.duration(200)}
-      exiting={FadeOut.duration(200)}
+      entering={FadeIn.duration(FADE_TRANSITION_DURATION)}
+      exiting={FadeOut.duration(FADE_TRANSITION_DURATION)}
     >
       <InteractButton onPress={onPressLeft} disabled={index === 0}>
         <ThemedText type="tag" color="black">

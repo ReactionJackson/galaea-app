@@ -2,6 +2,7 @@ import { BlurView } from "@/components/interface/BlurView";
 import { Button } from "@/components/interface/Button";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
+import { SLIDE_TRANSITION_DURATION } from "@/constants/values";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
@@ -61,9 +62,11 @@ export function TrackTray({
   canSwapRight = true,
   children,
 }) {
-  const containerStyle = useAnimatedTransition(editMode, {
-    translateY: [60, 0],
-  });
+  const containerStyle = useAnimatedTransition(
+    editMode,
+    { translateY: [60, 0] },
+    { duration: SLIDE_TRANSITION_DURATION },
+  );
 
   return (
     <Container style={containerStyle}>

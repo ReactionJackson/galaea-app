@@ -1,3 +1,4 @@
+import { SLIDE_TRANSITION_DURATION } from "@/constants/values";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import Animated, {
@@ -109,7 +110,7 @@ function AnimateHeightActive({
 export function AnimateHeight({
   visible,
   children,
-  duration = 250,
+  duration = SLIDE_TRANSITION_DURATION,
   animateOnMount = false,
   style,
 }) {
@@ -155,7 +156,7 @@ export function AnimatedSpacer({
       if (!animateOnMount) return;
     }
     heightValue.value = withTiming(visible ? height : 0, {
-      duration: 250,
+      duration: SLIDE_TRANSITION_DURATION,
       easing: Easing.out(Easing.quad),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

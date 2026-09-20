@@ -2,7 +2,7 @@ import { CoverImage } from "@/components/image/CoverImage";
 import { Image } from "@/components/image/Image";
 import { InteractionControls } from "@/components/interface/InteractionControls";
 import { Colors } from "@/constants/theme";
-import { PAGE_INTRO_FADE } from "@/constants/values";
+import { PAGE_FADE_DURATION } from "@/constants/values";
 import { useState } from "react";
 import { useWindowDimensions } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -114,7 +114,7 @@ export function CollectionItemHero({
           coverLoaded &&
           (animateCoverReveal ? (
             <Animated.View
-              entering={FadeIn.duration(PAGE_INTRO_FADE)}
+              entering={FadeIn.duration(PAGE_FADE_DURATION)}
               style={{ width: "100%", height: "100%" }}
             >
               <CoverImage key={coverImage.uri} {...coverImage} addOverlay />

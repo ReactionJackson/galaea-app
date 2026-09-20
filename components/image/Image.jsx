@@ -1,4 +1,5 @@
 import { cardShadow } from "@/constants/theme";
+import { FADE_TRANSITION_DURATION } from "@/constants/values";
 import { fileExists } from "@/utils/images";
 import { Image as ExpoImage } from "expo-image";
 import { useMemo } from "react";
@@ -17,7 +18,7 @@ const ShadowWrap = styled.View`
 `;
 
 const StyledImage = styled(ExpoImage).attrs({
-  transition: 200,
+  transition: FADE_TRANSITION_DURATION,
   contentFit: "contain",
   cachePolicy: "memory-disk",
 })`

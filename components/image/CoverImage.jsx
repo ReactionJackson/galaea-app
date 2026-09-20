@@ -1,11 +1,12 @@
 import { Colors } from "@/constants/theme";
+import { FADE_TRANSITION_DURATION } from "@/constants/values";
 import { fileExists } from "@/utils/images";
 import { Image as ExpoImage } from "expo-image";
 import { useMemo } from "react";
 import styled from "styled-components/native";
 
 const StyledImage = styled(ExpoImage).attrs({
-  transition: 200,
+  transition: FADE_TRANSITION_DURATION,
   contentFit: "cover",
   cachePolicy: "memory-disk",
 })`

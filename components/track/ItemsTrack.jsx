@@ -1,5 +1,9 @@
 import { ThemedText } from "@/components/interface/ThemedText";
-import { EMPTY_CARD_WIDTH, ITEM_HEIGHT } from "@/constants/values";
+import {
+  EMPTY_CARD_WIDTH,
+  ITEM_HEIGHT,
+  SLIDE_TRANSITION_DURATION,
+} from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
@@ -136,8 +140,8 @@ export function ItemsTrack({
         {items.map((item, i) => (
           <Animated.View
             key={item.itemId}
-            layout={LinearTransition.duration(220)}
-            entering={FadeIn.duration(220)}
+            layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
+            entering={FadeIn.duration(SLIDE_TRANSITION_DURATION)}
           >
             <ItemCard
               cardImage={item.cardImage}
@@ -148,7 +152,9 @@ export function ItemsTrack({
             />
           </Animated.View>
         ))}
-        <Animated.View layout={LinearTransition.duration(220)}>
+        <Animated.View
+          layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
+        >
           <Pressable onPress={() => goToIndex(ADD_INDEX)} disabled={editMode}>
             <EmptyCard style={addButtonStyle}>
               <ThemedText type="date-number" color="black">

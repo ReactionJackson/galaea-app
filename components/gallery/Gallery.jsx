@@ -1,4 +1,7 @@
-import { ITEM_ASPECT_RATIO } from "@/constants/values";
+import {
+  ITEM_ASPECT_RATIO,
+  SLIDE_TRANSITION_DURATION,
+} from "@/constants/values";
 import { pickAndStoreImage } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
 import { memo, useEffect, useRef, useState } from "react";
@@ -91,7 +94,7 @@ export const Gallery = memo(function Gallery({
     setTransitioning(true);
     revealShift.value = withTiming(
       editMode ? CAPTION_REVEAL_HEIGHT : 0,
-      { duration: 250, easing: CAPTION_REVEAL_EASING },
+      { duration: SLIDE_TRANSITION_DURATION, easing: CAPTION_REVEAL_EASING },
       (finished) => {
         if (finished) scheduleOnRN(setTransitioning, false);
       },
