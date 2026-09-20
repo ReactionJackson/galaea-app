@@ -20,6 +20,7 @@ export const Colors = {
   backgroundBlurTint: "rgba(255, 255, 255, 0.4)",
   surfaceTint: "rgba(0, 0, 0, 0.03)",
   emptySlotBackground: "rgba(0, 0, 0, 0.02)",
+  thumbnailOverlay: "rgba(0, 0, 0, 0.05)",
   editButtonBackground: "rgba(255, 255, 255, 0.8)",
   selectedBorder: "rgba(255, 255, 255, 0.85)",
   tags: {
@@ -115,4 +116,8 @@ export function cardShadow(radius = 8, opacity = 0.12) {
     shadow-opacity: ${opacity};
     shadow-radius: ${radius}px;
   `;
+}
+
+export function collectionCardColor(color) {
+  return color && color !== "default" ? color : Colors.white;
 }

@@ -33,6 +33,7 @@ export function PickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
   const {
     activeIndex,
     isScrolling,
+    isInternalScroll,
     basePadding,
     paddingEnd,
     offsets,
@@ -84,7 +85,10 @@ export function PickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
             <ItemCard
               key={item.itemId}
               cardImage={item.cardImage}
-              active={!attached && (isScrolling || activeIndex === i)}
+              active={
+                !attached &&
+                ((isScrolling && !isInternalScroll) || activeIndex === i)
+              }
               inactiveOpacity={attached ? 0.1 : 0.5}
               onPress={() => goToIndex(i)}
               disabled={attached}

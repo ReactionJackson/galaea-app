@@ -6,23 +6,45 @@ import { ThemedText } from "@/components/interface/ThemedText";
 import { EditLightbox } from "@/components/lightbox/EditLightbox";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
+import { CollectionsTrack } from "@/components/track/CollectionsTrack";
 import { ItemsTrack } from "@/components/track/ItemsTrack";
 import { TrackTray } from "@/components/track/TrackTray";
 import { Colors } from "@/constants/theme";
 import {
   COLLECTION_HERO_HEIGHT,
   COLLECTION_HERO_SPACING,
+  COLOR_TRANSITION_DURATION,
+  SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { pickAndStoreImage } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
-import { Fragment, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { useWindowDimensions } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import styled from "styled-components/native";
 
 const Container = styled.View`
   flex: 1;
   background-color: ${Colors.background};
+`;
+
+const TrackStack = styled.View`
+  width: 100%;
+  height: 100%;
+`;
+
+const TrackLayer = styled(Animated.View)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 `;
 
 async function pickImageAsset() {
@@ -42,6 +64,26 @@ async function pickImage(kind) {
   return asset ? pickAndStoreImage(asset, kind) : null;
 }
 
+function fadeItemsIn(itemsFade, onComplete) {
+  itemsFade.value = withTiming(
+    1,
+    { duration: SLIDE_TRANSITION_DURATION },
+    (finished) => {
+      if (finished) scheduleOnRN(onComplete);
+    },
+  );
+}
+
+function fadeItemsOut(itemsFade, onComplete) {
+  itemsFade.value = withTiming(
+    0,
+    { duration: SLIDE_TRANSITION_DURATION },
+    (finished) => {
+      if (finished) scheduleOnRN(onComplete);
+    },
+  );
+}
+
 export default function CollectionScreen() {
   const { state, dispatch, itemsById } = useApp();
   const { items, itemDraft, editingItemId } = state;
@@ -51,6 +93,28 @@ export default function CollectionScreen() {
   const [activeItemId, setActiveItemId] = useState(items[0]?.itemId);
   const [coverImageToEdit, setCoverImageToEdit] = useState(null);
   const [trayControls, setTrayControls] = useState({});
+  const [viewingCollectionId, setViewingCollectionId] = useState(null);
+  const [collectionsSoloed, setCollectionsSoloed] = useState(false);
+  const [collectionsVisible, setCollectionsVisible] = useState(true);
+  const [itemsFadeTarget, setItemsFadeTarget] = useState(0);
+  const itemsFade = useSharedValue(0);
+
+  const itemsStyle = useAnimatedStyle(() => ({ opacity: itemsFade.value }));
+
+  useEffect(() => {
+    if (itemsFadeTarget === 1) {
+      const timer = setTimeout(
+        () => fadeItemsIn(itemsFade, () => setCollectionsVisible(false)),
+        COLOR_TRANSITION_DURATION,
+      );
+      return () => clearTimeout(timer);
+    }
+    fadeItemsOut(itemsFade, () => {
+      setViewingCollectionId(null);
+      setCollectionsSoloed(false);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemsFadeTarget]);
 
   const activeItem = itemsById[activeItemId] ?? items[0];
   const displayItem = itemDraft ?? activeItem;
@@ -64,29 +128,54 @@ export default function CollectionScreen() {
   const updateDraft = (changes) =>
     dispatch({ type: "UPDATE_ITEM_DRAFT", changes });
 
-  const handleAddItem = () =>
-    dispatch({ type: "ENTER_ITEM_EDIT", itemId: null });
+  const handleAddItem = useCallback(
+    () => dispatch({ type: "ENTER_ITEM_EDIT", itemId: null }),
+    [dispatch],
+  );
 
-  const handleCancelAddItem = () => dispatch({ type: "CANCEL_ITEM_EDIT" });
+  const handleCancelAddItem = useCallback(
+    () => dispatch({ type: "CANCEL_ITEM_EDIT" }),
+    [dispatch],
+  );
 
   const handleDelete = () => {
     if (editingItemId == null) {
       dispatch({ type: "CANCEL_ITEM_EDIT" });
       return;
     }
-    const deletedIndex = items.findIndex((it) => it.itemId === editingItemId);
-    const landingItem = deletedIndex > 0 ? items[deletedIndex - 1] : items[1];
+    const collectionItems = items.filter(
+      (it) => it.collectionId === viewingCollectionId,
+    );
+    const deletedIndex = collectionItems.findIndex(
+      (it) => it.itemId === editingItemId,
+    );
+    const landingItem =
+      deletedIndex > 0 ? collectionItems[deletedIndex - 1] : collectionItems[1];
     dispatch({ type: "DELETE_ITEM", itemId: editingItemId });
     if (landingItem) setActiveItemId(landingItem.itemId);
   };
 
-  const handlePressActiveItem = (itemId) => {
-    if (editMode && editingItemId === itemId) {
-      dispatch({ type: "CANCEL_ITEM_EDIT" });
-    } else {
-      dispatch({ type: "ENTER_ITEM_EDIT", itemId });
-    }
-  };
+  const handleChooseCollection = useCallback((collectionId) => {
+    setViewingCollectionId(collectionId);
+    setCollectionsSoloed(true);
+    setItemsFadeTarget(1);
+  }, []);
+
+  const handleGoBackToCollections = useCallback(() => {
+    setCollectionsVisible(true);
+    setItemsFadeTarget(0);
+  }, []);
+
+  const handlePressActiveItem = useCallback(
+    (itemId) => {
+      if (editMode && editingItemId === itemId) {
+        dispatch({ type: "CANCEL_ITEM_EDIT" });
+      } else {
+        dispatch({ type: "ENTER_ITEM_EDIT", itemId });
+      }
+    },
+    [editMode, editingItemId, dispatch],
+  );
 
   const handleSave = () => {
     if (!editMode) return;
@@ -219,14 +308,33 @@ export default function CollectionScreen() {
         onSave={handleSave}
         {...trayControls}
       >
-        <ItemsTrack
-          editMode={editMode}
-          onChangeItem={setActiveItemId}
-          onPressActiveItem={handlePressActiveItem}
-          onAddItem={handleAddItem}
-          onCancelAddItem={handleCancelAddItem}
-          onControlsChange={setTrayControls}
-        />
+        <TrackStack>
+          <TrackLayer
+            style={itemsStyle}
+            pointerEvents={viewingCollectionId ? "auto" : "none"}
+          >
+            <ItemsTrack
+              key={viewingCollectionId}
+              collectionId={viewingCollectionId}
+              editMode={editMode}
+              onChangeItem={setActiveItemId}
+              onPressActiveItem={handlePressActiveItem}
+              onAddItem={handleAddItem}
+              onCancelAddItem={handleCancelAddItem}
+              onPressBack={handleGoBackToCollections}
+              onControlsChange={setTrayControls}
+            />
+          </TrackLayer>
+          <TrackLayer
+            style={{ opacity: collectionsVisible ? 1 : 0 }}
+            pointerEvents={viewingCollectionId ? "none" : "auto"}
+          >
+            <CollectionsTrack
+              soloed={collectionsSoloed}
+              onPressActiveCollection={handleChooseCollection}
+            />
+          </TrackLayer>
+        </TrackStack>
       </TrackTray>
     </Container>
   );

@@ -24,6 +24,7 @@ export function useSnapTrack({
   addButtonWidth,
   startAtEnd = true,
   onSettle = () => {},
+  onArrive = () => {},
   onAdd = () => {},
   onCancelAdd = () => {},
 }) {
@@ -46,6 +47,12 @@ export function useSnapTrack({
   const hasScrolledToInitial = useRef(false);
   const activeItemIdRef = useRef(itemIds[activeIndex] ?? null);
   const [isInternalScroll, setIsInternalScroll] = useState(false);
+  // Set only by a genuine tap-to-a-different-index in goToIndex below, and
+  // read once, in handleMomentumScrollEnd - so onArrive only ever fires for
+  // a deliberate tap landing, never for the other, unrelated things that
+  // also drive an internal scroll (an item being added/removed, the
+  // recenter-on-reorder effect, etc).
+  const pendingArriveIndexRef = useRef(null);
 
   const leftEdges = useMemo(() => {
     const edges = [];
@@ -143,6 +150,7 @@ export function useSnapTrack({
     }
     // Load content immediately if we tap directly to an index
     setIsInternalScroll(true);
+    pendingArriveIndexRef.current = index;
     setActiveIndex(index);
     activeItemIdRef.current = itemIds[index] ?? null;
     scrollToIndex(index);
@@ -203,6 +211,11 @@ export function useSnapTrack({
     if (isInternalScroll) {
       setIsInternalScroll(false);
       setIsScrolling(false);
+      if (pendingArriveIndexRef.current != null) {
+        const arrivedIndex = pendingArriveIndexRef.current;
+        pendingArriveIndexRef.current = null;
+        onArrive(arrivedIndex);
+      }
       return;
     }
     settleAt(getIndexFromScrollEnd(event));
@@ -219,6 +232,7 @@ export function useSnapTrack({
       setActiveIndex(newIndex);
       activeItemIdRef.current = itemIds[newIndex] ?? null;
       setIsInternalScroll(true);
+      pendingArriveIndexRef.current = null;
       scrollToIndex(newIndex, true);
     } else if (itemCount < prevItemCountRef.current) {
       const newIndex = Math.max(0, Math.min(activeIndex - 1, itemCount - 1));
@@ -239,6 +253,7 @@ export function useSnapTrack({
       setActiveIndex(newIndex);
       activeItemIdRef.current = itemIds[newIndex] ?? null;
       setIsInternalScroll(true);
+      pendingArriveIndexRef.current = null;
       scrollToIndex(newIndex, true);
     } else {
       prevItemCountRef.current = itemCount;
@@ -297,6 +312,7 @@ export function useSnapTrack({
 
     setActiveIndex(resolvedIndex);
     setIsInternalScroll(true);
+    pendingArriveIndexRef.current = null;
     scrollToIndex(resolvedIndex, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemIds]);

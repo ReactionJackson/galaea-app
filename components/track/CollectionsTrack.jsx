@@ -3,13 +3,14 @@ import {
   SLIDE_TRANSITION_DURATION,
   TRACK_GAP,
 } from "@/constants/values";
+import { collectionCardColor } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { AddItemCard } from "./ItemCard";
 import { CollectionCard } from "./CollectionCard";
+import { AddItemCard } from "./ItemCard";
 
 // Constants:
 
@@ -25,12 +26,14 @@ const ScrollContainer = styled(Animated.ScrollView)`
 
 // Component:
 
-export function CollectionsTrack({
+export const CollectionsTrack = memo(function CollectionsTrack({
+  soloed = false,
   onChangeCollection = () => {},
   onPressActiveCollection = () => {},
   onAddCollection = () => {},
   onCancelAddCollection = () => {},
 }) {
+  const inactiveOpacity = soloed ? 0 : INACTIVE_OPACITY;
   const { state } = useApp();
   const collections = state.collections;
   const itemsByCollection = useMemo(() => {
@@ -81,6 +84,14 @@ export function CollectionsTrack({
         onChangeCollection(collection.collectionId);
       }
     },
+    // A tap "from afar" doesn't choose the collection until the jump to
+    // centre it actually finishes - a swipe that happens to settle on a
+    // card never reaches here, only a genuine tap does (see useSnapTrack).
+    onArrive: (index) => {
+      const collection = collections[index];
+      if (!collection) return;
+      onPressActiveCollection(collection.collectionId);
+    },
     onAdd: onAddCollection,
     onCancelAdd: onCancelAddCollection,
   });
@@ -119,7 +130,8 @@ export function CollectionsTrack({
             <CollectionCard
               thumbnails={thumbnails}
               active={(isScrolling && !isInternalScroll) || activeIndex === i}
-              inactiveOpacity={INACTIVE_OPACITY}
+              inactiveOpacity={inactiveOpacity}
+              backgroundColor={collectionCardColor(collection.color)}
               onPress={() => goToIndex(i)}
             />
           </Animated.View>
@@ -128,9 +140,9 @@ export function CollectionsTrack({
       <AddItemCard
         width={ITEM_HEIGHT}
         active={isScrolling || activeIndex === ADD_INDEX}
-        inactiveOpacity={INACTIVE_OPACITY}
+        inactiveOpacity={inactiveOpacity}
         onPress={() => goToIndex(ADD_INDEX)}
       />
     </ScrollContainer>
   );
-}
+});

@@ -4,14 +4,20 @@ import {
   SLIDE_TRANSITION_DURATION,
   TRACK_GAP,
 } from "@/constants/values";
+import { collectionCardColor } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
-import { useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
+import { CollectionCard } from "./CollectionCard";
 import { AddItemCard, ItemCard } from "./ItemCard";
+
+// Constants:
+
+const COLLECTION_CARD_ID = "__collection__";
 
 // Styled Components:
 
@@ -23,18 +29,41 @@ const ScrollContainer = styled(Animated.ScrollView)`
 
 // Component:
 
-export function ItemsTrack({
+export const ItemsTrack = memo(function ItemsTrack({
+  collectionId,
   editMode = false,
   onChangeItem = () => {},
   onPressActiveItem = () => {},
   onAddItem = () => {},
   onCancelAddItem = () => {},
+  onPressBack = () => {},
   onControlsChange = () => {},
 }) {
   const { state, dispatch } = useApp();
-  const items = state.items;
-  const itemWidths = useItemCardSizes(items, ITEM_HEIGHT);
-  const itemIds = useMemo(() => items.map((it) => it.itemId), [items]);
+  const collection = state.collections.find(
+    (c) => c.collectionId === collectionId,
+  );
+  const items = useMemo(
+    () => state.items.filter((item) => item.collectionId === collectionId),
+    [state.items, collectionId],
+  );
+  const collectionThumbnails = useMemo(
+    () =>
+      items
+        .map((item) => item.cardThumbnail)
+        .filter(Boolean)
+        .slice(0, 4),
+    [items],
+  );
+  const realItemWidths = useItemCardSizes(items, ITEM_HEIGHT);
+  const itemWidths = useMemo(
+    () => [ITEM_HEIGHT, ...realItemWidths],
+    [realItemWidths],
+  );
+  const itemIds = useMemo(
+    () => [COLLECTION_CARD_ID, ...items.map((it) => it.itemId)],
+    [items],
+  );
 
   const {
     ADD_INDEX,
@@ -60,7 +89,11 @@ export function ItemsTrack({
     addButtonWidth: EMPTY_CARD_WIDTH,
     startAtEnd: false,
     onSettle: (index, { alreadyActive }) => {
-      const item = items[index];
+      if (index === 0) {
+        if (alreadyActive) onPressBack();
+        return;
+      }
+      const item = items[index - 1];
       if (!item) return;
       if (alreadyActive) {
         onPressActiveItem(item.itemId);
@@ -75,12 +108,19 @@ export function ItemsTrack({
         onChangeItem(item.itemId);
       }
     },
+    // A tap "from afar" on the leading CollectionCard doesn't go back until
+    // the jump to centre it actually finishes - a swipe that happens to
+    // settle there never reaches here, only a genuine tap does (see
+    // useSnapTrack).
+    onArrive: (index) => {
+      if (index === 0) onPressBack();
+    },
     onAdd: onAddItem,
     onCancelAdd: onCancelAddItem,
   });
 
   const handleSwap = (direction) => {
-    const item = items[activeIndex];
+    const item = items[activeIndex - 1];
     if (!item) return;
     if (process.env.EXPO_OS === "ios") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -88,14 +128,9 @@ export function ItemsTrack({
     dispatch({ type: "SWAP_ADJACENT_ITEM", itemId: item.itemId, direction });
   };
 
-  const canSwapLeft = activeIndex !== ADD_INDEX && activeIndex > 0;
-  const canSwapRight =
-    activeIndex !== ADD_INDEX && activeIndex < items.length - 1;
+  const canSwapLeft = activeIndex !== ADD_INDEX && activeIndex > 1;
+  const canSwapRight = activeIndex !== ADD_INDEX && activeIndex < items.length;
 
-  // No dependency array - the reported callbacks close over editMode and
-  // other state that doesn't itself trigger this effect, so they'd go
-  // stale if this only reran when activeIndex/canSwapLeft/canSwapRight
-  // changed.
   useEffect(() => {
     onControlsChange({
       onCancel: () => goToIndex(activeIndex),
@@ -127,18 +162,28 @@ export function ItemsTrack({
         alignItems: "center",
       }}
     >
+      <Animated.View style={{ zIndex: activeIndex === 0 ? 1 : 0 }}>
+        <CollectionCard
+          thumbnails={collectionThumbnails}
+          active={(isScrolling && !isInternalScroll) || activeIndex === 0}
+          inactiveOpacity={editMode ? 0.1 : 0.5}
+          backgroundColor={collectionCardColor(collection?.color)}
+          onPress={() => goToIndex(0)}
+          disabled={editMode}
+        />
+      </Animated.View>
       {items.map((item, i) => (
         <Animated.View
           key={item.itemId}
           layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
           entering={FadeIn.duration(SLIDE_TRANSITION_DURATION)}
-          style={{ zIndex: activeIndex === i ? 1 : 0 }}
+          style={{ zIndex: activeIndex === i + 1 ? 1 : 0 }}
         >
           <ItemCard
             cardImage={item.cardImage}
-            active={(isScrolling && !isInternalScroll) || activeIndex === i}
+            active={(isScrolling && !isInternalScroll) || activeIndex === i + 1}
             inactiveOpacity={editMode ? 0.1 : 0.5}
-            onPress={() => goToIndex(i)}
+            onPress={() => goToIndex(i + 1)}
             disabled={editMode}
           />
         </Animated.View>
@@ -152,4 +197,4 @@ export function ItemsTrack({
       />
     </ScrollContainer>
   );
-}
+});

@@ -49,6 +49,15 @@ function sanitizeItems(items) {
 
 const DEFAULT_COLLECTION_ID = 1;
 
+// The actual background colour each named collection renders with (see
+// CollectionCard) - kept as one lookup so the one-off migrations below and
+// the reconciliation pass that keeps already-migrated devices in sync both
+// read from the same place.
+const COLLECTION_COLORS = {
+  Games: "#f96156",
+  "Board Games": "mediumseagreen",
+};
+
 // Runs once, at hydrate time. Every install predating collections has items
 // with no collectionId at all — rather than the storage layer's usual
 // approach of just moving on to a fresh key and leaving old data unread,
@@ -64,7 +73,11 @@ function migrateCollections(collections, items) {
   }
   return {
     collections: [
-      { collectionId: DEFAULT_COLLECTION_ID, name: "Games", color: "default" },
+      {
+        collectionId: DEFAULT_COLLECTION_ID,
+        name: "Games",
+        color: COLLECTION_COLORS.Games,
+      },
       ...(collections ?? []),
     ],
     items: items.map((item) => ({
@@ -72,6 +85,45 @@ function migrateCollections(collections, items) {
       collectionId: item.collectionId ?? DEFAULT_COLLECTION_ID,
     })),
   };
+}
+
+// One-off, at hydrate time: splits the "Arydia" item off into its own
+// "Board Games" collection, alongside the existing "Games" one. Guarded on
+// the collection already existing, so once it's run once on a device it's
+// a no-op forever after - matches migrateCollections' shape above.
+function migrateBoardGamesCollection(collections, items) {
+  if (collections.some((c) => c.name === "Board Games")) {
+    return { collections, items };
+  }
+  const boardGamesId =
+    Math.max(0, ...collections.map((c) => c.collectionId)) + 1;
+  return {
+    collections: [
+      ...collections,
+      {
+        collectionId: boardGamesId,
+        name: "Board Games",
+        color: COLLECTION_COLORS["Board Games"],
+      },
+    ],
+    items: items.map((item) =>
+      item.title?.trim().toLowerCase() === "arydia"
+        ? { ...item, collectionId: boardGamesId }
+        : item,
+    ),
+  };
+}
+
+// Runs on every hydrate, not just once - the two migrations above are
+// guarded to fire only a single time each, so a colour changed here after
+// they've already run on a device would otherwise never reach it. Cheap and
+// a no-op once every collection's colour already matches.
+function applyCollectionColors(collections) {
+  return collections.map((c) =>
+    COLLECTION_COLORS[c.name] && c.color !== COLLECTION_COLORS[c.name]
+      ? { ...c, color: COLLECTION_COLORS[c.name] }
+      : c,
+  );
 }
 
 // The one process any item-entry mutation must go through to actually reach
@@ -561,11 +613,18 @@ function appReducer(state, action) {
       const { entries, items, tags, collections } = action.persisted;
       const safeEntries = entries ?? [];
       const migrated = migrateCollections(collections, items ?? []);
+      const withBoardGames = migrateBoardGamesCollection(
+        migrated.collections,
+        migrated.items,
+      );
+      const coloredCollections = applyCollectionColors(
+        withBoardGames.collections,
+      );
       return {
         ...state,
         entries: safeEntries,
-        items: sanitizeItems(migrated.items),
-        collections: migrated.collections,
+        items: sanitizeItems(withBoardGames.items),
+        collections: coloredCollections,
         tags: tags ?? [],
         committed: safeEntries[safeEntries.length - 1],
       };
