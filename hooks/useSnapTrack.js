@@ -1,5 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useWindowDimensions } from "react-native";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // useSnapTrack
@@ -34,7 +35,8 @@ export function useSnapTrack({
     startAtEnd ? Math.max(0, itemCount - 1) : 0,
   );
   const [isScrolling, setIsScrolling] = useState(false);
-  const [halfTrackWidth, setHalfTrackWidth] = useState(0);
+  const { width: windowWidth } = useWindowDimensions();
+  const [halfTrackWidth, setHalfTrackWidth] = useState(windowWidth / 2);
   const [addActive, setAddActive] = useState(false);
 
   const trackRef = useRef(null);
@@ -66,6 +68,12 @@ export function useSnapTrack({
     const widths = [...itemWidths, resolvedAddWidth];
     return leftEdges.map((edge, i) => edge + (widths[i] - itemWidths[0]) / 2);
   }, [leftEdges, itemWidths, resolvedAddWidth, halfTrackWidth]);
+
+  const initialIndex = startAtEnd ? Math.max(0, itemCount - 1) : 0;
+  const [initialContentOffset] = useState(() => ({
+    x: offsets[initialIndex] ?? 0,
+    y: 0,
+  }));
 
   const paddingEndCollapsed = useMemo(() => {
     if (!halfTrackWidth || !itemWidths.length) return 0;
@@ -302,6 +310,7 @@ export function useSnapTrack({
     basePadding,
     paddingEnd,
     offsets,
+    initialContentOffset,
     trackRef,
     goToIndex,
     scrollToIndex,
