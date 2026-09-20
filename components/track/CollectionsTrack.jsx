@@ -35,26 +35,20 @@ const AddCard = styled(Animated.View)`
 // Component:
 
 export function CollectionsTrack({
-  // TEMP — lets a call site preview CollectionsTrack against fabricated
-  // data without touching real state.collections/collectionId. Remove
-  // once there's a real screen driving this from actual collections.
-  collectionsOverride,
-  itemsByCollectionOverride,
   onChangeCollection = () => {},
   onPressActiveCollection = () => {},
   onAddCollection = () => {},
   onCancelAddCollection = () => {},
 }) {
   const { state } = useApp();
-  const collections = collectionsOverride ?? state.collections;
-  const realItemsByCollection = useMemo(() => {
+  const collections = state.collections;
+  const itemsByCollection = useMemo(() => {
     const map = {};
     for (const item of state.items) {
       (map[item.collectionId] ??= []).push(item);
     }
     return map;
   }, [state.items]);
-  const itemsByCollection = itemsByCollectionOverride ?? realItemsByCollection;
   const itemWidths = useMemo(
     () => collections.map(() => ITEM_HEIGHT),
     [collections.length],
