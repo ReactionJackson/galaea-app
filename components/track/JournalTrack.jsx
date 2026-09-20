@@ -175,6 +175,7 @@ export function JournalTrack({
     basePadding,
     paddingEnd,
     offsets,
+    initialContentOffset,
     trackRef,
     goToIndex,
     handleTrackLayout,
@@ -290,6 +291,7 @@ export function JournalTrack({
         <ScrollContainer
           horizontal
           ref={trackRef}
+          contentOffset={initialContentOffset}
           onScroll={scrollHandler}
           onLayout={handleTrackLayoutAndWidth}
           onScrollBeginDrag={handleScrollBeginDrag}

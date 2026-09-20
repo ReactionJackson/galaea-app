@@ -37,6 +37,7 @@ export function PickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
     basePadding,
     paddingEnd,
     offsets,
+    initialContentOffset,
     trackRef,
     goToIndex,
     handleTrackLayout,
@@ -62,6 +63,7 @@ export function PickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
       <ScrollContainer
         horizontal
         ref={trackRef}
+        contentOffset={initialContentOffset}
         onLayout={handleTrackLayout}
         onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={handleScrollEndDrag}

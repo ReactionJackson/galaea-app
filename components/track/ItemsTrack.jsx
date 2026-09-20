@@ -47,6 +47,7 @@ export function ItemsTrack({
     basePadding,
     paddingEnd,
     offsets,
+    initialContentOffset,
     trackRef,
     goToIndex,
     handleTrackLayout,
@@ -115,6 +116,7 @@ export function ItemsTrack({
       <ScrollContainer
         horizontal
         ref={trackRef}
+        contentOffset={initialContentOffset}
         onLayout={handleTrackLayout}
         onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={handleScrollEndDrag}
