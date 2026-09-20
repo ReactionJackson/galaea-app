@@ -19,7 +19,7 @@ export const EmptyCard = styled(Animated.View)`
   width: ${EMPTY_CARD_WIDTH}px;
   height: ${ITEM_HEIGHT}px;
   border-radius: 8px;
-  border: 2px solid ${Colors.dateBorder};
+  border: 2px solid ${Colors.buttonBorder};
   justify-content: center;
   align-items: center;
 `;

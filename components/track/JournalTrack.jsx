@@ -60,7 +60,7 @@ const DateCircle = styled.Pressable`
   width: ${ITEM_WIDTH}px;
   height: ${ITEM_WIDTH}px;
   border-radius: 50%;
-  border: 2px solid ${Colors.dateBorder};
+  border: 2px solid ${Colors.buttonBorder};
   justify-content: center;
   align-items: center;
 `;

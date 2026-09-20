@@ -6,7 +6,7 @@ import { FadeTrack } from "@/components/interface/FadeTrack";
 import { CrossIcon } from "@/components/interface/icons/CrossIcon";
 import { InteractButton } from "@/components/interface/InteractButton";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { TagEditRow } from "@/components/TagEditRow";
+import { TagEditRow } from "@/components/tags/TagEditRow";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { useEffect, useRef, useState } from "react";

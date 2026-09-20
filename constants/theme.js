@@ -1,7 +1,7 @@
 import { css } from "styled-components/native";
 
 export const Colors = {
-  transparent: "rgba(0, 0, 0, 0)",
+  transparent: "transparent",
   white: "#fff",
   black: "#000",
   title: "#000",
@@ -9,7 +9,7 @@ export const Colors = {
   border: "#e2e2e2",
   faded: "rgba(0, 0, 0, 0.6)",
   disabled: "rgba(0, 0, 0, 0.1)",
-  dateBorder: "rgba(0, 0, 0, 0.1)",
+  buttonBorder: "rgba(0, 0, 0, 0.1)",
   placeholder: "rgba(0, 0, 0, 0.25)",
   overlay: "rgba(0, 0, 0, 0.9)",
   overlayBorder: "rgba(255, 255, 255, 0.6)",
@@ -67,6 +67,24 @@ export const Colors = {
       primary: "#7cb518",
       secondary: "#e6f4c2",
     },
+  },
+};
+
+Colors.button = {
+  primary: {
+    text: Colors.white,
+    fill: Colors.accent,
+    border: Colors.buttonBorder,
+  },
+  secondary: {
+    text: Colors.black,
+    fill: Colors.transparent,
+    border: Colors.buttonBorder,
+  },
+  "secondary-dark": {
+    text: Colors.white,
+    fill: Colors.transparent,
+    border: Colors.overlayBorder,
   },
 };
 

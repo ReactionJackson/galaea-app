@@ -37,7 +37,7 @@ const CircleButton = styled.View`
 `;
 
 const CancelCircle = styled(CircleButton)`
-  border-color: ${Colors.dateBorder};
+  border-color: ${Colors.buttonBorder};
 `;
 
 const SaveCircle = styled(CircleButton)`

@@ -7,7 +7,7 @@ import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
-import { Tags } from "@/components/Tags";
+import { Tags } from "@/components/tags/Tags";
 import { ItemPickerTrack } from "@/components/track/ItemPickerTrack";
 import { JournalTrack } from "@/components/track/JournalTrack";
 import { Colors } from "@/constants/theme";

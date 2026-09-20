@@ -1,26 +1,31 @@
+import { firePressHaptic } from "@/components/interface/shared";
 import { Colors } from "@/constants/theme";
-import * as Haptics from "expo-haptics";
-import { useEffect } from "react";
+import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { Pressable } from "react-native";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import styled, { css } from "styled-components/native";
+
+const VARIANTS = {
+  default: {
+    backgroundColor: Colors.editButtonBackground,
+    borderColor: Colors.tags.default.primary,
+  },
+  danger: {
+    backgroundColor: Colors.accent,
+    borderColor: Colors.buttonBorder,
+  },
+};
 
 export const InteractCircle = styled.View`
   height: 26px;
   border-radius: 13px;
-  border: 2px solid
-    ${({ variant }) =>
-      variant === "danger" ? Colors.dateBorder : Colors.tags.default.primary};
+  border-width: 2px;
+  border-color: ${({ borderColor }) =>
+    borderColor ?? Colors.tags.default.primary};
   justify-content: center;
   align-items: center;
-  background-color: ${({ variant }) =>
-    variant === "danger" ? Colors.accent : Colors.editButtonBackground};
+  background-color: ${({ backgroundColor }) =>
+    backgroundColor ?? Colors.editButtonBackground};
   ${({ pill }) =>
     pill
       ? css`
@@ -34,32 +39,25 @@ export const InteractCircle = styled.View`
 `;
 
 export function InteractButton({
-  variant,
+  variant = "default",
   pill = false,
-  haptic = true,
-  hapticStyle = "light",
+  haptics = "Light",
   disabled = false,
   onPress,
   style,
   children,
 }) {
-  const dimmedOpacity = useSharedValue(disabled ? 0.35 : 1);
-  useEffect(() => {
-    dimmedOpacity.value = withTiming(disabled ? 0.35 : 1, { duration: 200 });
-  }, [disabled, dimmedOpacity]);
-  const dimmedStyle = useAnimatedStyle(() => ({
-    opacity: dimmedOpacity.value,
-  }));
+  const { backgroundColor, borderColor } = VARIANTS[variant];
+
+  const dimmedStyle = useAnimatedTransition(
+    !disabled,
+    { opacity: [0.35, 1] },
+    { duration: 200 },
+  );
 
   const handlePress = () => {
     if (disabled) return;
-    if (haptic && process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(
-        hapticStyle === "heavy"
-          ? Haptics.ImpactFeedbackStyle.Heavy
-          : Haptics.ImpactFeedbackStyle.Light,
-      );
-    }
+    firePressHaptic(haptics);
     onPress?.();
   };
 
@@ -71,7 +69,11 @@ export function InteractButton({
     >
       <Animated.View style={dimmedStyle}>
         <Pressable onPress={handlePress} disabled={disabled}>
-          <InteractCircle variant={variant} pill={pill}>
+          <InteractCircle
+            backgroundColor={backgroundColor}
+            borderColor={borderColor}
+            pill={pill}
+          >
             {children}
           </InteractCircle>
         </Pressable>

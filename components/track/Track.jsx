@@ -1,23 +1,10 @@
 import { BlurView } from "@/components/interface/BlurView";
+import { Button } from "@/components/interface/Button";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
-import * as Haptics from "expo-haptics";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Track
-//
-// The bottom-docked shell shared by the horizontal tracks: a blurred panel
-// that slides fully into view when editMode is on (revealing the Cancel /
-// reorder / Save controls) and mostly off-screen otherwise, leaving just
-// the scrollable track itself visible. Used by both JournalTrack and
-// CollectionTrack, which each supply their own scrollview content as
-// children (see their own local Container styled component). onDelete is
-// kept as a prop for whenever the Delete button comes back (it needs a
-// confirmation step first) — nothing currently renders it.
-// ─────────────────────────────────────────────────────────────────────────────
 
 const Container = styled(Animated.View)`
   z-index: 100;
@@ -51,25 +38,13 @@ const MoveButtonsContainer = styled.View`
   right: 0;
 `;
 
-export const Button = styled.Pressable`
-  height: 36px;
-  justify-content: center;
-  padding: 4px 14px;
-  border-radius: 20px;
-  border: 2px solid ${Colors.dateBorder};
-`;
-
-export const SaveButton = styled(Button)`
-  background-color: ${Colors.accent};
-`;
-
 const CircleButton = styled.Pressable`
   width: 36px;
   height: 36px;
   border-radius: 18px;
   justify-content: center;
   align-items: center;
-  border: 2px solid ${Colors.dateBorder};
+  border: 2px solid ${Colors.buttonBorder};
   opacity: ${({ disabled }) => (disabled ? 0.3 : 1)};
 `;
 
@@ -110,19 +85,12 @@ export function Track({
               </CircleButton>
             </MoveButtonsContainer>
           )}
-          <Button onPress={onCancel}>
-            <ThemedText color="black">Cancel</ThemedText>
+          <Button variant="secondary" onPress={onCancel}>
+            Cancel
           </Button>
-          <SaveButton
-            onPress={() => {
-              if (process.env.EXPO_OS === "ios") {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              }
-              onSave?.();
-            }}
-          >
-            <ThemedText color="white">Save</ThemedText>
-          </SaveButton>
+          <Button variant="primary" haptics="Medium" onPress={onSave}>
+            Save
+          </Button>
         </ControlsContainer>
       </BlurView>
     </Container>

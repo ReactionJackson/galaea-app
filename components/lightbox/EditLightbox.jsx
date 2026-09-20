@@ -1,14 +1,12 @@
 import { GALLERY_ITEM_RADIUS } from "@/components/gallery/shared";
 import { Image } from "@/components/image/Image";
+import { Button } from "@/components/interface/Button";
 import { Colors } from "@/constants/theme";
 import { ITEM_ASPECT_RATIO } from "@/constants/values";
-import * as Haptics from "expo-haptics";
 import { useEffect, useRef, useState } from "react";
 import { PanResponder, View } from "react-native";
 import styled from "styled-components/native";
-import { ThemedText } from "../interface/ThemedText";
 import { Lightbox } from "./Lightbox";
-import { GhostButton, PrimaryButton } from "./shared";
 
 const CropBox = styled.View`
   position: absolute;
@@ -133,9 +131,6 @@ export function EditLightbox({
   };
 
   const handleSave = () => {
-    if (process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
     const percent = focusPercent ?? 50;
     const focus =
       crop?.axis === "x"
@@ -144,13 +139,6 @@ export function EditLightbox({
           ? { top: `${percent.toFixed(1)}%` }
           : null;
     onSave?.(focus);
-  };
-
-  const handleCancel = () => {
-    if (process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    onClose?.();
   };
 
   return (
@@ -166,12 +154,12 @@ export function EditLightbox({
       </View>
 
       <Lightbox.Controls>
-        <GhostButton onPress={handleCancel}>
-          <ThemedText color="white">Cancel</ThemedText>
-        </GhostButton>
-        <PrimaryButton onPress={handleSave}>
-          <ThemedText color="white">Save</ThemedText>
-        </PrimaryButton>
+        <Button variant="secondary-dark" onPress={onClose}>
+          Cancel
+        </Button>
+        <Button variant="primary" haptics="Medium" onPress={handleSave}>
+          Save
+        </Button>
       </Lightbox.Controls>
     </Lightbox>
   );

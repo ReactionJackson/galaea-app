@@ -132,7 +132,7 @@ export function CollectionItemHero({
             height={cardHeight}
             shadowRadius={shadowRadius}
             shadowOpacity={shadowOpacity}
-            radius={4}
+            radius={10}
           />
         ) : (
           <CardPlaceholder />

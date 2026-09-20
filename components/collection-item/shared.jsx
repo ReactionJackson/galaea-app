@@ -4,7 +4,7 @@ import {
   AnimatedSpacer,
 } from "@/components/interface/AnimateHeight";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { Tags } from "@/components/Tags";
+import { Tags } from "@/components/tags/Tags";
 
 export function EntryFields({
   text = "",
