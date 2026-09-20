@@ -47,6 +47,33 @@ function sanitizeItems(items) {
   }));
 }
 
+const DEFAULT_COLLECTION_ID = 1;
+
+// Runs once, at hydrate time. Every install predating collections has items
+// with no collectionId at all — rather than the storage layer's usual
+// approach of just moving on to a fresh key and leaving old data unread,
+// this folds them into one starter collection in place, so real
+// already-saved journal content survives the upgrade. A day's own item refs
+// (`{ itemId, entryId }`) are untouched — collection membership lives only
+// on the item, looked up from there, never duplicated onto every reference
+// to it.
+function migrateCollections(collections, items) {
+  const hasLegacyItems = items.some((item) => item.collectionId == null);
+  if (!hasLegacyItems) {
+    return { collections: collections ?? [], items };
+  }
+  return {
+    collections: [
+      { collectionId: DEFAULT_COLLECTION_ID, name: "Games", color: "default" },
+      ...(collections ?? []),
+    ],
+    items: items.map((item) => ({
+      ...item,
+      collectionId: item.collectionId ?? DEFAULT_COLLECTION_ID,
+    })),
+  };
+}
+
 // The one process any item-entry mutation must go through to actually reach
 // the shared items store. A day's draft.items items carry scratch
 // text/tags/gallery fields directly while being edited (see UPDATE_ITEM) —
@@ -180,6 +207,9 @@ const initialState = {
   editMode: false,
   cancelling: false,
   tags: [],
+  // Every collection an item can belong to — see migrateCollections above
+  // for how existing installs get their first one.
+  collections: [],
   // The single source of truth for every collection item and its entries.
   // Journal days only ever hold { itemId, entryId } references into this —
   // see SAVE_EDIT, which is responsible for keeping that split intact.
@@ -319,7 +349,15 @@ function appReducer(state, action) {
         ...state,
         itemDraft: existing
           ? deepClone(existing)
-          : { title: "", cardImage: null, coverImage: null, entries: [] },
+          : {
+              title: "",
+              cardImage: null,
+              coverImage: null,
+              // Hardcoded until there's a collection to actually choose
+              // from — see the collections track work.
+              collectionId: DEFAULT_COLLECTION_ID,
+              entries: [],
+            },
         editingItemId: existing ? existing.itemId : null,
       };
     }
@@ -520,12 +558,14 @@ function appReducer(state, action) {
     // data, keeping every other field (editMode, drafts, etc.) at its
     // normal fresh-launch default.
     case "HYDRATE": {
-      const { entries, items, tags } = action.persisted;
+      const { entries, items, tags, collections } = action.persisted;
       const safeEntries = entries ?? [];
+      const migrated = migrateCollections(collections, items ?? []);
       return {
         ...state,
         entries: safeEntries,
-        items: sanitizeItems(items ?? []),
+        items: sanitizeItems(migrated.items),
+        collections: migrated.collections,
         tags: tags ?? [],
         committed: safeEntries[safeEntries.length - 1],
       };
@@ -632,13 +672,14 @@ export function AppProvider({ children }) {
       savePersistedState({
         entries: state.entries,
         items: state.items,
+        collections: state.collections,
         tags: state.tags,
       });
     }, 400);
     return () => {
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
     };
-  }, [ready, state.entries, state.items, state.tags]);
+  }, [ready, state.entries, state.items, state.collections, state.tags]);
 
   // The entry the UI always reads from — draft while editing, committed otherwise.
   const activeEntry = state.draft ?? state.committed;
