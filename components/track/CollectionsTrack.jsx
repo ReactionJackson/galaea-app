@@ -1,14 +1,11 @@
-import { ThemedText } from "@/components/interface/ThemedText";
-import { Colors } from "@/constants/theme";
 import { ITEM_HEIGHT, SLIDE_TRANSITION_DURATION } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import { useMemo } from "react";
-import { Pressable } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
+import { AddItemCard } from "./ItemCard";
 import { CollectionCard } from "./CollectionCard";
-import { useFadeStyle } from "./ItemCard";
 
 // Constants:
 
@@ -21,15 +18,6 @@ const ScrollContainer = styled(Animated.ScrollView)`
   flex: 1;
   width: 100%;
   height: 100%;
-`;
-
-const AddCard = styled(Animated.View)`
-  width: ${ITEM_HEIGHT}px;
-  height: ${ITEM_HEIGHT}px;
-  border-radius: 8px;
-  border: 2px solid ${Colors.buttonBorder};
-  justify-content: center;
-  align-items: center;
 `;
 
 // Component:
@@ -94,11 +82,6 @@ export function CollectionsTrack({
     onCancelAdd: onCancelAddCollection,
   });
 
-  const addCardStyle = useFadeStyle(
-    isScrolling || activeIndex === ADD_INDEX,
-    INACTIVE_OPACITY,
-  );
-
   return (
     <ScrollContainer
       horizontal
@@ -139,17 +122,12 @@ export function CollectionsTrack({
           </Animated.View>
         );
       })}
-      <Animated.View
-        layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
-      >
-        <Pressable onPress={() => goToIndex(ADD_INDEX)}>
-          <AddCard style={addCardStyle}>
-            <ThemedText type="date-number" color="black">
-              +
-            </ThemedText>
-          </AddCard>
-        </Pressable>
-      </Animated.View>
+      <AddItemCard
+        width={ITEM_HEIGHT}
+        active={isScrolling || activeIndex === ADD_INDEX}
+        inactiveOpacity={INACTIVE_OPACITY}
+        onPress={() => goToIndex(ADD_INDEX)}
+      />
     </ScrollContainer>
   );
 }

@@ -1,16 +1,12 @@
-import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import {
-  COLOR_TRANSITION_DURATION,
-  INDICATOR_DOT_SCALE_DOWN_DURATION,
-  INDICATOR_DOT_SCALE_UP_DURATION,
+  DAY_CIRCLE_HEIGHT,
+  INDICATOR_DOT_SCALE_DURATION,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
-import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
 import { useEffect, useMemo } from "react";
-import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedScrollHandler,
@@ -19,12 +15,12 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import styled from "styled-components/native";
+import { AddDayCircle, DayCircle } from "./DayCircle";
 import { StickyLabel } from "./StickyLabel";
 import { TrackTray } from "./TrackTray";
 
 // Constants:
 
-const ITEM_WIDTH = 40;
 const ITEM_SPACING = 10;
 
 // Styled Components:
@@ -54,50 +50,12 @@ const MonthLabels = styled(LabelsRow)`
 const RedIndicator = styled(Animated.View)`
   position: absolute;
   bottom: 12px;
-  width: ${ITEM_WIDTH}px;
-  height: ${ITEM_WIDTH}px;
+  width: ${DAY_CIRCLE_HEIGHT}px;
+  height: ${DAY_CIRCLE_HEIGHT}px;
   border-radius: 50%;
   background-color: ${Colors.accent};
   pointer-events: none;
 `;
-
-const DateCircle = styled.Pressable`
-  width: ${ITEM_WIDTH}px;
-  height: ${ITEM_WIDTH}px;
-  border-radius: 50%;
-  border: 2px solid ${Colors.buttonBorder};
-  justify-content: center;
-  align-items: center;
-`;
-
-function TrackDigit({ highlighted, dimmed, children }) {
-  const highlightStyle = useAnimatedTransition(
-    highlighted,
-    { opacity: [0, 1] },
-    { duration: COLOR_TRANSITION_DURATION },
-  );
-
-  return (
-    <View>
-      <ThemedText
-        type="date-number"
-        colorSwitch={{
-          colors: [Colors.black, Colors.disabled],
-          active: dimmed,
-        }}
-      >
-        {children}
-      </ThemedText>
-      <ThemedText
-        type="date-number"
-        color="white"
-        style={[StyleSheet.absoluteFill, highlightStyle]}
-      >
-        {children}
-      </ThemedText>
-    </View>
-  );
-}
 
 // Component:
 
@@ -120,7 +78,7 @@ export function JournalTrack({
   }, [entries]);
 
   const itemWidths = useMemo(
-    () => entries.map(() => ITEM_WIDTH),
+    () => entries.map(() => DAY_CIRCLE_HEIGHT),
     [entries.length],
   );
   const itemIds = useMemo(() => entries.map((e) => e.dayId), [entries]);
@@ -195,7 +153,7 @@ export function JournalTrack({
     itemIds,
     itemSpacing: ITEM_SPACING,
     showAddButton,
-    addButtonWidth: ITEM_WIDTH,
+    addButtonWidth: DAY_CIRCLE_HEIGHT,
     onSettle: (index, { alreadyActive }) => {
       if (alreadyActive) {
         if (editMode) {
@@ -245,14 +203,14 @@ export function JournalTrack({
   useEffect(() => {
     if (isScrolling) {
       const config = {
-        duration: INDICATOR_DOT_SCALE_DOWN_DURATION,
+        duration: INDICATOR_DOT_SCALE_DURATION,
         easing: Easing.in(Easing.quad),
       };
       indicatorScale.value = withTiming(0.6, config);
       indicatorOpacity.value = withTiming(0.2, config);
     } else {
       const config = {
-        duration: INDICATOR_DOT_SCALE_UP_DURATION,
+        duration: INDICATOR_DOT_SCALE_DURATION,
         easing: Easing.out(Easing.quad),
       };
       indicatorScale.value = withTiming(1, config);
@@ -323,37 +281,27 @@ export function JournalTrack({
           }}
         >
           {dayNumbers.map((dayNumber, i) => (
-            <DateCircle
+            <DayCircle
               key={`day-${dayNumber}-${i}`}
+              dayNumber={dayNumber}
+              isActive={activeIndex === i}
+              highlighted={
+                activeIndex === i && !(isScrolling && !isInternalScroll)
+              }
+              editMode={editMode}
               onPress={() => goToIndex(i)}
-              disabled={editMode}
-            >
-              <TrackDigit
-                highlighted={
-                  activeIndex === i && !(isScrolling && !isInternalScroll)
-                }
-                dimmed={editMode}
-              >
-                {dayNumber}
-              </TrackDigit>
-            </DateCircle>
+            />
           ))}
           {showAddButton && (
-            <DateCircle
+            <AddDayCircle
               key="add-button"
+              isActive={activeIndex === ADD_INDEX}
+              highlighted={
+                activeIndex === ADD_INDEX && !(isScrolling && !isInternalScroll)
+              }
+              editMode={editMode}
               onPress={() => goToIndex(ADD_INDEX)}
-              disabled={editMode}
-            >
-              <TrackDigit
-                highlighted={
-                  activeIndex === ADD_INDEX &&
-                  !(isScrolling && !isInternalScroll)
-                }
-                dimmed={editMode}
-              >
-                +
-              </TrackDigit>
-            </DateCircle>
+            />
           )}
         </ScrollContainer>
       </>

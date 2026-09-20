@@ -1,4 +1,3 @@
-import { ThemedText } from "@/components/interface/ThemedText";
 import {
   EMPTY_CARD_WIDTH,
   ITEM_HEIGHT,
@@ -9,10 +8,9 @@ import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
 import { useMemo } from "react";
-import { Pressable } from "react-native";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { EmptyCard, ItemCard, useFadeStyle } from "./ItemCard";
+import { AddItemCard, ItemCard } from "./ItemCard";
 import { TrackTray } from "./TrackTray";
 
 // Constants:
@@ -99,11 +97,6 @@ export function ItemsTrack({
   const canSwapRight =
     activeIndex !== ADD_INDEX && activeIndex < items.length - 1;
 
-  const addButtonStyle = useFadeStyle(
-    isScrolling || activeIndex === ADD_INDEX,
-    editMode ? 0.1 : 0.5,
-  );
-
   return (
     <TrackTray
       editMode={editMode}
@@ -153,17 +146,13 @@ export function ItemsTrack({
             />
           </Animated.View>
         ))}
-        <Animated.View
-          layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
-        >
-          <Pressable onPress={() => goToIndex(ADD_INDEX)} disabled={editMode}>
-            <EmptyCard style={addButtonStyle}>
-              <ThemedText type="date-number" color="black">
-                +
-              </ThemedText>
-            </EmptyCard>
-          </Pressable>
-        </Animated.View>
+        <AddItemCard
+          width={EMPTY_CARD_WIDTH}
+          active={isScrolling || activeIndex === ADD_INDEX}
+          inactiveOpacity={editMode ? 0.1 : 0.5}
+          onPress={() => goToIndex(ADD_INDEX)}
+          disabled={editMode}
+        />
       </ScrollContainer>
     </TrackTray>
   );

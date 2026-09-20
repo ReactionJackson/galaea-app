@@ -6,10 +6,10 @@ import {
   CARD_THUMBNAIL_HEIGHT,
   ITEM_HEIGHT,
 } from "@/constants/values";
+import { useFadeStyle } from "@/hooks/useFadeStyle";
 import { Pressable } from "react-native";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
-import { useFadeStyle } from "./ItemCard";
 
 const GRID_GAP = 5;
 const THUMBNAIL_RADIUS = 6;

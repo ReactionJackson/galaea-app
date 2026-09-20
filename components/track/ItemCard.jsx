@@ -1,40 +1,28 @@
+import { CrossIcon } from "@/components/interface/icons/CrossIcon";
 import { Image } from "@/components/image/Image";
 import { Colors } from "@/constants/theme";
 import {
   CARD_SHADOW_OPACITY,
   CARD_SHADOW_RADIUS,
-  COLOR_TRANSITION_DURATION,
   EMPTY_CARD_WIDTH,
   ITEM_HEIGHT,
+  SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
+import { useFadeStyle } from "@/hooks/useFadeStyle";
 import { fileExists } from "@/utils/images";
 import { useMemo } from "react";
 import { Pressable } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
 
 export const EmptyCard = styled(Animated.View)`
-  width: ${EMPTY_CARD_WIDTH}px;
+  width: ${({ width = EMPTY_CARD_WIDTH }) => width}px;
   height: ${ITEM_HEIGHT}px;
   border-radius: 8px;
   border: 2px solid ${Colors.buttonBorder};
   justify-content: center;
   align-items: center;
 `;
-
-export function useFadeStyle(active, inactiveOpacity) {
-  return useAnimatedStyle(
-    () => ({
-      opacity: withTiming(active ? 1 : inactiveOpacity, {
-        duration: COLOR_TRANSITION_DURATION,
-      }),
-    }),
-    [active, inactiveOpacity],
-  );
-}
 
 export function ItemCard({
   cardImage,
@@ -46,9 +34,6 @@ export function ItemCard({
   shadowOpacity = CARD_SHADOW_OPACITY,
 }) {
   const style = useFadeStyle(active, inactiveOpacity);
-  // A dangling reference (the file's gone) needs the same fallback as never
-  // having a cardImage at all — otherwise the track loses a usable, tappable
-  // slot for that item.
   const exists = useMemo(() => fileExists(cardImage?.uri), [cardImage?.uri]);
 
   return (
@@ -69,5 +54,27 @@ export function ItemCard({
         </Animated.View>
       )}
     </Pressable>
+  );
+}
+
+export function AddItemCard({
+  width,
+  active,
+  inactiveOpacity = 0.5,
+  onPress,
+  disabled = false,
+}) {
+  const style = useFadeStyle(active, inactiveOpacity);
+
+  return (
+    <Animated.View
+      layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
+    >
+      <Pressable onPress={onPress} disabled={disabled}>
+        <EmptyCard width={width} style={style}>
+          <CrossIcon size={18} color={Colors.black} />
+        </EmptyCard>
+      </Pressable>
+    </Animated.View>
   );
 }
