@@ -19,6 +19,7 @@ const ShadowWrap = styled.View`
 const StyledImage = styled(ExpoImage).attrs({
   transition: 200,
   contentFit: "contain",
+  cachePolicy: "memory-disk",
 })`
   width: 100%;
   height: 100%;
