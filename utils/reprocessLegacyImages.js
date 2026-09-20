@@ -1,4 +1,4 @@
-import { reprocessIfOversized } from "./images";
+import { generateCardThumbnail, reprocessIfOversized } from "./images";
 
 export async function reprocessLegacyImages(items, onItemPatched) {
   for (const item of items) {
@@ -7,6 +7,17 @@ export async function reprocessLegacyImages(items, onItemPatched) {
       const value = await reprocessIfOversized(item.cardImage, "card");
       if (value !== item.cardImage) {
         patch.cardImage = { fromUri: item.cardImage.uri, value };
+      }
+      // One-time backfill — every item that predates the thumbnail
+      // pipeline has a cardImage but no cardThumbnail yet.
+      if (!item.cardThumbnail) {
+        const thumbnail = await generateCardThumbnail(item.cardImage);
+        if (thumbnail) {
+          patch.cardThumbnail = {
+            fromUri: item.cardImage.uri,
+            value: thumbnail,
+          };
+        }
       }
     }
     if (item.coverImage) {
@@ -25,7 +36,12 @@ export async function reprocessLegacyImages(items, onItemPatched) {
       if (images.length) entryPatches.push({ entryId: entry.entryId, images });
     }
     if (entryPatches.length) patch.entryPatches = entryPatches;
-    if (patch.cardImage || patch.coverImage || patch.entryPatches) {
+    if (
+      patch.cardImage ||
+      patch.cardThumbnail ||
+      patch.coverImage ||
+      patch.entryPatches
+    ) {
       onItemPatched(patch);
     }
   }

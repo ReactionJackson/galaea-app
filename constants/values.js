@@ -7,6 +7,6 @@ export const COLLECTION_HERO_SPACING = 30;
 export const CARD_HEIGHT = COLLECTION_HERO_HEIGHT - 2 * COLLECTION_HERO_SPACING;
 export const CARD_THUMBNAIL_HEIGHT = 45;
 export const CARD_SHADOW_RADIUS = 3;
-export const CARD_SHADOW_OPACITY = 0.15;
+export const CARD_SHADOW_OPACITY = 0.2;
 export const PAGE_INTRO_FADE = 450;
 export const LIGHTBOX_PADDING = 20;

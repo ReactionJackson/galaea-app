@@ -24,7 +24,7 @@ const Container = styled.View`
   background-color: ${Colors.background};
 `;
 
-async function pickImage(kind) {
+async function pickImageAsset() {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) return null;
   const result = await ImagePicker.launchImageLibraryAsync({
@@ -33,8 +33,12 @@ async function pickImage(kind) {
   });
   if (result.canceled) return null;
   const asset = result.assets?.[0];
-  if (!asset?.uri) return null;
-  return pickAndStoreImage(asset, kind);
+  return asset?.uri ? asset : null;
+}
+
+async function pickImage(kind) {
+  const asset = await pickImageAsset();
+  return asset ? pickAndStoreImage(asset, kind) : null;
 }
 
 export default function CollectionScreen() {
@@ -93,8 +97,17 @@ export default function CollectionScreen() {
   };
 
   const handlePickCard = async () => {
-    const stored = await pickImage("card");
-    if (stored) updateDraft({ cardImage: stored });
+    // Both derivatives come from the same original asset, picked once —
+    // see generateCardThumbnail in utils/images for why the migration
+    // backfill can't do the same and has to work from the stored cardImage
+    // instead.
+    const asset = await pickImageAsset();
+    if (!asset) return;
+    const [cardImage, cardThumbnail] = await Promise.all([
+      pickAndStoreImage(asset, "card"),
+      pickAndStoreImage(asset, "card-thumbnail"),
+    ]);
+    updateDraft({ cardImage, cardThumbnail });
   };
 
   const handlePickCover = async () => {

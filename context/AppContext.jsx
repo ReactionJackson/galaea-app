@@ -588,6 +588,14 @@ function appReducer(state, action) {
           patch.cardImage && item.cardImage?.uri === patch.cardImage.fromUri
             ? patch.cardImage.value
             : item.cardImage;
+        // Guarded against the source cardImage, not against cardThumbnail
+        // itself — this only ever backfills a thumbnail that doesn't exist
+        // yet, so there's nothing of its own to compare against.
+        const cardThumbnail =
+          patch.cardThumbnail &&
+          item.cardImage?.uri === patch.cardThumbnail.fromUri
+            ? patch.cardThumbnail.value
+            : item.cardThumbnail;
         const coverImage =
           patch.coverImage && item.coverImage?.uri === patch.coverImage.fromUri
             ? patch.coverImage.value
@@ -609,7 +617,7 @@ function appReducer(state, action) {
             })
           : item.entries;
 
-        return { ...item, cardImage, coverImage, entries };
+        return { ...item, cardImage, cardThumbnail, coverImage, entries };
       });
       return { ...state, items };
     }
