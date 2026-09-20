@@ -1,6 +1,6 @@
 import {
-  COLLECTION_HERO_HEIGHT,
-  COLLECTION_HERO_SPACING,
+  CARD_HEIGHT,
+  CARD_THUMBNAIL_HEIGHT,
   LIGHTBOX_PADDING,
 } from "@/constants/values";
 import { Directory, File, Paths } from "expo-file-system";
@@ -10,6 +10,7 @@ import { Dimensions } from "react-native";
 const STORAGE_DIR_NAME = "picked-images";
 const MAX_DIMENSION = 1440;
 const DEFAULT_COMPRESS_QUALITY = 0.7;
+const SCALE_FACTOR = 2;
 
 function resolveOptions(kind) {
   const { width: screenWidth } = Dimensions.get("window");
@@ -17,15 +18,19 @@ function resolveOptions(kind) {
     case "card":
       return {
         quality: 0.4,
-        resizeHeight:
-          (COLLECTION_HERO_HEIGHT - 2 * COLLECTION_HERO_SPACING) * 2,
+        resizeHeight: CARD_HEIGHT * SCALE_FACTOR,
+      };
+    case "card-thumbnail":
+      return {
+        quality: 0.4,
+        resizeHeight: CARD_THUMBNAIL_HEIGHT * SCALE_FACTOR,
       };
     case "cover":
       return { quality: 0.4, resizeWidth: screenWidth };
     case "gallery":
       return {
         quality: 0.4,
-        resizeWidth: (screenWidth - LIGHTBOX_PADDING * 2) * 2,
+        resizeWidth: (screenWidth - LIGHTBOX_PADDING * 2) * SCALE_FACTOR,
       };
     default:
       throw new Error(`Unknown image kind: ${kind}`);
@@ -125,6 +130,22 @@ function isOversized(
   if (resizeWidth) return (rawWidth ?? 0) > resizeWidth;
   if (resizeHeight) return (rawHeight ?? 0) > resizeHeight;
   return false;
+}
+
+// Migration-only: derives a thumbnail from an already-stored, already-
+// compressed cardImage rather than an original picked asset (there isn't
+// one any more by the time this runs) — quality 1 because the source is
+// already lossy, and recompressing it again on top would just compound
+// artifacts for no reason. Going forward, new items get their thumbnail
+// the normal way, via pickAndStoreImage(asset, "card-thumbnail") against
+// the same original asset the full card image comes from.
+export async function generateCardThumbnail(image) {
+  if (!image?.uri || isGif({ uri: image.uri })) return null;
+  const { uri, rawWidth, rawHeight } = image;
+  return storePickedImage(
+    { uri, width: rawWidth, height: rawHeight },
+    { quality: 1, resizeHeight: CARD_THUMBNAIL_HEIGHT * SCALE_FACTOR },
+  );
 }
 
 export async function reprocessIfOversized(image, kind) {
