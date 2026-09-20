@@ -288,6 +288,7 @@ export function JournalTrack({
               highlighted={
                 activeIndex === i && !(isScrolling && !isInternalScroll)
               }
+              isInternalScroll={isInternalScroll}
               editMode={editMode}
               onPress={() => goToIndex(i)}
             />

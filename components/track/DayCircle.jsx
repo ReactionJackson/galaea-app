@@ -1,7 +1,11 @@
 import { CrossIcon } from "@/components/interface/icons/CrossIcon";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
-import { DAY_CIRCLE_HEIGHT } from "@/constants/values";
+import {
+  COLOR_TRANSITION_DURATION,
+  DAY_CIRCLE_HEIGHT,
+  DAY_CIRCLE_HIGHLIGHT_DURATION,
+} from "@/constants/values";
 import { useFadeStyle } from "@/hooks/useFadeStyle";
 import { Pressable } from "react-native";
 import Animated from "react-native-reanimated";
@@ -20,6 +24,7 @@ export function DayCircle({
   dayNumber,
   isActive,
   highlighted,
+  isInternalScroll,
   editMode,
   onPress,
 }) {
@@ -33,6 +38,9 @@ export function DayCircle({
           colorSwitch={{
             colors: [Colors.black, Colors.white],
             active: highlighted,
+            duration: isInternalScroll
+              ? DAY_CIRCLE_HIGHLIGHT_DURATION
+              : COLOR_TRANSITION_DURATION,
           }}
         >
           {dayNumber}

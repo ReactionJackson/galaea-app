@@ -21,6 +21,7 @@ export const FADE_TRANSITION_DURATION = 200;
 export const SLIDE_TRANSITION_DURATION = 250;
 export const EDGE_FADE_DURATION = 150;
 export const INDICATOR_DOT_SCALE_DURATION = 150;
+export const DAY_CIRCLE_HIGHLIGHT_DURATION = 500;
 
 // Shadows:
 

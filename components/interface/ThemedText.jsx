@@ -52,7 +52,7 @@ export const ThemedText = forwardRef(function ThemedText(
   const animatedColorStyle = useAnimatedTransition(
     colorSwitch?.active ?? false,
     { color: [fromColor, toColor] },
-    { duration: COLOR_TRANSITION_DURATION },
+    { duration: colorSwitch?.duration ?? COLOR_TRANSITION_DURATION },
   );
 
   const baseStyle = [
