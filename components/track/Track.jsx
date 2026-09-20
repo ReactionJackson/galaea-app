@@ -44,7 +44,7 @@ const ControlsContainer = styled.View`
 const MoveButtonsContainer = styled.View`
   flex-direction: row;
   justify-content: center;
-  gap: 10px;
+  gap: 20px;
   position: absolute;
   top: 10px;
   left: 0;

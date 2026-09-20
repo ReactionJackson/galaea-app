@@ -11,11 +11,6 @@ import Animated, {
 } from "react-native-reanimated";
 import styled, { css } from "styled-components/native";
 
-// Exported so anything needing the same 26px-tall/13px-radius bubble for
-// contrast against a photo (e.g. GalleryPagination's page count) can reuse
-// it without duplicating the sizing. `pill` swaps the fixed 26px circle for
-// a row that's free to grow wider — for a button combining an icon with a
-// short label rather than just an icon.
 export const InteractCircle = styled.View`
   height: 26px;
   border-radius: 13px;
