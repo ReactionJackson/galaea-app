@@ -1,4 +1,8 @@
-import { ITEM_HEIGHT, SLIDE_TRANSITION_DURATION } from "@/constants/values";
+import {
+  ITEM_HEIGHT,
+  SLIDE_TRANSITION_DURATION,
+  TRACK_GAP,
+} from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import { useMemo } from "react";
@@ -9,7 +13,6 @@ import { CollectionCard } from "./CollectionCard";
 
 // Constants:
 
-const ITEM_SPACING = 10;
 const INACTIVE_OPACITY = 0.5;
 
 // Styled Components:
@@ -65,7 +68,7 @@ export function CollectionsTrack({
   } = useSnapTrack({
     itemWidths,
     itemIds,
-    itemSpacing: ITEM_SPACING,
+    itemSpacing: TRACK_GAP,
     showAddButton: true,
     addButtonWidth: ITEM_HEIGHT,
     startAtEnd: false,
@@ -96,7 +99,7 @@ export function CollectionsTrack({
       onContentSizeChange={handleContentSizeChange}
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{
-        gap: ITEM_SPACING,
+        gap: TRACK_GAP,
         paddingInlineStart: basePadding,
         paddingInlineEnd: paddingEnd,
         alignItems: "center",

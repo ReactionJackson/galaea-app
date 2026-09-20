@@ -12,6 +12,7 @@ export const LIGHTBOX_PADDING = 20;
 export const DAY_CIRCLE_HEIGHT = 40;
 export const BUTTON_HEIGHT = 36;
 export const CONDENSED_BUTTON_HEIGHT = 26;
+export const TRACK_GAP = 10;
 
 // Durations:
 

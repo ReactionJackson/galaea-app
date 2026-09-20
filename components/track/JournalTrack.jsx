@@ -2,6 +2,7 @@ import { Colors } from "@/constants/theme";
 import {
   DAY_CIRCLE_HEIGHT,
   INDICATOR_DOT_SCALE_DURATION,
+  TRACK_GAP,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
@@ -17,11 +18,6 @@ import Animated, {
 import styled from "styled-components/native";
 import { AddDayCircle, DayCircle } from "./DayCircle";
 import { StickyLabel } from "./StickyLabel";
-import { TrackTray } from "./TrackTray";
-
-// Constants:
-
-const ITEM_SPACING = 10;
 
 // Styled Components:
 
@@ -62,6 +58,7 @@ const RedIndicator = styled(Animated.View)`
 export function JournalTrack({
   onEnterEdit = () => {},
   onCancelEdit = () => {},
+  onControlsChange = () => {},
 }) {
   const { state, dispatch } = useApp();
   const { entries, editMode } = state;
@@ -151,7 +148,7 @@ export function JournalTrack({
   } = useSnapTrack({
     itemWidths,
     itemIds,
-    itemSpacing: ITEM_SPACING,
+    itemSpacing: TRACK_GAP,
     showAddButton,
     addButtonWidth: DAY_CIRCLE_HEIGHT,
     onSettle: (index, { alreadyActive }) => {
@@ -176,6 +173,16 @@ export function JournalTrack({
     },
     onAdd: () => dispatch({ type: "ADD_DAY" }),
     onCancelAdd: onCancelEdit,
+  });
+
+  // No dependency array - the reported callbacks close over editMode and
+  // other state that doesn't itself trigger this effect, so they'd go
+  // stale if this only reran when activeIndex changed.
+  useEffect(() => {
+    onControlsChange({
+      onCancel: () => goToIndex(activeIndex),
+      onSave: () => dispatch({ type: "SAVE_EDIT" }),
+    });
   });
 
   const scrollX = useSharedValue(0);
@@ -227,85 +234,77 @@ export function JournalTrack({
   // Render:
 
   return (
-    <TrackTray
-      editMode={editMode}
-      trackHeight={90}
-      trackPaddingTop={25}
-      onCancel={() => goToIndex(activeIndex)}
-      onSave={() => dispatch({ type: "SAVE_EDIT" })}
-    >
-      <>
-        <YearLabels>
-          {yearGroups.map((group) => (
-            <StickyLabel
-              key={group.key}
-              group={group}
-              scrollX={scrollX}
-              halfTrackWidth={halfTrackWidth}
-              trackPaddingLeft={trackPaddingLeft}
-              condensed={true}
-            />
-          ))}
-        </YearLabels>
-        <MonthLabels>
-          {monthGroups.map((group) => (
-            <StickyLabel
-              key={group.key}
-              group={group}
-              scrollX={scrollX}
-              halfTrackWidth={halfTrackWidth}
-              trackPaddingLeft={trackPaddingLeft}
-            />
-          ))}
-        </MonthLabels>
-        <RedIndicator style={indicatorStyle} />
-        <ScrollContainer
-          horizontal
-          ref={trackRef}
-          contentOffset={initialContentOffset}
-          onScroll={scrollHandler}
-          onLayout={handleTrackLayoutAndWidth}
-          onScrollBeginDrag={handleScrollBeginDrag}
-          onScrollEndDrag={handleScrollEndDrag}
-          onMomentumScrollEnd={handleMomentumScrollEnd}
-          scrollEnabled={!editMode}
-          snapToOffsets={offsets}
-          decelerationRate="fast"
-          onContentSizeChange={handleContentSizeChange}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            gap: ITEM_SPACING,
-            paddingInlineStart: basePadding,
-            paddingInlineEnd: paddingEnd,
-            alignItems: "center",
-          }}
-        >
-          {dayNumbers.map((dayNumber, i) => (
-            <DayCircle
-              key={`day-${dayNumber}-${i}`}
-              dayNumber={dayNumber}
-              isActive={activeIndex === i}
-              highlighted={
-                activeIndex === i && !(isScrolling && !isInternalScroll)
-              }
-              isInternalScroll={isInternalScroll}
-              editMode={editMode}
-              onPress={() => goToIndex(i)}
-            />
-          ))}
-          {showAddButton && (
-            <AddDayCircle
-              key="add-button"
-              isActive={activeIndex === ADD_INDEX}
-              highlighted={
-                activeIndex === ADD_INDEX && !(isScrolling && !isInternalScroll)
-              }
-              editMode={editMode}
-              onPress={() => goToIndex(ADD_INDEX)}
-            />
-          )}
-        </ScrollContainer>
-      </>
-    </TrackTray>
+    <>
+      <YearLabels>
+        {yearGroups.map((group) => (
+          <StickyLabel
+            key={group.key}
+            group={group}
+            scrollX={scrollX}
+            halfTrackWidth={halfTrackWidth}
+            trackPaddingLeft={trackPaddingLeft}
+            condensed={true}
+          />
+        ))}
+      </YearLabels>
+      <MonthLabels>
+        {monthGroups.map((group) => (
+          <StickyLabel
+            key={group.key}
+            group={group}
+            scrollX={scrollX}
+            halfTrackWidth={halfTrackWidth}
+            trackPaddingLeft={trackPaddingLeft}
+          />
+        ))}
+      </MonthLabels>
+      <RedIndicator style={indicatorStyle} />
+      <ScrollContainer
+        horizontal
+        ref={trackRef}
+        contentOffset={initialContentOffset}
+        onScroll={scrollHandler}
+        onLayout={handleTrackLayoutAndWidth}
+        onScrollBeginDrag={handleScrollBeginDrag}
+        onScrollEndDrag={handleScrollEndDrag}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        scrollEnabled={!editMode}
+        snapToOffsets={offsets}
+        decelerationRate="fast"
+        onContentSizeChange={handleContentSizeChange}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          gap: TRACK_GAP,
+          paddingInlineStart: basePadding,
+          paddingInlineEnd: paddingEnd,
+          alignItems: "center",
+        }}
+      >
+        {dayNumbers.map((dayNumber, i) => (
+          <DayCircle
+            key={`day-${dayNumber}-${i}`}
+            dayNumber={dayNumber}
+            isActive={activeIndex === i}
+            highlighted={
+              activeIndex === i && !(isScrolling && !isInternalScroll)
+            }
+            isInternalScroll={isInternalScroll}
+            editMode={editMode}
+            onPress={() => goToIndex(i)}
+          />
+        ))}
+        {showAddButton && (
+          <AddDayCircle
+            key="add-button"
+            isActive={activeIndex === ADD_INDEX}
+            highlighted={
+              activeIndex === ADD_INDEX && !(isScrolling && !isInternalScroll)
+            }
+            editMode={editMode}
+            onPress={() => goToIndex(ADD_INDEX)}
+          />
+        )}
+      </ScrollContainer>
+    </>
   );
 }

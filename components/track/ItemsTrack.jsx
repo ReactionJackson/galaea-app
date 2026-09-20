@@ -2,20 +2,16 @@ import {
   EMPTY_CARD_WIDTH,
   ITEM_HEIGHT,
   SLIDE_TRANSITION_DURATION,
+  TRACK_GAP,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import * as Haptics from "expo-haptics";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { AddItemCard, ItemCard } from "./ItemCard";
-import { TrackTray } from "./TrackTray";
-
-// Constants:
-
-const ITEM_SPACING = 10;
 
 // Styled Components:
 
@@ -33,8 +29,7 @@ export function ItemsTrack({
   onPressActiveItem = () => {},
   onAddItem = () => {},
   onCancelAddItem = () => {},
-  onDelete = () => {},
-  onSave = () => {},
+  onControlsChange = () => {},
 }) {
   const { state, dispatch } = useApp();
   const items = state.items;
@@ -60,7 +55,7 @@ export function ItemsTrack({
   } = useSnapTrack({
     itemWidths,
     itemIds,
-    itemSpacing: ITEM_SPACING,
+    itemSpacing: TRACK_GAP,
     showAddButton: true,
     addButtonWidth: EMPTY_CARD_WIDTH,
     startAtEnd: false,
@@ -97,63 +92,64 @@ export function ItemsTrack({
   const canSwapRight =
     activeIndex !== ADD_INDEX && activeIndex < items.length - 1;
 
+  // No dependency array - the reported callbacks close over editMode and
+  // other state that doesn't itself trigger this effect, so they'd go
+  // stale if this only reran when activeIndex/canSwapLeft/canSwapRight
+  // changed.
+  useEffect(() => {
+    onControlsChange({
+      onCancel: () => goToIndex(activeIndex),
+      onSwapLeft: () => handleSwap("left"),
+      onSwapRight: () => handleSwap("right"),
+      canSwapLeft,
+      canSwapRight,
+    });
+  });
+
   return (
-    <TrackTray
-      editMode={editMode}
-      trackHeight={ITEM_HEIGHT + 20}
-      trackPaddingTop={6}
-      onCancel={() => goToIndex(activeIndex)}
-      onDelete={onDelete}
-      onSave={onSave}
-      onSwapLeft={() => handleSwap("left")}
-      onSwapRight={() => handleSwap("right")}
-      canSwapLeft={canSwapLeft}
-      canSwapRight={canSwapRight}
+    <ScrollContainer
+      horizontal
+      ref={trackRef}
+      contentOffset={initialContentOffset}
+      onLayout={handleTrackLayout}
+      onScrollBeginDrag={handleScrollBeginDrag}
+      onScrollEndDrag={handleScrollEndDrag}
+      onMomentumScrollEnd={handleMomentumScrollEnd}
+      scrollEnabled={!editMode}
+      snapToOffsets={offsets}
+      decelerationRate="fast"
+      onContentSizeChange={handleContentSizeChange}
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        gap: TRACK_GAP,
+        paddingInlineStart: basePadding,
+        paddingInlineEnd: paddingEnd,
+        alignItems: "center",
+      }}
     >
-      <ScrollContainer
-        horizontal
-        ref={trackRef}
-        contentOffset={initialContentOffset}
-        onLayout={handleTrackLayout}
-        onScrollBeginDrag={handleScrollBeginDrag}
-        onScrollEndDrag={handleScrollEndDrag}
-        onMomentumScrollEnd={handleMomentumScrollEnd}
-        scrollEnabled={!editMode}
-        snapToOffsets={offsets}
-        decelerationRate="fast"
-        onContentSizeChange={handleContentSizeChange}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          gap: ITEM_SPACING,
-          paddingInlineStart: basePadding,
-          paddingInlineEnd: paddingEnd,
-          alignItems: "center",
-        }}
-      >
-        {items.map((item, i) => (
-          <Animated.View
-            key={item.itemId}
-            layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
-            entering={FadeIn.duration(SLIDE_TRANSITION_DURATION)}
-            style={{ zIndex: activeIndex === i ? 1 : 0 }}
-          >
-            <ItemCard
-              cardImage={item.cardImage}
-              active={(isScrolling && !isInternalScroll) || activeIndex === i}
-              inactiveOpacity={editMode ? 0.1 : 0.5}
-              onPress={() => goToIndex(i)}
-              disabled={editMode}
-            />
-          </Animated.View>
-        ))}
-        <AddItemCard
-          width={EMPTY_CARD_WIDTH}
-          active={isScrolling || activeIndex === ADD_INDEX}
-          inactiveOpacity={editMode ? 0.1 : 0.5}
-          onPress={() => goToIndex(ADD_INDEX)}
-          disabled={editMode}
-        />
-      </ScrollContainer>
-    </TrackTray>
+      {items.map((item, i) => (
+        <Animated.View
+          key={item.itemId}
+          layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
+          entering={FadeIn.duration(SLIDE_TRANSITION_DURATION)}
+          style={{ zIndex: activeIndex === i ? 1 : 0 }}
+        >
+          <ItemCard
+            cardImage={item.cardImage}
+            active={(isScrolling && !isInternalScroll) || activeIndex === i}
+            inactiveOpacity={editMode ? 0.1 : 0.5}
+            onPress={() => goToIndex(i)}
+            disabled={editMode}
+          />
+        </Animated.View>
+      ))}
+      <AddItemCard
+        width={EMPTY_CARD_WIDTH}
+        active={isScrolling || activeIndex === ADD_INDEX}
+        inactiveOpacity={editMode ? 0.1 : 0.5}
+        onPress={() => goToIndex(ADD_INDEX)}
+        disabled={editMode}
+      />
+    </ScrollContainer>
   );
 }

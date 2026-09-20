@@ -1,5 +1,5 @@
 import { Colors } from "@/constants/theme";
-import { ITEM_HEIGHT } from "@/constants/values";
+import { ITEM_HEIGHT, TRACK_GAP } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
@@ -8,7 +8,6 @@ import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
 import { ItemCard } from "./ItemCard";
 
-const ITEM_SPACING = 10;
 const SCROLL_SLACK = 20;
 const CONTAINER_PADDING = 15 - SCROLL_SLACK / 2;
 
@@ -48,7 +47,7 @@ export function PickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
   } = useSnapTrack({
     itemWidths,
     itemIds,
-    itemSpacing: ITEM_SPACING,
+    itemSpacing: TRACK_GAP,
     showAddButton: false,
     startAtEnd: false,
     onSettle: (index, { alreadyActive }) => {
@@ -73,7 +72,7 @@ export function PickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
         onContentSizeChange={handleContentSizeChange}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
-          gap: ITEM_SPACING,
+          gap: TRACK_GAP,
           paddingInlineStart: basePadding,
           paddingInlineEnd: paddingEnd,
           alignItems: "center",

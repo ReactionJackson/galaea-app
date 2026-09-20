@@ -10,9 +10,10 @@ import { PageScroll } from "@/components/page/PageScroll";
 import { Tags } from "@/components/tags/Tags";
 import { JournalTrack } from "@/components/track/JournalTrack";
 import { PickerTrack } from "@/components/track/PickerTrack";
+import { TrackTray } from "@/components/track/TrackTray";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import styled from "styled-components/native";
 
@@ -31,6 +32,7 @@ function JournalScreen() {
   const cancelTimerRef = useRef(null);
   const pageScrollRef = useRef(null);
   const pendingScrollItemIdRef = useRef(null);
+  const [trayControls, setTrayControls] = useState({});
 
   // Derived state:
 
@@ -200,10 +202,18 @@ function JournalScreen() {
         </FadeInOnMount>
       </PageScroll>
 
-      <JournalTrack
-        onEnterEdit={handleEnterEdit}
-        onCancelEdit={handleCancelEdit}
-      />
+      <TrackTray
+        editMode={editMode}
+        trackHeight={90}
+        trackPaddingTop={25}
+        {...trayControls}
+      >
+        <JournalTrack
+          onEnterEdit={handleEnterEdit}
+          onCancelEdit={handleCancelEdit}
+          onControlsChange={setTrayControls}
+        />
+      </TrackTray>
     </Container>
   );
 }

@@ -7,6 +7,7 @@ import { EditLightbox } from "@/components/lightbox/EditLightbox";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
 import { ItemsTrack } from "@/components/track/ItemsTrack";
+import { TrackTray } from "@/components/track/TrackTray";
 import { Colors } from "@/constants/theme";
 import {
   COLLECTION_HERO_HEIGHT,
@@ -49,6 +50,7 @@ export default function CollectionScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const [activeItemId, setActiveItemId] = useState(items[0]?.itemId);
   const [coverImageToEdit, setCoverImageToEdit] = useState(null);
+  const [trayControls, setTrayControls] = useState({});
 
   const activeItem = itemsById[activeItemId] ?? items[0];
   const displayItem = itemDraft ?? activeItem;
@@ -97,10 +99,6 @@ export default function CollectionScreen() {
   };
 
   const handlePickCard = async () => {
-    // Both derivatives come from the same original asset, picked once —
-    // see generateCardThumbnail in utils/images for why the migration
-    // backfill can't do the same and has to work from the stored cardImage
-    // instead.
     const asset = await pickImageAsset();
     if (!asset) return;
     const [cardImage, cardThumbnail] = await Promise.all([
@@ -213,15 +211,23 @@ export default function CollectionScreen() {
         </FadeInOnMount>
       </PageScroll>
 
-      <ItemsTrack
+      <TrackTray
         editMode={editMode}
-        onChangeItem={setActiveItemId}
-        onPressActiveItem={handlePressActiveItem}
-        onAddItem={handleAddItem}
-        onCancelAddItem={handleCancelAddItem}
+        trackHeight={125}
+        trackPaddingTop={6}
         onDelete={handleDelete}
         onSave={handleSave}
-      />
+        {...trayControls}
+      >
+        <ItemsTrack
+          editMode={editMode}
+          onChangeItem={setActiveItemId}
+          onPressActiveItem={handlePressActiveItem}
+          onAddItem={handleAddItem}
+          onCancelAddItem={handleCancelAddItem}
+          onControlsChange={setTrayControls}
+        />
+      </TrackTray>
     </Container>
   );
 }
