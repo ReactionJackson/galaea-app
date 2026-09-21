@@ -8,7 +8,7 @@ import {
 import { useApp } from "@/context/AppContext";
 import { useItemCardSizes } from "@/hooks/useItemCardSizes";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
-import * as Haptics from "expo-haptics";
+import { triggerHaptics } from "@/utils/haptics";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import Animated, {
   FadeIn,
@@ -112,13 +112,7 @@ export const ItemsTrack = memo(function ItemsTrack({
       if (!item) return;
       if (alreadyActive) {
         onPressActiveItem(item.itemId);
-        if (process.env.EXPO_OS === "ios") {
-          Haptics.impactAsync(
-            locked
-              ? Haptics.ImpactFeedbackStyle.Light
-              : Haptics.ImpactFeedbackStyle.Heavy,
-          );
-        }
+        triggerHaptics(locked ? "Light" : "Heavy");
       } else {
         onChangeItem(item.itemId);
       }
@@ -128,9 +122,7 @@ export const ItemsTrack = memo(function ItemsTrack({
   const handleSwap = (direction) => {
     const item = items[activeIndex];
     if (!item) return;
-    if (process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    triggerHaptics("Light");
     dispatch({ type: "SWAP_ADJACENT_ITEM", itemId: item.itemId, direction });
   };
 
@@ -186,9 +178,7 @@ export const ItemsTrack = memo(function ItemsTrack({
 
   const handlePressCollectionCard = () => {
     if (activeBookend === "collection") return;
-    if (process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    triggerHaptics("Light");
     if (activeIndex !== 0) goToIndex(0, { haptic: false });
     setActiveBookend("collection");
     onViewCollectionCard();
@@ -199,9 +189,7 @@ export const ItemsTrack = memo(function ItemsTrack({
       handleCancelAdd();
       return;
     }
-    if (process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    triggerHaptics("Light");
     const lastIndex = items.length - 1;
     if (activeIndex !== lastIndex) goToIndex(lastIndex, { haptic: false });
     setActiveBookend("add");

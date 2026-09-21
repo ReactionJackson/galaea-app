@@ -6,7 +6,7 @@ import {
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
-import * as Haptics from "expo-haptics";
+import { triggerHaptics } from "@/utils/haptics";
 import { memo, useMemo } from "react";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
@@ -79,9 +79,7 @@ export const CollectionsTrack = memo(function CollectionsTrack({
       const collection = collections[index];
       if (!collection) return;
       if (alreadyActive) {
-        if (process.env.EXPO_OS === "ios") {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
+        triggerHaptics("Light");
         onPressActiveCollection(collection.collectionId);
       } else {
         onChangeCollection(collection.collectionId);

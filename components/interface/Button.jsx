@@ -1,7 +1,7 @@
-import { firePressHaptic } from "@/components/interface/shared";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
 import { BUTTON_HEIGHT } from "@/constants/values";
+import { triggerHaptics } from "@/utils/haptics";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
@@ -25,7 +25,7 @@ export function Button({
   const { text, fill, border } = Colors.button[variant];
 
   const handlePress = (e) => {
-    firePressHaptic(haptics);
+    triggerHaptics(haptics);
     onPress?.(e);
   };
 

@@ -1,4 +1,4 @@
-import * as Haptics from "expo-haptics";
+import { triggerHaptics } from "@/utils/haptics";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useWindowDimensions } from "react-native";
 
@@ -110,12 +110,6 @@ export function useSnapTrack({
 
   // Helpers:
 
-  const hapticLight = () => {
-    if (process.env.EXPO_OS === "ios") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  };
-
   const scrollToIndex = (index, animated = true) => {
     const offset = offsets[index];
     if (offset == null) return;
@@ -127,7 +121,7 @@ export function useSnapTrack({
       if (index === ADD_INDEX) {
         onCancelAdd();
         setIsScrolling(true);
-        if (haptic) hapticLight();
+        if (haptic) triggerHaptics("Light");
         setIsInternalScroll(false);
         scrollToIndex(itemCount - 1, true);
         return;
@@ -136,7 +130,7 @@ export function useSnapTrack({
       return;
     }
     setIsScrolling(true);
-    if (haptic) hapticLight();
+    if (haptic) triggerHaptics("Light");
     if (index === ADD_INDEX) {
       setIsInternalScroll(false);
       setAddActive(true);
@@ -192,7 +186,7 @@ export function useSnapTrack({
     scrollToAddAfterResize.current = false;
     setIsInternalScroll(false);
     setIsScrolling(true);
-    hapticLight();
+    triggerHaptics("Light");
   };
 
   const handleScrollEndDrag = (event) => {

@@ -1,10 +1,10 @@
-import { firePressHaptic } from "@/components/interface/shared";
 import { Colors } from "@/constants/theme";
 import {
   CONDENSED_BUTTON_HEIGHT,
   FADE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
+import { triggerHaptics } from "@/utils/haptics";
 import { Children, cloneElement, isValidElement } from "react";
 import { Pressable } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
@@ -47,7 +47,7 @@ export function InteractButton({
 
   const handlePress = () => {
     if (disabled) return;
-    firePressHaptic(haptics);
+    triggerHaptics(haptics);
     onPress?.();
   };
 

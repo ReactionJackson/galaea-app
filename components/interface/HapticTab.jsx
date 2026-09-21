@@ -1,14 +1,12 @@
+import { triggerHaptics } from "@/utils/haptics";
 import { PlatformPressable } from "expo-router/react-navigation";
-import * as Haptics from "expo-haptics";
 
 export function HapticTab(props) {
   return (
     <PlatformPressable
       {...props}
       onPressIn={(ev) => {
-        if (process.env.EXPO_OS === "ios") {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
+        triggerHaptics("Light");
         props.onPressIn?.(ev);
       }}
     />

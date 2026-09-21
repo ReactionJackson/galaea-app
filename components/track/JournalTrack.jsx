@@ -7,7 +7,7 @@ import {
 import { resolveEntryGalleryPairs, useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import { deleteDroppedImages } from "@/utils/images";
-import * as Haptics from "expo-haptics";
+import { triggerHaptics } from "@/utils/haptics";
 import { useEffect, useMemo } from "react";
 import Animated, {
   Easing,
@@ -156,14 +156,10 @@ export function JournalTrack({
       if (alreadyActive) {
         if (editMode) {
           onCancelEdit();
-          if (process.env.EXPO_OS === "ios") {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          }
+          triggerHaptics("Light");
         } else {
           onEnterEdit();
-          if (process.env.EXPO_OS === "ios") {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-          }
+          triggerHaptics("Heavy");
         }
         return;
       }
