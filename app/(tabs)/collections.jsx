@@ -6,16 +6,12 @@ import { ThemedText } from "@/components/interface/ThemedText";
 import { EditLightbox } from "@/components/lightbox/EditLightbox";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
-import { CollectionsTrack } from "@/components/track/CollectionsTrack";
-import { ItemsTrack } from "@/components/track/ItemsTrack";
 import { TrackStack } from "@/components/track/TrackStack";
 import { TrackTray } from "@/components/track/TrackTray";
 import { Colors } from "@/constants/theme";
 import {
   COLLECTION_HERO_HEIGHT,
   COLLECTION_HERO_SPACING,
-  FADE_TRANSITION_DURATION,
-  SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import {
@@ -25,14 +21,8 @@ import {
   pickAndStoreImage,
 } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useState } from "react";
 import { View, useWindowDimensions } from "react-native";
-import {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
-import { scheduleOnRN } from "react-native-worklets";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -57,26 +47,6 @@ async function pickImage(kind) {
   return asset ? pickAndStoreImage(asset, kind) : null;
 }
 
-function fadeItemsIn(itemsFade, onComplete) {
-  itemsFade.value = withTiming(
-    1,
-    { duration: SLIDE_TRANSITION_DURATION },
-    (finished) => {
-      if (finished) scheduleOnRN(onComplete);
-    },
-  );
-}
-
-function fadeItemsOut(itemsFade, onComplete) {
-  itemsFade.value = withTiming(
-    0,
-    { duration: SLIDE_TRANSITION_DURATION },
-    (finished) => {
-      if (finished) scheduleOnRN(onComplete);
-    },
-  );
-}
-
 export default function CollectionScreen() {
   const { state, dispatch, itemsById } = useApp();
   const { items, itemDraft, editingItemId } = state;
@@ -86,31 +56,9 @@ export default function CollectionScreen() {
   const [activeItemId, setActiveItemId] = useState(items[0]?.itemId);
   const [coverImageToEdit, setCoverImageToEdit] = useState(null);
   const [trayControls, setTrayControls] = useState({});
-  const [viewingCollectionId, setViewingCollectionId] = useState(null);
   const [contentCollectionId, setContentCollectionId] = useState(
     () => state.collections[0]?.collectionId ?? null,
   );
-  const [collectionsSoloed, setCollectionsSoloed] = useState(false);
-  const [collectionsVisible, setCollectionsVisible] = useState(true);
-  const [itemsFadeTarget, setItemsFadeTarget] = useState(0);
-  const itemsFade = useSharedValue(0);
-
-  const itemsStyle = useAnimatedStyle(() => ({ opacity: itemsFade.value }));
-
-  useEffect(() => {
-    if (itemsFadeTarget === 1) {
-      const timer = setTimeout(
-        () => fadeItemsIn(itemsFade, () => setCollectionsVisible(false)),
-        FADE_TRANSITION_DURATION,
-      );
-      return () => clearTimeout(timer);
-    }
-    fadeItemsOut(itemsFade, () => {
-      setViewingCollectionId(null);
-      setCollectionsSoloed(false);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemsFadeTarget]);
 
   const collectionStub = editMode
     ? null
@@ -132,13 +80,13 @@ export default function CollectionScreen() {
     dispatch({ type: "UPDATE_ITEM_DRAFT", changes });
 
   const handleAddItem = useCallback(
-    () =>
+    (collectionId) =>
       dispatch({
         type: "ENTER_ITEM_EDIT",
         itemId: null,
-        collectionId: viewingCollectionId,
+        collectionId,
       }),
-    [dispatch, viewingCollectionId],
+    [dispatch],
   );
 
   const cancelItemEdit = useCallback(() => {
@@ -155,8 +103,11 @@ export default function CollectionScreen() {
       cancelItemEdit();
       return;
     }
+    const editingCollectionId = items.find(
+      (it) => it.itemId === editingItemId,
+    )?.collectionId;
     const collectionItems = items.filter(
-      (it) => it.collectionId === viewingCollectionId,
+      (it) => it.collectionId === editingCollectionId,
     );
     const deletedIndex = collectionItems.findIndex(
       (it) => it.itemId === editingItemId,
@@ -167,24 +118,9 @@ export default function CollectionScreen() {
     if (landingItem) setActiveItemId(landingItem.itemId);
   };
 
-  const handleChooseCollection = useCallback((collectionId) => {
-    setViewingCollectionId(collectionId);
-    setCollectionsSoloed(true);
-    setItemsFadeTarget(1);
-  }, []);
-
-  const handleGoBackToCollections = useCallback(() => {
-    setCollectionsVisible(true);
-    setItemsFadeTarget(0);
-  }, []);
-
   const handleChangeCollection = useCallback((collectionId) => {
     setContentCollectionId(collectionId);
   }, []);
-
-  const handleViewCollectionCard = useCallback(() => {
-    setContentCollectionId(viewingCollectionId);
-  }, [viewingCollectionId]);
 
   const handleChangeItem = useCallback((itemId) => {
     setActiveItemId(itemId);
@@ -250,9 +186,6 @@ export default function CollectionScreen() {
   };
 
   const handleCloseCover = () => {
-    // A newly picked cover already has its file on disk before it's saved
-    // into the draft - closing without saving means it was never confirmed,
-    // so only delete when it hasn't landed in displayItem.coverImage yet.
     if (
       coverImageToEdit &&
       coverImageToEdit.uri !== displayItem?.coverImage?.uri
@@ -377,38 +310,17 @@ export default function CollectionScreen() {
         onSave={handleSave}
         {...trayControls}
       >
-        <TrackStack>
-          <TrackStack.Layer
-            style={itemsStyle}
-            pointerEvents={viewingCollectionId ? "auto" : "none"}
-          >
-            <ItemsTrack
-              key={viewingCollectionId}
-              collectionId={viewingCollectionId}
-              editMode={editMode}
-              isEditable
-              revealed={!collectionsVisible}
-              onChangeItem={handleChangeItem}
-              onPressActiveItem={handlePressActiveItem}
-              onAddItem={handleAddItem}
-              onCancelAddItem={cancelItemEdit}
-              onPressBack={handleGoBackToCollections}
-              onViewCollectionCard={handleViewCollectionCard}
-              onControlsChange={setTrayControls}
-            />
-          </TrackStack.Layer>
-          <TrackStack.Layer
-            style={{ opacity: collectionsVisible ? 1 : 0 }}
-            pointerEvents={viewingCollectionId ? "none" : "auto"}
-          >
-            <CollectionsTrack
-              soloed={collectionsSoloed}
-              isEditable
-              onChangeCollection={handleChangeCollection}
-              onPressActiveCollection={handleChooseCollection}
-            />
-          </TrackStack.Layer>
-        </TrackStack>
+        <TrackStack
+          isEditable
+          editMode={editMode}
+          onPressActiveItem={handlePressActiveItem}
+          onChangeItem={handleChangeItem}
+          onAddItem={handleAddItem}
+          onCancelAddItem={cancelItemEdit}
+          onViewCollectionCard={handleChangeCollection}
+          onChangeCollection={handleChangeCollection}
+          onControlsChange={setTrayControls}
+        />
       </TrackTray>
     </Container>
   );

@@ -167,18 +167,16 @@ function JournalScreen() {
             )}
             <AnimatedSpacer visible={activeEntry.items.length > 0} />
 
-            {editMode && (
-              <AnimateHeight
-                visible={editMode}
-                animateOnMount
-                style={{ marginHorizontal: -20 }}
-              >
-                <PickerTrack
-                  attachedItemIds={activeEntry.items.map((it) => it.itemId)}
-                  onSelect={handleSelectItem}
-                />
-              </AnimateHeight>
-            )}
+            <AnimateHeight
+              visible={editMode}
+              animateOnMount
+              style={{ marginHorizontal: -20 }}
+            >
+              <PickerTrack
+                attachedItemIds={activeEntry.items.map((it) => it.itemId)}
+                onSelect={handleSelectItem}
+              />
+            </AnimateHeight>
             <AnimatedSpacer visible={editMode} height={70} />
           </Fragment>
         </FadeInOnMount>

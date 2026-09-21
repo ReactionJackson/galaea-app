@@ -55,8 +55,8 @@ const DEFAULT_COLLECTION_ID = 1;
 // the reconciliation pass that keeps already-migrated devices in sync both
 // read from the same place.
 const COLLECTION_COLORS = {
-  Games: "#eee",
-  "Board Games": "#eee",
+  Games: "dodgerblue",
+  "Board Games": "mediumseagreen",
 };
 
 // Runs once, at hydrate time. Every install predating collections has items

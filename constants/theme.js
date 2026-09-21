@@ -21,7 +21,7 @@ export const Colors = {
   lightboxCropBox: "rgba(255, 255, 255, 0.2)",
   surfaceTint: "rgba(0, 0, 0, 0.03)",
   emptySlotBackground: "rgba(0, 0, 0, 0.02)",
-  thumbnailOverlay: "rgba(0, 0, 0, 0.05)",
+  thumbnailOverlay: "rgba(0, 0, 0, 0.075)",
   editButtonBackground: "rgba(255, 255, 255, 0.8)",
   selectedBorder: "rgba(255, 255, 255, 0.85)",
   tags: {
