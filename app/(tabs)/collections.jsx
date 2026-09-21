@@ -62,9 +62,14 @@ export default function CollectionScreen() {
       ? `collection-${activeCollection.collectionId}`
       : activeItemId;
   const orderedEntries = displayItem
-    ? [...displayItem.entries].sort(
-        (a, b) => new Date(b.date) - new Date(a.date),
-      )
+    ? [...displayItem.entries]
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .map((entry, i, sorted) => ({
+          ...entry,
+          entryNumber:
+            itemsById[displayItem.itemId]?.entriesById[entry.entryId]
+              ?.entryNumber ?? sorted.length - i,
+        }))
     : [];
 
   const updateDraft = (changes) =>

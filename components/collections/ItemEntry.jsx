@@ -12,32 +12,27 @@ function formatEntryDate(dateString) {
   const day = String(date.getDate()).padStart(2, "0");
   const month = date.toLocaleString("default", { month: "long" });
   const year = date.getFullYear();
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const period = date.getHours() >= 12 ? "pm" : "am";
-  const hour12 = date.getHours() % 12 || 12;
-  return {
-    datePart: `${day} ${month} ${year}`,
-    timePart: `${hour12}:${minutes}${period}`,
-  };
+  return `${day} ${month} ${year}`;
 }
 
 export function ItemEntry({
   date,
+  entryNumber,
   text,
   tagIds,
   gallery,
   editable = false,
   onUpdate,
 }) {
-  const { datePart, timePart } = date ? formatEntryDate(date) : {};
+  const dateText = date ? formatEntryDate(date) : null;
 
   return (
     <Content>
       <ThemedText type="subtitle" style={{ marginBottom: 5 }}>
-        {datePart}
+        {dateText}
         <ThemedText type="subtitle" color="faded">
           {" "}
-          {timePart}
+          Entry {String(entryNumber).padStart(2, "0")}
         </ThemedText>
       </ThemedText>
       <EntryFields

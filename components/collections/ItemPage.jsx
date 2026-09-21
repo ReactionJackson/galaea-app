@@ -79,6 +79,7 @@ export function ItemPage({
               key={entry.entryId}
               editable={editMode}
               date={entry.date}
+              entryNumber={entry.entryNumber}
               text={entry.text}
               tagIds={entry.tags}
               gallery={entry.gallery}

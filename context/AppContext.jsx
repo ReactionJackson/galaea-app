@@ -768,8 +768,12 @@ export function AppProvider({ children }) {
   const itemsById = useMemo(() => {
     const map = {};
     for (const item of state.items) {
+      // entryNumber is by date, not entryId (creation order) - going back
+      // to fill in a missed day makes an entry with a newer entryId but an
+      // older date, and the date is what should win. Safe to sort on since
+      // an item can never have two entries on the same day.
       const sortedEntries = [...item.entries].sort(
-        (a, b) => a.entryId - b.entryId,
+        (a, b) => new Date(a.date) - new Date(b.date),
       );
       const entriesById = {};
       sortedEntries.forEach((entry, index) => {

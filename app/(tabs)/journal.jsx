@@ -47,6 +47,10 @@ function JournalScreen() {
 
   const textVisible = !!(activeEntry.text || editMode);
   const tagsVisible = !!(activeEntry.tags.length || editMode);
+  const dayIndex = state.entries.findIndex(
+    (e) => e.dayId === activeEntry.dayId,
+  );
+  const dayNumber = dayIndex === -1 ? state.entries.length + 1 : dayIndex + 1;
 
   // Helpers:
 
@@ -57,12 +61,6 @@ function JournalScreen() {
         return date.getDate().toString();
       case "month":
         return date.toLocaleString("default", { month: "long" });
-      case "time":
-        return date.toLocaleString("default", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        });
       case "weekday":
         return date.toLocaleString("default", { weekday: "long" });
     }
@@ -112,7 +110,7 @@ function JournalScreen() {
           <PageHeader.Meta>
             <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
             <ThemedText type="subtitle" color="faded">
-              {formatDate("time")}
+              Entry {String(dayNumber).padStart(2, "0")}
             </ThemedText>
           </PageHeader.Meta>
           <PageHeader.Title
