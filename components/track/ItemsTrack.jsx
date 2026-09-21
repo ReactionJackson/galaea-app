@@ -186,6 +186,7 @@ export const ItemsTrack = memo(function ItemsTrack({
     if (process.env.EXPO_OS === "ios") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
+    if (activeIndex !== 0) goToIndex(0, { haptic: false });
     setActiveBookend("collection");
     onViewCollectionCard();
   };
@@ -198,6 +199,8 @@ export const ItemsTrack = memo(function ItemsTrack({
     if (process.env.EXPO_OS === "ios") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
+    const lastIndex = items.length - 1;
+    if (activeIndex !== lastIndex) goToIndex(lastIndex, { haptic: false });
     setActiveBookend("add");
     onAddItem();
   };
