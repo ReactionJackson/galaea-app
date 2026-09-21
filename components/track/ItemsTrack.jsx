@@ -134,9 +134,20 @@ export const ItemsTrack = memo(function ItemsTrack({
   const canSwapLeft = activeIndex > 0;
   const canSwapRight = activeIndex < items.length - 1;
 
+  const handleCancelAdd = () => {
+    setActiveBookend(null);
+    onCancelAddItem();
+  };
+
   useEffect(() => {
     onControlsChange({
-      onCancel: () => goToIndex(activeIndex),
+      onCancel: () => {
+        if (activeBookend === "add") {
+          handleCancelAdd();
+          return;
+        }
+        goToIndex(activeIndex);
+      },
       onSwapLeft: () => handleSwap("left"),
       onSwapRight: () => handleSwap("right"),
       canSwapLeft,
@@ -147,11 +158,14 @@ export const ItemsTrack = memo(function ItemsTrack({
   const hasArrivedRef = useRef(false);
 
   useEffect(() => {
-    if (revealed && items.length > 0) {
-      onViewCollectionCard();
-      hasArrivedRef.current = true;
-      setActiveBookend(null);
-    }
+    if (!revealed || items.length === 0) return;
+    onViewCollectionCard();
+    hasArrivedRef.current = true;
+    setActiveBookend(null);
+    const timer = setTimeout(() => {
+      onChangeItem(items[0].itemId);
+    }, SLIDE_TRANSITION_DURATION);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealed]);
 
@@ -178,8 +192,7 @@ export const ItemsTrack = memo(function ItemsTrack({
 
   const handlePressAddBookend = () => {
     if (activeBookend === "add") {
-      setActiveBookend(null);
-      onCancelAddItem();
+      handleCancelAdd();
       return;
     }
     if (process.env.EXPO_OS === "ios") {
@@ -287,7 +300,10 @@ export const ItemsTrack = memo(function ItemsTrack({
           >
             <ItemCard
               cardImage={item.cardImage}
-              active={(isScrolling && !isInternalScroll) || activeIndex === i}
+              active={
+                activeBookend == null &&
+                ((isScrolling && !isInternalScroll) || activeIndex === i)
+              }
               inactiveOpacity={editMode ? 0.1 : 0.5}
               onPress={() => handlePressItem(i)}
               disabled={editMode}
