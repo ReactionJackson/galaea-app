@@ -157,10 +157,7 @@ export const ItemsTrack = memo(function ItemsTrack({
     onViewCollectionCard();
     hasArrivedRef.current = true;
     setActiveBookend(null);
-    const timer = setTimeout(() => {
-      onChangeItem(items[0].itemId);
-    }, SLIDE_TRANSITION_DURATION);
-    return () => clearTimeout(timer);
+    onChangeItem(items[0].itemId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealed]);
 
