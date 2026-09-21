@@ -84,6 +84,11 @@ export const CollectionsTrack = memo(function CollectionsTrack({
         onChangeCollection(collection.collectionId);
       }
     },
+    onArrive: (index) => {
+      const collection = collections[index];
+      if (!collection) return;
+      if (!isEditable) onPressActiveCollection(collection.collectionId);
+    },
     onAdd: onAddCollection,
     onCancelAdd: onCancelAddCollection,
   });
