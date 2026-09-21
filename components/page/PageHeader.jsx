@@ -42,7 +42,9 @@ const BadgeCircle = styled.View`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: ${Colors.accent};
+  border-width: 2px;
+  border-color: ${({ $borderColor }) => $borderColor};
+  background-color: ${({ $backgroundColor }) => $backgroundColor};
 `;
 
 function Title({ value, placeholder, onChangeText, editable }) {
@@ -60,8 +62,13 @@ function Title({ value, placeholder, onChangeText, editable }) {
   );
 }
 
-function Badge({ children, ...rest }) {
-  return <BadgeCircle {...rest}>{children}</BadgeCircle>;
+function Badge({ variant = "primary", children, ...rest }) {
+  const { fill, border } = Colors.badge[variant];
+  return (
+    <BadgeCircle $backgroundColor={fill} $borderColor={border} {...rest}>
+      {children}
+    </BadgeCircle>
+  );
 }
 Badge.displayName = "PageHeader.Badge";
 

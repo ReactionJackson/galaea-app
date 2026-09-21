@@ -72,6 +72,17 @@ export const Colors = {
   },
 };
 
+Colors.badge = {
+  primary: {
+    fill: Colors.accent,
+    border: Colors.transparent,
+  },
+  secondary: {
+    fill: Colors.transparent,
+    border: Colors.buttonBorder,
+  },
+};
+
 Colors.button = {
   primary: {
     text: Colors.white,

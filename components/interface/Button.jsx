@@ -11,8 +11,8 @@ const StyledButton = styled(Pressable)`
   padding: 4px 14px;
   border-radius: 20px;
   border-width: 2px;
-  border-color: ${({ borderColor }) => borderColor};
-  background-color: ${({ backgroundColor }) => backgroundColor};
+  border-color: ${({ $borderColor }) => $borderColor};
+  background-color: ${({ $backgroundColor }) => $backgroundColor};
 `;
 
 export function Button({
@@ -31,8 +31,8 @@ export function Button({
 
   return (
     <StyledButton
-      backgroundColor={fill}
-      borderColor={border}
+      $backgroundColor={fill}
+      $borderColor={border}
       onPress={handlePress}
       {...props}
     >
