@@ -522,17 +522,28 @@ function appReducer(state, action) {
       };
     }
 
-    // Swaps an item with its immediate left/right neighbour — used by both
-    // the edit panel's arrow buttons and the drag-to-reorder gesture.
+    // Swaps an item with its immediate left/right neighbour within the same
+    // collection — used by both the edit panel's arrow buttons and the
+    // drag-to-reorder gesture. Items from different collections are
+    // interleaved in state.items (a new item is always appended at the very
+    // end, see SAVE_ITEM_EDIT), so the neighbour has to be found by walking
+    // past any items belonging to other collections rather than just
+    // stepping by one index.
     case "SWAP_ADJACENT_ITEM": {
       const { itemId, direction } = action;
       const index = state.items.findIndex((it) => it.itemId === itemId);
-      const neighborIndex = index + (direction === "right" ? 1 : -1);
-      if (
-        index === -1 ||
-        neighborIndex < 0 ||
-        neighborIndex >= state.items.length
+      if (index === -1) return state;
+      const { collectionId } = state.items[index];
+      const step = direction === "right" ? 1 : -1;
+      let neighborIndex = index + step;
+      while (
+        neighborIndex >= 0 &&
+        neighborIndex < state.items.length &&
+        state.items[neighborIndex].collectionId !== collectionId
       ) {
+        neighborIndex += step;
+      }
+      if (neighborIndex < 0 || neighborIndex >= state.items.length) {
         return state;
       }
       const items = [...state.items];
