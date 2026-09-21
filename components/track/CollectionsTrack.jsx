@@ -24,6 +24,7 @@ const ScrollContainer = styled(Animated.ScrollView)`
 
 export const CollectionsTrack = memo(function CollectionsTrack({
   soloed = false,
+  isEditable = false,
   onChangeCollection = () => {},
   onPressActiveCollection = () => {},
   onAddCollection = () => {},
@@ -68,7 +69,7 @@ export const CollectionsTrack = memo(function CollectionsTrack({
     itemWidths,
     itemIds,
     itemSpacing: TRACK_GAP,
-    showAddButton: true,
+    showAddButton: isEditable,
     addButtonWidth: ITEM_HEIGHT,
     startAtEnd: false,
     onSettle: (index, { alreadyActive }) => {
@@ -80,9 +81,6 @@ export const CollectionsTrack = memo(function CollectionsTrack({
         onChangeCollection(collection.collectionId);
       }
     },
-    // A tap "from afar" doesn't choose the collection until the jump to
-    // centre it actually finishes - a swipe that happens to settle on a
-    // card never reaches here, only a genuine tap does (see useSnapTrack).
     onArrive: (index) => {
       const collection = collections[index];
       if (!collection) return;
@@ -132,12 +130,14 @@ export const CollectionsTrack = memo(function CollectionsTrack({
           </Animated.View>
         );
       })}
-      <AddItemCard
-        width={ITEM_HEIGHT}
-        active={isScrolling || activeIndex === ADD_INDEX}
-        inactiveOpacity={inactiveOpacity}
-        onPress={() => goToIndex(ADD_INDEX)}
-      />
+      {isEditable && (
+        <AddItemCard
+          width={ITEM_HEIGHT}
+          active={isScrolling || activeIndex === ADD_INDEX}
+          inactiveOpacity={inactiveOpacity}
+          onPress={() => goToIndex(ADD_INDEX)}
+        />
+      )}
     </ScrollContainer>
   );
 });

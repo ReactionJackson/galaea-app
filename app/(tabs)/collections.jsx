@@ -386,6 +386,7 @@ export default function CollectionScreen() {
               key={viewingCollectionId}
               collectionId={viewingCollectionId}
               editMode={editMode}
+              isEditable
               revealed={!collectionsVisible}
               onChangeItem={handleChangeItem}
               onPressActiveItem={handlePressActiveItem}
@@ -402,6 +403,7 @@ export default function CollectionScreen() {
           >
             <CollectionsTrack
               soloed={collectionsSoloed}
+              isEditable
               onChangeCollection={handleChangeCollection}
               onPressActiveCollection={handleChooseCollection}
             />

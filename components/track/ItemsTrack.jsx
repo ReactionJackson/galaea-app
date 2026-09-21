@@ -55,6 +55,7 @@ const EmptyRow = styled.View`
 export const ItemsTrack = memo(function ItemsTrack({
   collectionId,
   editMode = false,
+  isEditable = false,
   revealed = false,
   onChangeItem = () => {},
   onPressActiveItem = () => {},
@@ -64,6 +65,7 @@ export const ItemsTrack = memo(function ItemsTrack({
   onViewCollectionCard = () => {},
   onControlsChange = () => {},
 }) {
+  const locked = isEditable && editMode;
   const { state, dispatch } = useApp();
   const collection = state.collections.find(
     (c) => c.collectionId === collectionId,
@@ -79,7 +81,6 @@ export const ItemsTrack = memo(function ItemsTrack({
   const itemWidths = useItemCardSizes(items, ITEM_HEIGHT);
   const itemIds = useMemo(() => items.map((it) => it.itemId), [items]);
 
-  // null when neither bookend is centred; otherwise which one is.
   const [activeBookend, setActiveBookend] = useState("collection");
 
   const {
@@ -111,7 +112,7 @@ export const ItemsTrack = memo(function ItemsTrack({
         onPressActiveItem(item.itemId);
         if (process.env.EXPO_OS === "ios") {
           Haptics.impactAsync(
-            editMode
+            locked
               ? Haptics.ImpactFeedbackStyle.Light
               : Haptics.ImpactFeedbackStyle.Heavy,
           );
@@ -176,10 +177,10 @@ export const ItemsTrack = memo(function ItemsTrack({
   }, [activeBookend, onPressBack]);
 
   useEffect(() => {
-    if (!editMode) {
+    if (!locked) {
       setActiveBookend((current) => (current === "add" ? null : current));
     }
-  }, [editMode]);
+  }, [locked]);
 
   const handlePressCollectionCard = () => {
     if (activeBookend === "collection") return;
@@ -256,18 +257,20 @@ export const ItemsTrack = memo(function ItemsTrack({
         <CollectionCard
           thumbnails={collectionThumbnails}
           active
-          inactiveOpacity={editMode ? 0.1 : 0.5}
+          inactiveOpacity={locked ? 0.1 : 0.5}
           backgroundColor={collectionCardColor(collection?.color)}
           onPress={onPressBack}
-          disabled={editMode}
+          disabled={locked}
         />
-        <AddItemCard
-          width={EMPTY_CARD_WIDTH}
-          active={activeBookend === "add"}
-          inactiveOpacity={editMode ? 0.1 : 0.5}
-          onPress={handlePressAddBookend}
-          disabled={editMode}
-        />
+        {isEditable && (
+          <AddItemCard
+            width={EMPTY_CARD_WIDTH}
+            active={activeBookend === "add"}
+            inactiveOpacity={locked ? 0.1 : 0.5}
+            onPress={handlePressAddBookend}
+            disabled={locked}
+          />
+        )}
       </EmptyRow>
     );
   }
@@ -282,7 +285,7 @@ export const ItemsTrack = memo(function ItemsTrack({
         onScrollBeginDrag={handleScrollBeginDragAndReset}
         onScrollEndDrag={handleScrollEndDrag}
         onMomentumScrollEnd={handleMomentumScrollEnd}
-        scrollEnabled={!editMode}
+        scrollEnabled={!locked}
         snapToOffsets={offsets}
         decelerationRate="fast"
         onContentSizeChange={handleContentSizeChange}
@@ -307,30 +310,30 @@ export const ItemsTrack = memo(function ItemsTrack({
                 activeBookend == null &&
                 ((isScrolling && !isInternalScroll) || activeIndex === i)
               }
-              inactiveOpacity={editMode ? 0.1 : 0.5}
+              inactiveOpacity={locked ? 0.1 : 0.5}
               onPress={() => handlePressItem(i)}
-              disabled={editMode}
+              disabled={locked}
             />
             {i === 0 && (
               <BookendSlot style={{ right: firstItemWidth + TRACK_GAP }}>
                 <CollectionCard
                   thumbnails={collectionThumbnails}
                   active={activeBookend === "collection"}
-                  inactiveOpacity={editMode ? 0.1 : 0.5}
+                  inactiveOpacity={locked ? 0.1 : 0.5}
                   backgroundColor={collectionCardColor(collection?.color)}
                   onPress={handlePressCollectionCard}
-                  disabled={editMode}
+                  disabled={locked}
                 />
               </BookendSlot>
             )}
-            {i === items.length - 1 && (
+            {isEditable && i === items.length - 1 && (
               <BookendSlot style={{ left: lastItemWidth + TRACK_GAP }}>
                 <AddItemCard
                   width={EMPTY_CARD_WIDTH}
                   active={activeBookend === "add"}
-                  inactiveOpacity={editMode ? 0.1 : 0.5}
+                  inactiveOpacity={locked ? 0.1 : 0.5}
                   onPress={handlePressAddBookend}
-                  disabled={editMode}
+                  disabled={locked}
                 />
               </BookendSlot>
             )}
