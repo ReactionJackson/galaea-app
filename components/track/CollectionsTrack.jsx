@@ -6,6 +6,7 @@ import {
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
+import * as Haptics from "expo-haptics";
 import { memo, useMemo } from "react";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
@@ -25,6 +26,8 @@ const ScrollContainer = styled(Animated.ScrollView)`
 export const CollectionsTrack = memo(function CollectionsTrack({
   soloed = false,
   isEditable = false,
+  viewingCollectionId = null,
+  browsingItems = false,
   onChangeCollection = () => {},
   onPressActiveCollection = () => {},
   onAddCollection = () => {},
@@ -76,6 +79,9 @@ export const CollectionsTrack = memo(function CollectionsTrack({
       const collection = collections[index];
       if (!collection) return;
       if (alreadyActive) {
+        if (process.env.EXPO_OS === "ios") {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
         onPressActiveCollection(collection.collectionId);
       } else {
         onChangeCollection(collection.collectionId);
@@ -125,6 +131,9 @@ export const CollectionsTrack = memo(function CollectionsTrack({
               active={(isScrolling && !isInternalScroll) || activeIndex === i}
               inactiveOpacity={inactiveOpacity}
               backgroundColor={collectionCardColor(collection.color)}
+              flipped={
+                collection.collectionId === viewingCollectionId && browsingItems
+              }
               onPress={() => goToIndex(i)}
             />
           </Animated.View>

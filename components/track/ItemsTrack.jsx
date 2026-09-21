@@ -57,6 +57,7 @@ export const ItemsTrack = memo(function ItemsTrack({
   editMode = false,
   isEditable = false,
   revealed = false,
+  browsingItems = false,
   dimmedItemIds = [],
   onChangeItem = () => {},
   onPressActiveItem = () => {},
@@ -260,6 +261,7 @@ export const ItemsTrack = memo(function ItemsTrack({
           active
           inactiveOpacity={locked ? 0.1 : 0.5}
           backgroundColor={collectionCardColor(collection?.color)}
+          flipped={browsingItems}
           onPress={onPressBack}
           disabled={locked}
         />
@@ -325,6 +327,7 @@ export const ItemsTrack = memo(function ItemsTrack({
                     active={activeBookend === "collection"}
                     inactiveOpacity={locked ? 0.1 : 0.5}
                     backgroundColor={collectionCardColor(collection?.color)}
+                    flipped={browsingItems}
                     onPress={handlePressCollectionCard}
                     disabled={locked}
                   />

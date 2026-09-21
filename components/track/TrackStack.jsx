@@ -115,6 +115,7 @@ export function TrackStack({
           isEditable={isEditable}
           dimmedItemIds={dimmedItemIds}
           revealed={!backVisible}
+          browsingItems={browsingItems}
           onChangeItem={onChangeItem}
           onPressActiveItem={onPressActiveItem}
           onAddItem={handleAddItem}
@@ -133,6 +134,8 @@ export function TrackStack({
         <CollectionsTrack
           soloed={collectionsSoloed}
           isEditable={isEditable}
+          viewingCollectionId={viewingCollectionId}
+          browsingItems={browsingItems}
           onChangeCollection={onChangeCollection}
           onPressActiveCollection={handleChooseCollection}
         />
