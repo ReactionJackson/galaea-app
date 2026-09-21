@@ -57,6 +57,7 @@ export const ItemsTrack = memo(function ItemsTrack({
   editMode = false,
   isEditable = false,
   revealed = false,
+  dimmedItemIds = [],
   onChangeItem = () => {},
   onPressActiveItem = () => {},
   onAddItem = () => {},
@@ -297,48 +298,52 @@ export const ItemsTrack = memo(function ItemsTrack({
           alignItems: "center",
         }}
       >
-        {items.map((item, i) => (
-          <Animated.View
-            key={item.itemId}
-            layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
-            entering={FadeIn.duration(SLIDE_TRANSITION_DURATION)}
-            style={{ zIndex: activeIndex === i ? 1 : 0 }}
-          >
-            <ItemCard
-              cardImage={item.cardImage}
-              active={
-                activeBookend == null &&
-                ((isScrolling && !isInternalScroll) || activeIndex === i)
-              }
-              inactiveOpacity={locked ? 0.1 : 0.5}
-              onPress={() => handlePressItem(i)}
-              disabled={locked}
-            />
-            {i === 0 && (
-              <BookendSlot style={{ right: firstItemWidth + TRACK_GAP }}>
-                <CollectionCard
-                  thumbnails={collectionThumbnails}
-                  active={activeBookend === "collection"}
-                  inactiveOpacity={locked ? 0.1 : 0.5}
-                  backgroundColor={collectionCardColor(collection?.color)}
-                  onPress={handlePressCollectionCard}
-                  disabled={locked}
-                />
-              </BookendSlot>
-            )}
-            {isEditable && i === items.length - 1 && (
-              <BookendSlot style={{ left: lastItemWidth + TRACK_GAP }}>
-                <AddItemCard
-                  width={EMPTY_CARD_WIDTH}
-                  active={activeBookend === "add"}
-                  inactiveOpacity={locked ? 0.1 : 0.5}
-                  onPress={handlePressAddBookend}
-                  disabled={locked}
-                />
-              </BookendSlot>
-            )}
-          </Animated.View>
-        ))}
+        {items.map((item, i) => {
+          const dimmed = dimmedItemIds.includes(item.itemId);
+          return (
+            <Animated.View
+              key={item.itemId}
+              layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
+              entering={FadeIn.duration(SLIDE_TRANSITION_DURATION)}
+              style={{ zIndex: activeIndex === i ? 1 : 0 }}
+            >
+              <ItemCard
+                cardImage={item.cardImage}
+                active={
+                  !dimmed &&
+                  activeBookend == null &&
+                  ((isScrolling && !isInternalScroll) || activeIndex === i)
+                }
+                inactiveOpacity={dimmed || locked ? 0.1 : 0.5}
+                onPress={() => handlePressItem(i)}
+                disabled={locked}
+              />
+              {i === 0 && (
+                <BookendSlot style={{ right: firstItemWidth + TRACK_GAP }}>
+                  <CollectionCard
+                    thumbnails={collectionThumbnails}
+                    active={activeBookend === "collection"}
+                    inactiveOpacity={locked ? 0.1 : 0.5}
+                    backgroundColor={collectionCardColor(collection?.color)}
+                    onPress={handlePressCollectionCard}
+                    disabled={locked}
+                  />
+                </BookendSlot>
+              )}
+              {isEditable && i === items.length - 1 && (
+                <BookendSlot style={{ left: lastItemWidth + TRACK_GAP }}>
+                  <AddItemCard
+                    width={EMPTY_CARD_WIDTH}
+                    active={activeBookend === "add"}
+                    inactiveOpacity={locked ? 0.1 : 0.5}
+                    onPress={handlePressAddBookend}
+                    disabled={locked}
+                  />
+                </BookendSlot>
+              )}
+            </Animated.View>
+          );
+        })}
       </ScrollContainer>
     </TrackShiftWrap>
   );

@@ -31,7 +31,10 @@ export function PickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
   return (
     <Container>
       <TrackArea>
-        <TrackStack onPressActiveItem={handlePressActiveItem} />
+        <TrackStack
+          dimmedItemIds={attachedItemIds}
+          onPressActiveItem={handlePressActiveItem}
+        />
       </TrackArea>
     </Container>
   );

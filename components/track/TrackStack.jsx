@@ -49,6 +49,7 @@ function fadeItemsOut(itemsFade, onComplete) {
 export function TrackStack({
   isEditable = false,
   editMode = false,
+  dimmedItemIds = [],
   onPressActiveItem = () => {},
   onChangeItem = () => {},
   onAddItem = () => {},
@@ -112,6 +113,7 @@ export function TrackStack({
           collectionId={viewingCollectionId}
           editMode={editMode}
           isEditable={isEditable}
+          dimmedItemIds={dimmedItemIds}
           revealed={!backVisible}
           onChangeItem={onChangeItem}
           onPressActiveItem={onPressActiveItem}
