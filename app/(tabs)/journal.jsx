@@ -12,8 +12,9 @@ import { JournalTrack } from "@/components/track/JournalTrack";
 import { PickerTrack } from "@/components/track/PickerTrack";
 import { TrackTray } from "@/components/track/TrackTray";
 import { Colors } from "@/constants/theme";
-import { useApp } from "@/context/AppContext";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { resolveEntryGalleryPairs, useApp } from "@/context/AppContext";
+import { deleteDroppedImages } from "@/utils/images";
+import { Fragment, useRef, useState } from "react";
 import { View } from "react-native";
 import styled from "styled-components/native";
 
@@ -28,20 +29,15 @@ const STICKY_HEADER_HEIGHT = 70;
 
 function JournalScreen() {
   const { state, activeEntry, dispatch } = useApp();
-  const { editMode, cancelling, committed } = state;
-  const cancelTimerRef = useRef(null);
+  const { editMode } = state;
   const pageScrollRef = useRef(null);
   const pendingScrollItemIdRef = useRef(null);
   const [trayControls, setTrayControls] = useState({});
 
   // Derived state:
 
-  const textVisible = cancelling
-    ? !!committed.text
-    : !!(activeEntry.text || editMode);
-  const tagsVisible = cancelling
-    ? !!committed.tags.length
-    : !!(activeEntry.tags.length || editMode);
+  const textVisible = !!(activeEntry.text || editMode);
+  const tagsVisible = !!(activeEntry.tags.length || editMode);
 
   // Helpers:
 
@@ -67,22 +63,18 @@ function JournalScreen() {
 
   const handleToggleTag = (tagId) => dispatch({ type: "TOGGLE_TAG", tagId });
 
-  const handleEnterEdit = () => {
-    // If a cancel is already in flight, abort it and go straight to edit.
-    if (cancelTimerRef.current) {
-      clearTimeout(cancelTimerRef.current);
-      cancelTimerRef.current = null;
-      dispatch({ type: "COMPLETE_CANCEL" });
-    }
-    dispatch({ type: "ENTER_EDIT" });
-  };
+  const handleEnterEdit = () => dispatch({ type: "ENTER_EDIT" });
 
   const handleCancelEdit = () => {
-    dispatch({ type: "BEGIN_CANCEL" });
-    cancelTimerRef.current = setTimeout(() => {
-      cancelTimerRef.current = null;
-      dispatch({ type: "COMPLETE_CANCEL" });
-    }, 350);
+    if (state.draft) {
+      for (const { draftGallery, storedGallery } of resolveEntryGalleryPairs(
+        state.items,
+        state.draft.items,
+      )) {
+        deleteDroppedImages(draftGallery, storedGallery);
+      }
+    }
+    dispatch({ type: "CANCEL_EDIT" });
   };
 
   const handleSelectItem = (itemId) => {
@@ -98,13 +90,6 @@ function JournalScreen() {
       animated: true,
     });
   };
-
-  // Clean up any pending timer if the component unmounts mid-cancel.
-  useEffect(() => {
-    return () => {
-      if (cancelTimerRef.current) clearTimeout(cancelTimerRef.current);
-    };
-  }, []);
 
   // Render:
 
@@ -156,36 +141,33 @@ function JournalScreen() {
             <AnimatedSpacer visible={tagsVisible} height={25} />
 
             {activeEntry.items.map(
-              ({ itemId, entryId, isNew, text, tags, gallery }, i) => {
-                const itemVisible = !cancelling || !isNew || !!text;
-                return (
-                  <View
-                    key={`${itemId}-${String(entryId)}-${i}`}
-                    onLayout={(e) =>
-                      handleItemLayout(itemId, e.nativeEvent.layout)
-                    }
-                  >
-                    <AnimateHeight visible={itemVisible}>
-                      <CollectionItemBubble
-                        itemId={itemId}
-                        entryId={entryId}
-                        index={i}
-                        isNew={isNew}
-                        text={text}
-                        tagIds={tags}
-                        gallery={gallery}
-                      />
-                    </AnimateHeight>
-                    {i !== activeEntry.items.length - 1 && (
-                      <AnimatedSpacer visible={itemVisible} />
-                    )}
-                  </View>
-                );
-              },
+              ({ itemId, entryId, isNew, text, tags, gallery }, i) => (
+                <View
+                  key={`${itemId}-${String(entryId)}-${i}`}
+                  onLayout={(e) =>
+                    handleItemLayout(itemId, e.nativeEvent.layout)
+                  }
+                >
+                  <AnimateHeight visible>
+                    <CollectionItemBubble
+                      itemId={itemId}
+                      entryId={entryId}
+                      index={i}
+                      isNew={isNew}
+                      text={text}
+                      tagIds={tags}
+                      gallery={gallery}
+                    />
+                  </AnimateHeight>
+                  {i !== activeEntry.items.length - 1 && (
+                    <AnimatedSpacer visible />
+                  )}
+                </View>
+              ),
             )}
             <AnimatedSpacer visible={activeEntry.items.length > 0} />
 
-            {(editMode || cancelling) && (
+            {editMode && (
               <AnimateHeight
                 visible={editMode}
                 animateOnMount

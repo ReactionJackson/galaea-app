@@ -2,7 +2,7 @@ import {
   ITEM_ASPECT_RATIO,
   SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
-import { pickAndStoreImage } from "@/utils/images";
+import { deleteStoredImage, pickAndStoreImage } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
 import { memo, useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, useWindowDimensions } from "react-native";
@@ -148,7 +148,12 @@ export const Gallery = memo(function Gallery({
     setOpenItem(null);
   };
 
-  const handleClose = () => setOpenItem(null);
+  const handleClose = () => {
+    if (openItem?.mode === "edit" && openItem.index == null) {
+      deleteStoredImage(openItem.image);
+    }
+    setOpenItem(null);
+  };
 
   const handleChangeCaption = (index, text) => {
     onUpdateImage?.(index, { ...images[index], caption: text });

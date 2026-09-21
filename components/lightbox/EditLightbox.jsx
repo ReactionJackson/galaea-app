@@ -158,7 +158,7 @@ export function EditLightbox({
           Cancel
         </Button>
         <Button variant="primary" haptics="Medium" onPress={handleSave}>
-          Save
+          Confirm
         </Button>
       </Lightbox.Controls>
     </Lightbox>

@@ -17,7 +17,12 @@ import {
   SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
-import { pickAndStoreImage } from "@/utils/images";
+import {
+  collectItemImages,
+  deleteDroppedImages,
+  deleteStoredImage,
+  pickAndStoreImage,
+} from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { View, useWindowDimensions } from "react-native";
@@ -148,14 +153,18 @@ export default function CollectionScreen() {
     [dispatch, viewingCollectionId],
   );
 
-  const handleCancelAddItem = useCallback(
-    () => dispatch({ type: "CANCEL_ITEM_EDIT" }),
-    [dispatch],
-  );
+  const cancelItemEdit = useCallback(() => {
+    const baseline = items.find((it) => it.itemId === editingItemId) ?? null;
+    deleteDroppedImages(
+      collectItemImages(itemDraft),
+      collectItemImages(baseline),
+    );
+    dispatch({ type: "CANCEL_ITEM_EDIT" });
+  }, [items, editingItemId, itemDraft, dispatch]);
 
   const handleDelete = () => {
     if (editingItemId == null) {
-      dispatch({ type: "CANCEL_ITEM_EDIT" });
+      cancelItemEdit();
       return;
     }
     const collectionItems = items.filter(
@@ -197,12 +206,12 @@ export default function CollectionScreen() {
   const handlePressActiveItem = useCallback(
     (itemId) => {
       if (editMode && editingItemId === itemId) {
-        dispatch({ type: "CANCEL_ITEM_EDIT" });
+        cancelItemEdit();
       } else {
         dispatch({ type: "ENTER_ITEM_EDIT", itemId });
       }
     },
-    [editMode, editingItemId, dispatch],
+    [editMode, editingItemId, dispatch, cancelItemEdit],
   );
 
   const handleSave = () => {
@@ -211,6 +220,13 @@ export default function CollectionScreen() {
     const itemId = isNew
       ? Math.max(0, ...items.map((it) => it.itemId)) + 1
       : editingItemId;
+    const baseline = isNew
+      ? null
+      : (items.find((it) => it.itemId === editingItemId) ?? null);
+    deleteDroppedImages(
+      collectItemImages(baseline),
+      collectItemImages(itemDraft),
+    );
     dispatch({ type: "SAVE_ITEM_EDIT", itemId });
     if (isNew) setActiveItemId(itemId);
   };
@@ -245,7 +261,18 @@ export default function CollectionScreen() {
     setCoverImageToEdit(null);
   };
 
-  const handleCloseCover = () => setCoverImageToEdit(null);
+  const handleCloseCover = () => {
+    // A newly picked cover already has its file on disk before it's saved
+    // into the draft - closing without saving means it was never confirmed,
+    // so only delete when it hasn't landed in displayItem.coverImage yet.
+    if (
+      coverImageToEdit &&
+      coverImageToEdit.uri !== displayItem?.coverImage?.uri
+    ) {
+      deleteStoredImage(coverImageToEdit);
+    }
+    setCoverImageToEdit(null);
+  };
 
   const handleEditCover = () => {
     if (displayItem.coverImage) setCoverImageToEdit(displayItem.coverImage);
@@ -375,7 +402,7 @@ export default function CollectionScreen() {
               onChangeItem={handleChangeItem}
               onPressActiveItem={handlePressActiveItem}
               onAddItem={handleAddItem}
-              onCancelAddItem={handleCancelAddItem}
+              onCancelAddItem={cancelItemEdit}
               onPressBack={handleGoBackToCollections}
               onViewCollectionCard={handleViewCollectionCard}
               onControlsChange={setTrayControls}

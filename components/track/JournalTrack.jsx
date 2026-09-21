@@ -4,8 +4,9 @@ import {
   INDICATOR_DOT_SCALE_DURATION,
   TRACK_GAP,
 } from "@/constants/values";
-import { useApp } from "@/context/AppContext";
+import { resolveEntryGalleryPairs, useApp } from "@/context/AppContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
+import { deleteDroppedImages } from "@/utils/images";
 import * as Haptics from "expo-haptics";
 import { useEffect, useMemo } from "react";
 import Animated, {
@@ -175,13 +176,18 @@ export function JournalTrack({
     onCancelAdd: onCancelEdit,
   });
 
-  // No dependency array - the reported callbacks close over editMode and
-  // other state that doesn't itself trigger this effect, so they'd go
-  // stale if this only reran when activeIndex changed.
   useEffect(() => {
     onControlsChange({
       onCancel: () => goToIndex(activeIndex),
-      onSave: () => dispatch({ type: "SAVE_EDIT" }),
+      onSave: () => {
+        for (const { draftGallery, storedGallery } of resolveEntryGalleryPairs(
+          state.items,
+          state.draft?.items ?? [],
+        )) {
+          deleteDroppedImages(storedGallery, draftGallery);
+        }
+        dispatch({ type: "SAVE_EDIT" });
+      },
     });
   });
 

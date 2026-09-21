@@ -170,3 +170,65 @@ export async function reprocessIfOversized(image, kind) {
   }
   return { ...rest, ...optimized };
 }
+
+export function deleteStoredImage(image) {
+  const uri = typeof image === "string" ? image : image?.uri;
+  if (!uri) return;
+  try {
+    new File(uri).delete();
+    console.log("deleted image", uri);
+  } catch {
+    // Best-effort cleanup — a failed delete just leaves one orphaned file
+    // behind, not worth failing whatever's discarding this image over.
+    console.log("failed to delete image", uri);
+  }
+}
+
+// Deletes whichever images from `before` are no longer present in `after`
+// (by uri). Used whenever a draft resolves — cancelled or saved — to clean
+// up whatever stored files that resolution no longer needs: cancelling
+// diffs draft against the committed baseline it's reverting to, saving
+// diffs the old baseline against what actually got saved.
+export function deleteDroppedImages(before, after) {
+  const keep = new Set((after ?? []).map((img) => img?.uri).filter(Boolean));
+  for (const img of before ?? []) {
+    if (img?.uri && !keep.has(img.uri)) deleteStoredImage(img);
+  }
+}
+
+// Every stored image an item can reference — its own card art plus every
+// entry's gallery.
+export function collectItemImages(item) {
+  if (!item) return [];
+  const images = [item.cardImage, item.cardThumbnail, item.coverImage].filter(
+    Boolean,
+  );
+  for (const entry of item.entries ?? []) {
+    images.push(...(entry.gallery ?? []));
+  }
+  return images;
+}
+
+// One-time-per-launch sweep: deletes any file in storage no longer
+// referenced by any item. Catches whatever the forward-going cancel/save
+// cleanup can't, the pre-existing backlog, plus anything that still slips
+// through it later (a crash mid-edit, etc).
+export function purgeOrphanedImages(items) {
+  const referenced = new Set();
+  for (const item of items) {
+    for (const image of collectItemImages(item)) {
+      if (image?.uri) referenced.add(image.uri);
+    }
+  }
+  for (const entry of storageDir().list()) {
+    if (!referenced.has(entry.uri)) {
+      try {
+        entry.delete();
+        console.log("deleted orphaned image", entry.uri);
+      } catch {
+        // Best-effort — see deleteStoredImage.
+        console.log("failed to delete orphaned image", entry.uri);
+      }
+    }
+  }
+}

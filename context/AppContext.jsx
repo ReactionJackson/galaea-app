@@ -1,3 +1,4 @@
+import { purgeOrphanedImages } from "@/utils/images";
 import { reprocessLegacyImages } from "@/utils/reprocessLegacyImages";
 import { loadPersistedState, savePersistedState } from "@/utils/storage";
 import {
@@ -152,6 +153,13 @@ function applyCollectionColors(collections) {
 // entries; an existing one that got emptied out this way is removed from
 // them entirely, not left behind as a blank record. Either way it's left out
 // of cleanItems too, so the day stops referencing it.
+// Same rule both the day-level and item-level save paths need: no text
+// and no gallery images (tags alone don't count) means it isn't a real
+// entry.
+function hasEntryContent(entry) {
+  return !!entry.text?.trim() || (entry.gallery?.length ?? 0) > 0;
+}
+
 function reconcileItemEdits(items, draftItems, dayDate) {
   let nextItems = items;
 
@@ -190,9 +198,7 @@ function reconcileItemEdits(items, draftItems, dayDate) {
           gallery !== undefined ? gallery : (existingEntry?.gallery ?? []),
       };
 
-      const hasContent =
-        !!nextEntry.text.trim() || nextEntry.gallery.length > 0;
-      if (!hasContent) {
+      if (!hasEntryContent(nextEntry)) {
         if (existingEntry) {
           nextItems = nextItems.map((it2, i) =>
             i === itemIndex
@@ -223,6 +229,27 @@ function reconcileItemEdits(items, draftItems, dayDate) {
     .filter(Boolean);
 
   return { items: nextItems, cleanItems };
+}
+
+// Every touched entry in a day draft (gallery !== undefined) paired with
+// whatever gallery that same item/entry currently holds in the store, so
+// a caller can diff either direction before resolving the draft:
+// cancelling deletes draftGallery images missing from storedGallery,
+// saving deletes storedGallery images missing from draftGallery.
+export function resolveEntryGalleryPairs(items, draftItems) {
+  return draftItems
+    .filter((it) => it.gallery !== undefined)
+    .map((it) => {
+      const item = items.find((i) => i.itemId === it.itemId);
+      const existingEntry =
+        !it.isNew && it.entryId != null
+          ? item?.entries.find((e) => e.entryId === it.entryId)
+          : null;
+      return {
+        draftGallery: it.gallery,
+        storedGallery: existingEntry?.gallery ?? [],
+      };
+    });
 }
 
 // Used when an item's own entries are edited to remove content down to
@@ -257,7 +284,6 @@ const initialState = {
   committed: undefined,
   draft: null,
   editMode: false,
-  cancelling: false,
   tags: [],
   // Every collection an item can belong to — see migrateCollections above
   // for how existing installs get their first one.
@@ -293,25 +319,15 @@ function appReducer(state, action) {
         ...state,
         draft: deepClone(state.committed),
         editMode: true,
-        cancelling: false,
       };
 
-    // Phase 1 of cancel: exit edit mode so close animations start playing,
-    // but keep draft alive so the content is still rendered during the transition.
-    case "BEGIN_CANCEL":
-      return {
-        ...state,
-        editMode: false,
-        cancelling: true,
-      };
-
-    // Phase 2 of cancel: animations have finished — now clear the draft so
-    // activeEntry reverts to committed.
-    case "COMPLETE_CANCEL":
+    // Cancel: drop the draft and exit edit mode in one go, reverting
+    // straight back to committed.
+    case "CANCEL_EDIT":
       return {
         ...state,
         draft: null,
-        cancelling: false,
+        editMode: false,
       };
 
     // Save: promote draft → committed and persist to the entries list.
@@ -350,7 +366,6 @@ function appReducer(state, action) {
         ...state,
         draft: buildNewEntry(),
         editMode: true,
-        cancelling: false,
       };
 
     // Field-level mutations — all target draft only.
@@ -450,9 +465,7 @@ function appReducer(state, action) {
       const keptEntries = [];
       const removedEntryIds = [];
       for (const entry of state.itemDraft.entries) {
-        const hasContent =
-          !!entry.text?.trim() || (entry.gallery?.length ?? 0) > 0;
-        if (hasContent) {
+        if (hasEntryContent(entry)) {
           keptEntries.push(entry);
         } else {
           removedEntryIds.push(entry.entryId);
@@ -701,6 +714,8 @@ export function AppProvider({ children }) {
   const [ready, setReady] = useState(false);
   const persistTimerRef = useRef(null);
   const hasReprocessedRef = useRef(false);
+  const hasPurgedRef = useRef(false);
+  const [reprocessed, setReprocessed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -724,9 +739,20 @@ export function AppProvider({ children }) {
     hasReprocessedRef.current = true;
     reprocessLegacyImages(state.items, (patch) => {
       dispatch({ type: "APPLY_IMAGE_PATCHES", patches: [patch] });
-    });
+    }).then(() => setReprocessed(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+
+  // Purges any stored image no longer referenced by anything — run once
+  // reprocessing has settled (rather than alongside it) so it's reading the
+  // items store after every patch from that pass has actually landed, not a
+  // stale pre-reprocess snapshot.
+  useEffect(() => {
+    if (!reprocessed || hasPurgedRef.current) return;
+    hasPurgedRef.current = true;
+    purgeOrphanedImages(state.items);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reprocessed]);
 
   // Persists the actual content whenever it changes — not on every keystroke
   // of an in-progress edit, since drafts aren't part of what's saved anyway
