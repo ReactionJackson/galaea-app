@@ -7,6 +7,12 @@ const Content = styled.View`
   margin-bottom: 30px;
 `;
 
+const HeaderWrap = styled.View`
+  flex-direction: row;
+  margin-bottom: 5px;
+  gap: 10px;
+`;
+
 function formatEntryDate(dateString) {
   const date = new Date(dateString);
   const day = String(date.getDate()).padStart(2, "0");
@@ -28,13 +34,14 @@ export function ItemEntry({
 
   return (
     <Content>
-      <ThemedText type="subtitle" style={{ marginBottom: 5 }}>
-        {dateText}
-        <ThemedText type="subtitle" color="faded">
-          {" "}
+      <HeaderWrap>
+        <ThemedText type="subtitle">
           Entry {String(entryNumber).padStart(2, "0")}
         </ThemedText>
-      </ThemedText>
+        <ThemedText type="subtitle" color="faded">
+          {dateText}
+        </ThemedText>
+      </HeaderWrap>
       <EntryFields
         text={text}
         tagIds={tagIds}

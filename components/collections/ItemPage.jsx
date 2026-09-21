@@ -15,6 +15,7 @@ import { useWindowDimensions } from "react-native";
 
 export function ItemPage({
   item,
+  collectionName,
   editMode,
   contentKey,
   coverImageToEdit,
@@ -61,15 +62,7 @@ export function ItemPage({
           editable={editMode}
         />
         <PageHeader.Meta>
-          <ThemedText
-            type="subtitle"
-            color={item.entries.length === 0 ? "faded" : ""}
-          >
-            {item.entries.length === 0
-              ? "No"
-              : String(item.entries.length).padStart(2, "0")}{" "}
-            {item.entries.length === 1 ? "Entry" : "Entries"}
-          </ThemedText>
+          <ThemedText type="subtitle">{collectionName} Collection</ThemedText>
         </PageHeader.Meta>
       </PageHeader>
       <FadeInOnMount>

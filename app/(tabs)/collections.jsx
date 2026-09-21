@@ -71,6 +71,11 @@ export default function CollectionScreen() {
               ?.entryNumber ?? sorted.length - i,
         }))
     : [];
+  const displayItemCollectionName = displayItem
+    ? (state.collections.find(
+        (c) => c.collectionId === displayItem.collectionId,
+      )?.name ?? "")
+    : "";
 
   const updateDraft = (changes) =>
     dispatch({ type: "UPDATE_ITEM_DRAFT", changes });
@@ -227,6 +232,7 @@ export default function CollectionScreen() {
       ) : (
         <ItemPage
           item={displayItem}
+          collectionName={displayItemCollectionName}
           editMode={editMode}
           contentKey={contentKey}
           coverImageToEdit={coverImageToEdit}
