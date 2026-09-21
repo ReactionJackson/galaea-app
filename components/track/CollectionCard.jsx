@@ -22,8 +22,8 @@ const Card = styled.View`
   height: ${ITEM_HEIGHT}px;
   border-radius: 20px;
   overflow: hidden;
-  border: 5px solid ${({ $backgroundColor }) => $backgroundColor};
-  background-color: ${({ $backgroundColor }) => $backgroundColor};
+  border: 5px solid ${Colors.white};
+  background-color: ${Colors.white};
 `;
 
 const Slider = styled(Animated.View)`
@@ -61,7 +61,6 @@ export function CollectionCard({
   thumbnails = [],
   active = true,
   inactiveOpacity = 1,
-  backgroundColor = Colors.white,
   flipped = false,
   onPress,
   disabled,
@@ -76,7 +75,7 @@ export function CollectionCard({
   return (
     <Pressable onPress={onPress} disabled={disabled}>
       <Animated.View style={style}>
-        <Card $backgroundColor={backgroundColor}>
+        <Card>
           <Slider style={sliderStyle}>
             <ThumbnailFace>
               {Array.from({ length: 4 }).map((_, i) => {

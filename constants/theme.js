@@ -118,7 +118,3 @@ export function cardShadow(radius = 8, opacity = 0.12) {
     shadow-radius: ${radius}px;
   `;
 }
-
-export function collectionCardColor(color) {
-  return color && color !== "default" ? color : Colors.white;
-}

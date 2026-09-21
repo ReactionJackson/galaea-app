@@ -50,15 +50,6 @@ function sanitizeItems(items) {
 
 const DEFAULT_COLLECTION_ID = 1;
 
-// The actual background colour each named collection renders with (see
-// CollectionCard) - kept as one lookup so the one-off migrations below and
-// the reconciliation pass that keeps already-migrated devices in sync both
-// read from the same place.
-const COLLECTION_COLORS = {
-  Games: "dodgerblue",
-  "Board Games": "mediumseagreen",
-};
-
 // Runs once, at hydrate time. Every install predating collections has items
 // with no collectionId at all — rather than the storage layer's usual
 // approach of just moving on to a fresh key and leaving old data unread,
@@ -77,7 +68,6 @@ function migrateCollections(collections, items) {
       {
         collectionId: DEFAULT_COLLECTION_ID,
         name: "Games",
-        color: COLLECTION_COLORS.Games,
       },
       ...(collections ?? []),
     ],
@@ -104,7 +94,6 @@ function migrateBoardGamesCollection(collections, items) {
       {
         collectionId: boardGamesId,
         name: "Board Games",
-        color: COLLECTION_COLORS["Board Games"],
       },
     ],
     items: items.map((item) =>
@@ -113,18 +102,6 @@ function migrateBoardGamesCollection(collections, items) {
         : item,
     ),
   };
-}
-
-// Runs on every hydrate, not just once - the two migrations above are
-// guarded to fire only a single time each, so a colour changed here after
-// they've already run on a device would otherwise never reach it. Cheap and
-// a no-op once every collection's colour already matches.
-function applyCollectionColors(collections) {
-  return collections.map((c) =>
-    COLLECTION_COLORS[c.name] && c.color !== COLLECTION_COLORS[c.name]
-      ? { ...c, color: COLLECTION_COLORS[c.name] }
-      : c,
-  );
 }
 
 // The one process any item-entry mutation must go through to actually reach
@@ -632,14 +609,11 @@ function appReducer(state, action) {
         migrated.collections,
         migrated.items,
       );
-      const coloredCollections = applyCollectionColors(
-        withBoardGames.collections,
-      );
       return {
         ...state,
         entries: safeEntries,
         items: sanitizeItems(withBoardGames.items),
-        collections: coloredCollections,
+        collections: withBoardGames.collections,
         tags: tags ?? [],
         committed: safeEntries[safeEntries.length - 1],
       };

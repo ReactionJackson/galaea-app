@@ -1,4 +1,3 @@
-import { collectionCardColor } from "@/constants/theme";
 import {
   ITEM_HEIGHT,
   SLIDE_TRANSITION_DURATION,
@@ -128,7 +127,6 @@ export const CollectionsTrack = memo(function CollectionsTrack({
               thumbnails={thumbnails}
               active={(isScrolling && !isInternalScroll) || activeIndex === i}
               inactiveOpacity={inactiveOpacity}
-              backgroundColor={collectionCardColor(collection.color)}
               flipped={
                 collection.collectionId === viewingCollectionId && browsingItems
               }

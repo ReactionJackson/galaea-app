@@ -1,4 +1,3 @@
-import { collectionCardColor } from "@/constants/theme";
 import {
   EMPTY_CARD_WIDTH,
   ITEM_HEIGHT,
@@ -70,9 +69,6 @@ export const ItemsTrack = memo(function ItemsTrack({
 }) {
   const locked = isEditable && editMode;
   const { state, dispatch } = useApp();
-  const collection = state.collections.find(
-    (c) => c.collectionId === collectionId,
-  );
   const items = useMemo(
     () => state.items.filter((item) => item.collectionId === collectionId),
     [state.items, collectionId],
@@ -258,7 +254,6 @@ export const ItemsTrack = memo(function ItemsTrack({
           thumbnails={collectionThumbnails}
           active
           inactiveOpacity={locked ? 0.1 : 0.5}
-          backgroundColor={collectionCardColor(collection?.color)}
           flipped={browsingItems}
           onPress={onPressBack}
           disabled={locked}
@@ -306,7 +301,6 @@ export const ItemsTrack = memo(function ItemsTrack({
             thumbnails={collectionThumbnails}
             active={activeBookend === "collection"}
             inactiveOpacity={locked ? 0.1 : 0.5}
-            backgroundColor={collectionCardColor(collection?.color)}
             flipped={browsingItems}
             onPress={handlePressCollectionCard}
             disabled={locked}
