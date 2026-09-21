@@ -21,7 +21,7 @@ function formatEntryDate(dateString) {
   };
 }
 
-export function CollectionItem({
+export function ItemEntry({
   date,
   text,
   tagIds,

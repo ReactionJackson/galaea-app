@@ -69,6 +69,7 @@ export const TrackStack = forwardRef(function TrackStack(
 ) {
   const [viewingCollectionId, setViewingCollectionId] = useState(null);
   const [pendingItemId, setPendingItemId] = useState(null);
+  const [pendingAddItem, setPendingAddItem] = useState(false);
   const [collectionsSoloed, setCollectionsSoloed] = useState(false);
   const [browsingItems, setBrowsingItems] = useState(false);
   const [backVisible, setBackVisible] = useState(true);
@@ -94,6 +95,15 @@ export const TrackStack = forwardRef(function TrackStack(
   const handleChooseCollection = useCallback((collectionId, itemId = null) => {
     setViewingCollectionId(collectionId);
     setPendingItemId(itemId);
+    setPendingAddItem(false);
+    setCollectionsSoloed(true);
+    setBrowsingItems(true);
+  }, []);
+
+  const handleAddItemToCollection = useCallback((collectionId) => {
+    setViewingCollectionId(collectionId);
+    setPendingItemId(null);
+    setPendingAddItem(true);
     setCollectionsSoloed(true);
     setBrowsingItems(true);
   }, []);
@@ -113,9 +123,10 @@ export const TrackStack = forwardRef(function TrackStack(
     ref,
     () => ({
       viewCollectionItem: handleChooseCollection,
+      addItemToCollection: handleAddItemToCollection,
       reset: handleResetInstant,
     }),
-    [handleChooseCollection, handleResetInstant],
+    [handleChooseCollection, handleAddItemToCollection, handleResetInstant],
   );
 
   const handleAddItem = useCallback(
@@ -138,6 +149,7 @@ export const TrackStack = forwardRef(function TrackStack(
           key={viewingCollectionId}
           collectionId={viewingCollectionId}
           initialItemId={pendingItemId}
+          initialAddItem={pendingAddItem}
           editMode={editMode}
           isEditable={isEditable}
           dimmedItemIds={dimmedItemIds}

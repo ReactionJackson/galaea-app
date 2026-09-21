@@ -8,7 +8,7 @@ import {
 import { useApp } from "@/context/AppContext";
 import { memo } from "react";
 import styled from "styled-components/native";
-import { CollectionItemHero } from "./CollectionItemHero";
+import { ItemHero } from "./ItemHero";
 import { EntryFields } from "./shared";
 
 const ShadowWrap = styled.View`
@@ -42,7 +42,7 @@ const Content = styled.View`
   background-color: ${Colors.background};
 `;
 
-export const CollectionItemBubble = memo(function CollectionItemBubble({
+export const ItemEntryBubble = memo(function ItemEntryBubble({
   itemId = 1,
   entryId = null,
   index,
@@ -77,7 +77,7 @@ export const CollectionItemBubble = memo(function CollectionItemBubble({
     <ShadowWrap>
       <Container>
         <Header>
-          <CollectionItemHero
+          <ItemHero
             height={HERO_HEIGHT}
             spacing={15}
             cardImage={cardImage}

@@ -1,11 +1,13 @@
 import {
   ITEM_ASPECT_RATIO,
   SLIDE_TRANSITION_DURATION,
+  TRACK_GAP,
 } from "@/constants/values";
+import { usePagedScrollWidth } from "@/hooks/usePagedScrollWidth";
 import { deleteStoredImage, pickAndStoreImage } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
 import { memo, useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -24,7 +26,6 @@ import {
   CAPTION_REVEAL_HEIGHT,
   CaptionTray,
   EditableView,
-  GALLERY_ITEM_GAP,
   GallerySlot,
   Item,
 } from "./shared";
@@ -74,14 +75,15 @@ export const Gallery = memo(function Gallery({
   const [transitioning, setTransitioning] = useState(false);
   const [openItem, setOpenItem] = useState(null); // { mode: "edit" | "view", image, index }
 
-  const { width: screenWidth } = useWindowDimensions();
-  const containerWidth = screenWidth - horizontalPadding;
+  const { containerWidth, scrollInterval } = usePagedScrollWidth(
+    horizontalPadding,
+    TRACK_GAP,
+  );
   const scrollRef = useRef(null);
   const revealShift = useSharedValue(0);
 
   const trackHeight = Math.round(containerWidth / ITEM_ASPECT_RATIO);
   const itemCount = images.length + (editMode ? 1 : 0);
-  const scrollInterval = containerWidth + GALLERY_ITEM_GAP;
   const onAddTile = editMode && activeIndex >= images.length;
   const revealContainerAnimatedStyle = useAnimatedStyle(() => ({
     height: trackHeight + revealShift.value,
@@ -202,7 +204,7 @@ export const Gallery = memo(function Gallery({
           onScroll={handleScroll}
           scrollEventThrottle={16}
           contentContainerStyle={{
-            gap: GALLERY_ITEM_GAP,
+            gap: TRACK_GAP,
             paddingInlineStart: 20,
             paddingInlineEnd: 20,
           }}

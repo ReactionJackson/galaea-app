@@ -54,6 +54,7 @@ const EmptyRow = styled.View`
 export const ItemsTrack = memo(function ItemsTrack({
   collectionId,
   initialItemId = null,
+  initialAddItem = false,
   editMode = false,
   isEditable = false,
   revealed = false,
@@ -131,6 +132,20 @@ export const ItemsTrack = memo(function ItemsTrack({
     onCancelAddItem();
   };
 
+  // Shared by the bookend itself (tapped directly, already in this track)
+  // and the reveal effect below (arriving here from an "Add" press on the
+  // overview page, before the track has even been seen). Guards against a
+  // -1 lastIndex when the collection has no items yet, rather than trying
+  // to scroll to one.
+  const activateAddBookend = () => {
+    const lastIndex = items.length - 1;
+    if (lastIndex >= 0 && activeIndex !== lastIndex) {
+      goToIndex(lastIndex, { haptic: false });
+    }
+    setActiveBookend("add");
+    onAddItem();
+  };
+
   useEffect(() => {
     onControlsChange({
       onCancel: () => {
@@ -150,9 +165,14 @@ export const ItemsTrack = memo(function ItemsTrack({
   const hasArrivedRef = useRef(false);
 
   useEffect(() => {
-    if (!revealed || items.length === 0) return;
+    if (!revealed) return;
     onViewCollectionCard();
     hasArrivedRef.current = true;
+    if (initialAddItem) {
+      activateAddBookend();
+      return;
+    }
+    if (items.length === 0) return;
     setActiveBookend(null);
     const targetIndex = Math.max(
       0,
@@ -192,10 +212,7 @@ export const ItemsTrack = memo(function ItemsTrack({
       return;
     }
     triggerHaptics("Light");
-    const lastIndex = items.length - 1;
-    if (activeIndex !== lastIndex) goToIndex(lastIndex, { haptic: false });
-    setActiveBookend("add");
-    onAddItem();
+    activateAddBookend();
   };
 
   const handleScrollBeginDragAndReset = () => {

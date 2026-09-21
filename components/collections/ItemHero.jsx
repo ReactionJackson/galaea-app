@@ -64,7 +64,7 @@ const EditOverlay = styled.View`
   align-items: center;
 `;
 
-export function CollectionItemHero({
+export function ItemHero({
   height,
   spacing = 0,
   cardImage,

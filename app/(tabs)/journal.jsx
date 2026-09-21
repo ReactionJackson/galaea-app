@@ -1,4 +1,4 @@
-import { CollectionItemBubble } from "@/components/collection-item/CollectionItemBubble";
+import { ItemEntryBubble } from "@/components/collections/ItemEntryBubble";
 import {
   AnimateHeight,
   AnimatedSpacer,
@@ -158,7 +158,7 @@ function JournalScreen() {
                   }
                 >
                   <AnimateHeight visible>
-                    <CollectionItemBubble
+                    <ItemEntryBubble
                       itemId={itemId}
                       entryId={entryId}
                       index={i}

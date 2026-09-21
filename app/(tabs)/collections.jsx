@@ -1,19 +1,10 @@
-import { CollectionItem } from "@/components/collection-item/CollectionItem";
-import { CollectionItemHero } from "@/components/collection-item/CollectionItemHero";
-import { AnimatedSpacer } from "@/components/interface/AnimateHeight";
-import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
-import { ThemedText } from "@/components/interface/ThemedText";
-import { EditLightbox } from "@/components/lightbox/EditLightbox";
-import { PageHeader } from "@/components/page/PageHeader";
-import { PageScroll } from "@/components/page/PageScroll";
+import { ItemPage } from "@/components/collections/ItemPage";
+import { OverviewPage } from "@/components/collections/OverviewPage";
 import { TrackStack } from "@/components/track/TrackStack";
 import { TrackTray } from "@/components/track/TrackTray";
 import { Colors } from "@/constants/theme";
-import {
-  COLLECTION_HERO_HEIGHT,
-  COLLECTION_HERO_SPACING,
-} from "@/constants/values";
 import { useApp } from "@/context/AppContext";
+import { triggerHaptics } from "@/utils/haptics";
 import {
   collectItemImages,
   deleteDroppedImages,
@@ -21,8 +12,8 @@ import {
   pickAndStoreImage,
 } from "@/utils/images";
 import * as ImagePicker from "expo-image-picker";
-import { Fragment, useCallback, useState } from "react";
-import { View, useWindowDimensions } from "react-native";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useRef, useState } from "react";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -52,23 +43,23 @@ export default function CollectionScreen() {
   const { items, itemDraft, editingItemId } = state;
   const editMode = !!itemDraft;
 
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [activeItemId, setActiveItemId] = useState(items[0]?.itemId);
   const [coverImageToEdit, setCoverImageToEdit] = useState(null);
   const [trayControls, setTrayControls] = useState({});
   const [contentCollectionId, setContentCollectionId] = useState(
     () => state.collections[0]?.collectionId ?? null,
   );
-
-  const collectionStub = editMode
+  const trackStackRef = useRef(null);
+  const activeCollection = editMode
     ? null
     : state.collections.find((c) => c.collectionId === contentCollectionId);
+  const showOverviewPage = !!activeCollection;
   const activeItem = itemsById[activeItemId] ?? items[0];
   const displayItem = itemDraft ?? activeItem;
   const contentKey = editMode
     ? (editingItemId ?? "new-item")
-    : collectionStub
-      ? `collection-${collectionStub.collectionId}`
+    : showOverviewPage
+      ? `collection-${activeCollection.collectionId}`
       : activeItemId;
   const orderedEntries = displayItem
     ? [...displayItem.entries].sort(
@@ -121,6 +112,22 @@ export default function CollectionScreen() {
   const handleChangeCollection = useCallback((collectionId) => {
     setContentCollectionId(collectionId);
   }, []);
+
+  const handlePressRowItem = useCallback((item) => {
+    triggerHaptics("Light");
+    trackStackRef.current?.viewCollectionItem(item.collectionId, item.itemId);
+  }, []);
+
+  const handlePressAddRow = useCallback((collectionId) => {
+    triggerHaptics("Light");
+    trackStackRef.current?.addItemToCollection(collectionId);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      trackStackRef.current?.reset();
+    }, []),
+  );
 
   const handleChangeItem = useCallback((itemId) => {
     setActiveItemId(itemId);
@@ -201,106 +208,36 @@ export default function CollectionScreen() {
 
   const handleRemoveCover = () => updateDraft({ coverImage: null });
 
-  if (!displayItem && !collectionStub) return <Container />;
+  if (!displayItem && !showOverviewPage) return <Container />;
 
   return (
     <Container>
-      <PageScroll
-        resetKey={contentKey}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
-      >
-        {collectionStub ? (
-          <>
-            <PageHeader gap={7} style={{ marginBottom: 10 }}>
-              <PageHeader.Title
-                value={`${collectionStub.name} Collection`}
-                editable={false}
-                onChangeText={() => {}}
-              />
-            </PageHeader>
-            <View
-              style={{
-                height: screenHeight,
-                marginHorizontal: -20,
-                backgroundColor:
-                  collectionStub.name === "Games"
-                    ? "dodgerblue"
-                    : "mediumseagreen",
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <CollectionItemHero
-              height={COLLECTION_HERO_HEIGHT}
-              spacing={COLLECTION_HERO_SPACING}
-              cardImage={displayItem.cardImage}
-              coverImage={displayItem.coverImage}
-              editable={editMode}
-              onPressCard={handlePickCard}
-              onPressCover={handlePickCover}
-              onEditCover={handleEditCover}
-              onRemoveCover={handleRemoveCover}
-            />
-
-            <EditLightbox
-              image={coverImageToEdit}
-              onClose={handleCloseCover}
-              onSave={handleSaveCover}
-              targetAspectRatio={screenWidth / COLLECTION_HERO_HEIGHT}
-            />
-
-            <PageHeader gap={7} style={{ marginBottom: 10 }}>
-              <PageHeader.Title
-                key={editMode ? "editing" : "display"}
-                value={
-                  !editMode && !displayItem.title
-                    ? "New Item"
-                    : displayItem.title
-                }
-                placeholder="New Item"
-                onChangeText={(title) => updateDraft({ title })}
-                editable={editMode}
-              />
-              <PageHeader.Meta>
-                <ThemedText
-                  type="subtitle"
-                  color={displayItem.entries.length === 0 ? "faded" : ""}
-                >
-                  {displayItem.entries.length === 0
-                    ? "No"
-                    : String(displayItem.entries.length).padStart(2, "0")}{" "}
-                  {displayItem.entries.length === 1 ? "Entry" : "Entries"}
-                </ThemedText>
-              </PageHeader.Meta>
-            </PageHeader>
-
-            <FadeInOnMount>
-              <Fragment key={contentKey}>
-                {orderedEntries.map((entry) => (
-                  <CollectionItem
-                    key={entry.entryId}
-                    editable={editMode}
-                    date={entry.date}
-                    text={entry.text}
-                    tagIds={entry.tags}
-                    gallery={entry.gallery}
-                    onUpdate={(changes) =>
-                      dispatch({
-                        type: "UPDATE_ITEM_DRAFT_ENTRY",
-                        entryId: entry.entryId,
-                        changes,
-                      })
-                    }
-                  />
-                ))}
-
-                <AnimatedSpacer visible={editMode} height={50} />
-              </Fragment>
-            </FadeInOnMount>
-          </>
-        )}
-      </PageScroll>
+      {showOverviewPage ? (
+        <OverviewPage
+          collection={activeCollection}
+          items={items}
+          onPressItem={handlePressRowItem}
+          onPressAdd={handlePressAddRow}
+        />
+      ) : (
+        <ItemPage
+          item={displayItem}
+          editMode={editMode}
+          contentKey={contentKey}
+          coverImageToEdit={coverImageToEdit}
+          orderedEntries={orderedEntries}
+          onPressCard={handlePickCard}
+          onPressCover={handlePickCover}
+          onEditCover={handleEditCover}
+          onRemoveCover={handleRemoveCover}
+          onCloseCover={handleCloseCover}
+          onSaveCover={handleSaveCover}
+          onChangeTitle={(title) => updateDraft({ title })}
+          onUpdateEntry={(entryId, changes) =>
+            dispatch({ type: "UPDATE_ITEM_DRAFT_ENTRY", entryId, changes })
+          }
+        />
+      )}
 
       <TrackTray
         editMode={editMode}
@@ -311,6 +248,7 @@ export default function CollectionScreen() {
         {...trayControls}
       >
         <TrackStack
+          ref={trackStackRef}
           isEditable
           editMode={editMode}
           onPressActiveItem={handlePressActiveItem}

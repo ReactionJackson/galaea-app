@@ -2,8 +2,8 @@ import { Tag } from "@/components/tags/Tag";
 import { FADE_TRANSITION_DURATION } from "@/constants/values";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { InteractButton } from "../interface/InteractButton";
 import { ArrowIcon } from "../interface/icons/ArrowIcon";
+import { InteractButton } from "../interface/InteractButton";
 import { ThemedText } from "../interface/ThemedText";
 
 const Row = styled(Animated.View)`

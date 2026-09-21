@@ -4,7 +4,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import Animated, { Easing } from "react-native-reanimated";
 import styled from "styled-components/native";
 
-export const GALLERY_ITEM_GAP = 10;
 export const GALLERY_ITEM_RADIUS = 15;
 export const CAPTION_REVEAL_HEIGHT = 60;
 export const CAPTION_REVEAL_EASING = Easing.out(Easing.quad);

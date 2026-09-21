@@ -72,7 +72,7 @@ export function AddItemCard({
     >
       <Pressable onPress={onPress} disabled={disabled}>
         <EmptyCard width={width} style={style}>
-          <CrossIcon size={18} color={Colors.black} />
+          <CrossIcon size={18} color={Colors.text} />
         </EmptyCard>
       </Pressable>
     </Animated.View>
