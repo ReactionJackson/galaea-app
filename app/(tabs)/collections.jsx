@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
 import { CollectionsTrack } from "@/components/track/CollectionsTrack";
 import { ItemsTrack } from "@/components/track/ItemsTrack";
+import { TrackStack } from "@/components/track/TrackStack";
 import { TrackTray } from "@/components/track/TrackTray";
 import { Colors } from "@/constants/theme";
 import {
@@ -26,7 +27,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { View, useWindowDimensions } from "react-native";
-import Animated, {
+import {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -37,19 +38,6 @@ import styled from "styled-components/native";
 const Container = styled.View`
   flex: 1;
   background-color: ${Colors.background};
-`;
-
-const TrackStack = styled.View`
-  width: 100%;
-  height: 100%;
-`;
-
-const TrackLayer = styled(Animated.View)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 `;
 
 async function pickImageAsset() {
@@ -390,7 +378,7 @@ export default function CollectionScreen() {
         {...trayControls}
       >
         <TrackStack>
-          <TrackLayer
+          <TrackStack.Layer
             style={itemsStyle}
             pointerEvents={viewingCollectionId ? "auto" : "none"}
           >
@@ -407,8 +395,8 @@ export default function CollectionScreen() {
               onViewCollectionCard={handleViewCollectionCard}
               onControlsChange={setTrayControls}
             />
-          </TrackLayer>
-          <TrackLayer
+          </TrackStack.Layer>
+          <TrackStack.Layer
             style={{ opacity: collectionsVisible ? 1 : 0 }}
             pointerEvents={viewingCollectionId ? "none" : "auto"}
           >
@@ -417,7 +405,7 @@ export default function CollectionScreen() {
               onChangeCollection={handleChangeCollection}
               onPressActiveCollection={handleChooseCollection}
             />
-          </TrackLayer>
+          </TrackStack.Layer>
         </TrackStack>
       </TrackTray>
     </Container>
