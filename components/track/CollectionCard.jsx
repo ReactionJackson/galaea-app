@@ -89,10 +89,8 @@ export function CollectionCard({
               })}
             </ThumbnailFace>
             <BackFace>
-              <ArrowIcon rotation={-90} color={Colors.white} />
-              <ThemedText type="caption" color={Colors.white}>
-                Back
-              </ThemedText>
+              <ArrowIcon rotation={-90} />
+              <ThemedText type="caption">Back</ThemedText>
             </BackFace>
           </Slider>
         </Card>

@@ -1,7 +1,7 @@
 import { TrackStack } from "@/components/track/TrackStack";
 import { Colors } from "@/constants/theme";
 import { ITEM_HEIGHT } from "@/constants/values";
-import { useCallback } from "react";
+import { forwardRef, useCallback } from "react";
 import styled from "styled-components/native";
 
 const SCROLL_SLACK = 20;
@@ -19,7 +19,10 @@ const TrackArea = styled.View`
   height: ${ITEM_HEIGHT + SCROLL_SLACK}px;
 `;
 
-export function PickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
+export const PickerTrack = forwardRef(function PickerTrack(
+  { attachedItemIds = [], onSelect = () => {} },
+  ref,
+) {
   const handlePressActiveItem = useCallback(
     (itemId) => {
       if (attachedItemIds.includes(itemId)) return;
@@ -32,10 +35,11 @@ export function PickerTrack({ attachedItemIds = [], onSelect = () => {} }) {
     <Container>
       <TrackArea>
         <TrackStack
+          ref={ref}
           dimmedItemIds={attachedItemIds}
           onPressActiveItem={handlePressActiveItem}
         />
       </TrackArea>
     </Container>
   );
-}
+});

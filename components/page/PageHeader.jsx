@@ -26,7 +26,7 @@ const Content = styled.View`
 const TitleContainer = styled.View`
   width: 100%;
   height: 28px;
-  margin: -4px 0;
+  margin: -4px 0 -4px -2px;
 `;
 
 const Meta = styled.View`
@@ -60,8 +60,8 @@ function Title({ value, placeholder, onChangeText, editable }) {
   );
 }
 
-function Badge({ children }) {
-  return <BadgeCircle>{children}</BadgeCircle>;
+function Badge({ children, ...rest }) {
+  return <BadgeCircle {...rest}>{children}</BadgeCircle>;
 }
 Badge.displayName = "PageHeader.Badge";
 

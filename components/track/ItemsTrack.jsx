@@ -35,7 +35,7 @@ const ScrollContainer = styled(Animated.ScrollView)`
   height: 100%;
 `;
 
-const BookendSlot = styled.View`
+const BookendSlot = styled(Animated.View)`
   position: absolute;
   top: 0;
   bottom: 0;
@@ -54,6 +54,7 @@ const EmptyRow = styled.View`
 
 export const ItemsTrack = memo(function ItemsTrack({
   collectionId,
+  initialItemId = null,
   editMode = false,
   isEditable = false,
   revealed = false,
@@ -157,7 +158,15 @@ export const ItemsTrack = memo(function ItemsTrack({
     onViewCollectionCard();
     hasArrivedRef.current = true;
     setActiveBookend(null);
-    onChangeItem(items[0].itemId);
+    const targetIndex = Math.max(
+      0,
+      initialItemId ? items.findIndex((it) => it.itemId === initialItemId) : 0,
+    );
+    if (targetIndex === activeIndex) {
+      onChangeItem(items[targetIndex].itemId);
+    } else {
+      goToIndex(targetIndex, { haptic: false });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealed]);
 
@@ -212,6 +221,10 @@ export const ItemsTrack = memo(function ItemsTrack({
   const lastItemWidth = itemWidths[itemWidths.length - 1] ?? 0;
   const leadingShift = firstItemWidth / 2 + TRACK_GAP + ITEM_HEIGHT / 2;
   const trailingShift = lastItemWidth / 2 + TRACK_GAP + EMPTY_CARD_WIDTH / 2;
+
+  const itemsSpan =
+    itemWidths.reduce((sum, w) => sum + w, 0) +
+    TRACK_GAP * Math.max(0, itemWidths.length - 1);
 
   const trackShift = useSharedValue(leadingShift);
   const isFirstShift = useRef(true);
@@ -285,6 +298,20 @@ export const ItemsTrack = memo(function ItemsTrack({
           alignItems: "center",
         }}
       >
+        <BookendSlot
+          layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
+          style={{ left: basePadding - TRACK_GAP - ITEM_HEIGHT }}
+        >
+          <CollectionCard
+            thumbnails={collectionThumbnails}
+            active={activeBookend === "collection"}
+            inactiveOpacity={locked ? 0.1 : 0.5}
+            backgroundColor={collectionCardColor(collection?.color)}
+            flipped={browsingItems}
+            onPress={handlePressCollectionCard}
+            disabled={locked}
+          />
+        </BookendSlot>
         {items.map((item, i) => {
           const dimmed = dimmedItemIds.includes(item.itemId);
           return (
@@ -305,33 +332,23 @@ export const ItemsTrack = memo(function ItemsTrack({
                 onPress={() => handlePressItem(i)}
                 disabled={locked}
               />
-              {i === 0 && (
-                <BookendSlot style={{ right: firstItemWidth + TRACK_GAP }}>
-                  <CollectionCard
-                    thumbnails={collectionThumbnails}
-                    active={activeBookend === "collection"}
-                    inactiveOpacity={locked ? 0.1 : 0.5}
-                    backgroundColor={collectionCardColor(collection?.color)}
-                    flipped={browsingItems}
-                    onPress={handlePressCollectionCard}
-                    disabled={locked}
-                  />
-                </BookendSlot>
-              )}
-              {isEditable && i === items.length - 1 && (
-                <BookendSlot style={{ left: lastItemWidth + TRACK_GAP }}>
-                  <AddItemCard
-                    width={EMPTY_CARD_WIDTH}
-                    active={activeBookend === "add"}
-                    inactiveOpacity={locked ? 0.1 : 0.5}
-                    onPress={handlePressAddBookend}
-                    disabled={locked}
-                  />
-                </BookendSlot>
-              )}
             </Animated.View>
           );
         })}
+        {isEditable && (
+          <BookendSlot
+            layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
+            style={{ left: basePadding + itemsSpan + TRACK_GAP }}
+          >
+            <AddItemCard
+              width={EMPTY_CARD_WIDTH}
+              active={activeBookend === "add"}
+              inactiveOpacity={locked ? 0.1 : 0.5}
+              onPress={handlePressAddBookend}
+              disabled={locked}
+            />
+          </BookendSlot>
+        )}
       </ScrollContainer>
     </TrackShiftWrap>
   );

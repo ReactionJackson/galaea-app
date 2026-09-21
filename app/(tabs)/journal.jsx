@@ -14,7 +14,7 @@ import { TrackTray } from "@/components/track/TrackTray";
 import { Colors } from "@/constants/theme";
 import { resolveEntryGalleryPairs, useApp } from "@/context/AppContext";
 import { deleteDroppedImages } from "@/utils/images";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import styled from "styled-components/native";
 
@@ -32,7 +32,16 @@ function JournalScreen() {
   const { editMode } = state;
   const pageScrollRef = useRef(null);
   const pendingScrollItemIdRef = useRef(null);
+  const pickerTrackRef = useRef(null);
+  const wasEditingRef = useRef(editMode);
   const [trayControls, setTrayControls] = useState({});
+
+  useEffect(() => {
+    if (editMode && !wasEditingRef.current) {
+      pickerTrackRef.current?.reset();
+    }
+    wasEditingRef.current = editMode;
+  }, [editMode]);
 
   // Derived state:
 
@@ -173,6 +182,7 @@ function JournalScreen() {
               style={{ marginHorizontal: -20 }}
             >
               <PickerTrack
+                ref={pickerTrackRef}
                 attachedItemIds={activeEntry.items.map((it) => it.itemId)}
                 onSelect={handleSelectItem}
               />

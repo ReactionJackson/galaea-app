@@ -2,7 +2,13 @@ import {
   FADE_TRANSITION_DURATION,
   SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
-import { useCallback, useEffect, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -46,19 +52,23 @@ function fadeItemsOut(itemsFade, onComplete) {
   );
 }
 
-export function TrackStack({
-  isEditable = false,
-  editMode = false,
-  dimmedItemIds = [],
-  onPressActiveItem = () => {},
-  onChangeItem = () => {},
-  onAddItem = () => {},
-  onCancelAddItem = () => {},
-  onViewCollectionCard = () => {},
-  onControlsChange = () => {},
-  onChangeCollection = () => {},
-}) {
+export const TrackStack = forwardRef(function TrackStack(
+  {
+    isEditable = false,
+    editMode = false,
+    dimmedItemIds = [],
+    onPressActiveItem = () => {},
+    onChangeItem = () => {},
+    onAddItem = () => {},
+    onCancelAddItem = () => {},
+    onViewCollectionCard = () => {},
+    onControlsChange = () => {},
+    onChangeCollection = () => {},
+  },
+  ref,
+) {
   const [viewingCollectionId, setViewingCollectionId] = useState(null);
+  const [pendingItemId, setPendingItemId] = useState(null);
   const [collectionsSoloed, setCollectionsSoloed] = useState(false);
   const [browsingItems, setBrowsingItems] = useState(false);
   const [backVisible, setBackVisible] = useState(true);
@@ -81,8 +91,9 @@ export function TrackStack({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [browsingItems]);
 
-  const handleChooseCollection = useCallback((collectionId) => {
+  const handleChooseCollection = useCallback((collectionId, itemId = null) => {
     setViewingCollectionId(collectionId);
+    setPendingItemId(itemId);
     setCollectionsSoloed(true);
     setBrowsingItems(true);
   }, []);
@@ -91,6 +102,21 @@ export function TrackStack({
     setBackVisible(true);
     setBrowsingItems(false);
   }, []);
+
+  const handleResetInstant = useCallback(() => {
+    itemsFade.value = 0;
+    setBackVisible(true);
+    setBrowsingItems(false);
+  }, [itemsFade]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      viewCollectionItem: handleChooseCollection,
+      reset: handleResetInstant,
+    }),
+    [handleChooseCollection, handleResetInstant],
+  );
 
   const handleAddItem = useCallback(
     () => onAddItem(viewingCollectionId),
@@ -111,6 +137,7 @@ export function TrackStack({
         <ItemsTrack
           key={viewingCollectionId}
           collectionId={viewingCollectionId}
+          initialItemId={pendingItemId}
           editMode={editMode}
           isEditable={isEditable}
           dimmedItemIds={dimmedItemIds}
@@ -142,4 +169,4 @@ export function TrackStack({
       </Layer>
     </Container>
   );
-}
+});
