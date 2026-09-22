@@ -63,6 +63,8 @@ function JournalScreen() {
         return date.toLocaleString("default", { month: "long" });
       case "weekday":
         return date.toLocaleString("default", { weekday: "long" });
+      case "year":
+        return date.getFullYear().toString();
     }
   };
 
@@ -107,12 +109,6 @@ function JournalScreen() {
           <PageHeader.Badge>
             <ThemedText type="date-number">{formatDate("day")}</ThemedText>
           </PageHeader.Badge>
-          <PageHeader.Meta>
-            <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
-            <ThemedText type="subtitle" color="faded">
-              Entry {String(dayNumber).padStart(2, "0")}
-            </ThemedText>
-          </PageHeader.Meta>
           <PageHeader.Title
             key={editMode ? "editing" : "display"}
             value={
@@ -124,6 +120,12 @@ function JournalScreen() {
             onChangeText={(title) => dispatch({ type: "UPDATE_TITLE", title })}
             editable={editMode}
           />
+          <PageHeader.Meta>
+            <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
+            <ThemedText type="subtitle" color="faded">
+              {formatDate("year")}
+            </ThemedText>
+          </PageHeader.Meta>
         </PageHeader>
 
         <FadeInOnMount>
