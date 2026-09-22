@@ -1,5 +1,6 @@
 import { CoverImage } from "@/components/image/CoverImage";
 import { Image } from "@/components/image/Image";
+import { BlurView } from "@/components/interface/BlurView";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { CrossIcon } from "@/components/interface/icons/CrossIcon";
 import { Colors } from "@/constants/theme";
@@ -10,15 +11,15 @@ import styled from "styled-components/native";
 export const ROW_HEIGHT = 70;
 const BADGE_SIZE = ROW_HEIGHT - 16;
 
-const Container = styled.View`
+const Container = styled(BlurView)`
   width: 100%;
   height: ${ROW_HEIGHT}px;
   flex-direction: row;
   align-items: center;
   padding: 0 6px;
   border-radius: 20px;
+  overflow: hidden;
   border: 2px solid ${Colors.buttonBorder};
-  background-color: ${Colors.overlayBorder};
 `;
 
 const CoverFill = styled.View`
@@ -65,7 +66,7 @@ export function OverviewItemsBubble({ item, onPress }) {
 
   return (
     <Pressable onPress={() => onPress?.(item)}>
-      <Container>
+      <Container intensity={30}>
         <HeaderText>
           <HeaderText.Badge shape="image" size={BADGE_SIZE}>
             {coverImage && (
