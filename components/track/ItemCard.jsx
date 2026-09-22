@@ -16,9 +16,9 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
 
 export const EmptyCard = styled(Animated.View)`
-  width: ${({ width = EMPTY_CARD_WIDTH }) => width}px;
+  width: ${({ $width = EMPTY_CARD_WIDTH }) => $width}px;
   height: ${ITEM_HEIGHT}px;
-  border-radius: 8px;
+  border-radius: ${({ $radius = 8 }) => $radius}px;
   border: 2px solid ${Colors.buttonBorder};
   justify-content: center;
   align-items: center;
@@ -58,7 +58,8 @@ export function ItemCard({
 }
 
 export function AddItemCard({
-  width,
+  $width,
+  $radius,
   active,
   inactiveOpacity = 0.5,
   onPress,
@@ -71,7 +72,7 @@ export function AddItemCard({
       layout={LinearTransition.duration(SLIDE_TRANSITION_DURATION)}
     >
       <Pressable onPress={onPress} disabled={disabled}>
-        <EmptyCard width={width} style={style}>
+        <EmptyCard $width={$width} $radius={$radius} style={style}>
           <CrossIcon size={18} color={Colors.text} />
         </EmptyCard>
       </Pressable>

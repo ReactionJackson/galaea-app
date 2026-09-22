@@ -277,7 +277,7 @@ export const ItemsTrack = memo(function ItemsTrack({
         />
         {isEditable && (
           <AddItemCard
-            width={EMPTY_CARD_WIDTH}
+            $width={EMPTY_CARD_WIDTH}
             active={activeBookend === "add"}
             inactiveOpacity={locked ? 0.5 : 1}
             onPress={handlePressAddBookend}
@@ -352,7 +352,7 @@ export const ItemsTrack = memo(function ItemsTrack({
             style={{ left: basePadding + itemsSpan + TRACK_GAP }}
           >
             <AddItemCard
-              width={EMPTY_CARD_WIDTH}
+              $width={EMPTY_CARD_WIDTH}
               active={activeBookend === "add"}
               inactiveOpacity={locked ? 0.5 : 1}
               onPress={handlePressAddBookend}

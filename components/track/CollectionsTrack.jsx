@@ -137,7 +137,8 @@ export const CollectionsTrack = memo(function CollectionsTrack({
       })}
       {isEditable && (
         <AddItemCard
-          width={ITEM_HEIGHT}
+          $width={ITEM_HEIGHT}
+          $radius={20}
           active={isScrolling || activeIndex === ADD_INDEX}
           inactiveOpacity={inactiveOpacity}
           onPress={() => goToIndex(ADD_INDEX)}
