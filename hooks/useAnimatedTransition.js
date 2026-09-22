@@ -6,6 +6,7 @@ import {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 
 const TRANSFORM_PROPS = new Set([
   "translateX",
@@ -28,11 +29,19 @@ const DEFAULT_EASING = Easing.out(Easing.quad);
 export function useAnimatedTransition(active, styleMap, config = {}) {
   const duration = config.duration ?? DEFAULT_DURATION;
   const easing = config.easing ?? DEFAULT_EASING;
+  const onSettle = config.onSettle;
 
   const progress = useSharedValue(active ? 1 : 0);
 
   useEffect(() => {
-    progress.value = withTiming(active ? 1 : 0, { duration, easing });
+    progress.value = withTiming(
+      active ? 1 : 0,
+      { duration, easing },
+      (finished) => {
+        if (finished && onSettle) scheduleOnRN(onSettle, active);
+      },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
   return useAnimatedStyle(() => {

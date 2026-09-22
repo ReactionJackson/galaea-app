@@ -16,7 +16,9 @@ const Card = styled.View`
   height: ${ITEM_HEIGHT}px;
   border-radius: 20px;
   overflow: hidden;
-  border: 2px solid ${Colors.buttonBorder};
+  border-width: 2px;
+  border-color: ${({ $showBorder }) =>
+    $showBorder ? Colors.buttonBorder : "transparent"};
 `;
 
 const Slider = styled(Animated.View)`
@@ -74,6 +76,8 @@ export function CollectionCard({
   active = true,
   inactiveOpacity = 1,
   flipped = false,
+  $showBorder = true,
+  onFlipSettle,
   onPress,
   disabled,
 }) {
@@ -81,13 +85,17 @@ export function CollectionCard({
   const sliderStyle = useAnimatedTransition(
     flipped,
     { translateY: [0, -ITEM_HEIGHT] },
-    { duration: FLIP_DURATION, easing: Easing.inOut(Easing.cubic) },
+    {
+      duration: FLIP_DURATION,
+      easing: Easing.inOut(Easing.cubic),
+      onSettle: onFlipSettle,
+    },
   );
 
   return (
     <Pressable onPress={onPress} disabled={disabled}>
       <Animated.View style={style}>
-        <Card>
+        <Card $showBorder={$showBorder}>
           <Slider style={sliderStyle}>
             <TopFace>
               {Array.from({ length: 4 }).map((_, i) => {

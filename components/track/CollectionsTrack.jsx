@@ -31,6 +31,7 @@ export const CollectionsTrack = memo(function CollectionsTrack({
   onPressActiveCollection = () => {},
   onAddCollection = () => {},
   onCancelAddCollection = () => {},
+  onFlipSettle,
 }) {
   const inactiveOpacity = soloed ? 0 : 1;
   const { state } = useApp();
@@ -129,6 +130,11 @@ export const CollectionsTrack = memo(function CollectionsTrack({
               inactiveOpacity={inactiveOpacity}
               flipped={
                 collection.collectionId === viewingCollectionId && browsingItems
+              }
+              onFlipSettle={
+                collection.collectionId === viewingCollectionId
+                  ? onFlipSettle
+                  : undefined
               }
               onPress={() => goToIndex(i)}
             />

@@ -272,6 +272,7 @@ export const ItemsTrack = memo(function ItemsTrack({
           active
           inactiveOpacity={locked ? 0.5 : 1}
           flipped={browsingItems}
+          $showBorder={revealed}
           onPress={onPressBack}
           disabled={locked}
         />
@@ -319,6 +320,7 @@ export const ItemsTrack = memo(function ItemsTrack({
             active={activeBookend === "collection"}
             inactiveOpacity={locked ? 0.5 : 1}
             flipped={browsingItems}
+            $showBorder={revealed}
             onPress={handlePressCollectionCard}
             disabled={locked}
           />

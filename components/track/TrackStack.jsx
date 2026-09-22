@@ -1,14 +1,5 @@
-import {
-  FADE_TRANSITION_DURATION,
-  SLIDE_TRANSITION_DURATION,
-} from "@/constants/values";
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useState,
-} from "react";
+import { SLIDE_TRANSITION_DURATION } from "@/constants/values";
+import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -31,26 +22,6 @@ const Layer = styled(Animated.View)`
   right: 0;
   bottom: 0;
 `;
-
-function fadeItemsIn(itemsFade, onComplete) {
-  itemsFade.value = withTiming(
-    1,
-    { duration: SLIDE_TRANSITION_DURATION },
-    (finished) => {
-      if (finished) scheduleOnRN(onComplete);
-    },
-  );
-}
-
-function fadeItemsOut(itemsFade, onComplete) {
-  itemsFade.value = withTiming(
-    0,
-    { duration: SLIDE_TRANSITION_DURATION },
-    (finished) => {
-      if (finished) scheduleOnRN(onComplete);
-    },
-  );
-}
 
 export const TrackStack = forwardRef(function TrackStack(
   {
@@ -77,20 +48,23 @@ export const TrackStack = forwardRef(function TrackStack(
 
   const itemsStyle = useAnimatedStyle(() => ({ opacity: itemsFade.value }));
 
-  useEffect(() => {
-    if (browsingItems) {
-      const timer = setTimeout(
-        () => fadeItemsIn(itemsFade, () => setBackVisible(false)),
-        FADE_TRANSITION_DURATION,
-      );
-      return () => clearTimeout(timer);
-    }
-    fadeItemsOut(itemsFade, () => {
-      setViewingCollectionId(null);
-      setCollectionsSoloed(false);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [browsingItems]);
+  const handleFlipSettle = useCallback(
+    (flippedIn) => {
+      if (flippedIn) {
+        itemsFade.value = withTiming(
+          1,
+          { duration: SLIDE_TRANSITION_DURATION },
+          (finished) => {
+            if (finished) scheduleOnRN(setBackVisible, false);
+          },
+        );
+      } else {
+        setViewingCollectionId(null);
+        setCollectionsSoloed(false);
+      }
+    },
+    [itemsFade],
+  );
 
   const handleChooseCollection = useCallback((collectionId, itemId = null) => {
     setViewingCollectionId(collectionId);
@@ -110,8 +84,9 @@ export const TrackStack = forwardRef(function TrackStack(
 
   const handleGoBackToCollections = useCallback(() => {
     setBackVisible(true);
+    itemsFade.value = withTiming(0, { duration: SLIDE_TRANSITION_DURATION });
     setBrowsingItems(false);
-  }, []);
+  }, [itemsFade]);
 
   const handleResetInstant = useCallback(() => {
     itemsFade.value = 0;
@@ -177,6 +152,7 @@ export const TrackStack = forwardRef(function TrackStack(
           browsingItems={browsingItems}
           onChangeCollection={onChangeCollection}
           onPressActiveCollection={handleChooseCollection}
+          onFlipSettle={handleFlipSettle}
         />
       </Layer>
     </Container>
