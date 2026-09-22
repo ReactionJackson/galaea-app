@@ -71,10 +71,6 @@ export const Colors = {
   },
 };
 
-// Everything below is derived from the accent colour, so it can be
-// recomputed live when the user picks a different one in Settings -
-// see SettingsContext. The static Colors.* versions just call this with
-// the default accent, for anything that only ever needs that default.
 export function deriveAccentColors(accent) {
   return {
     badgeColors: {
@@ -124,17 +120,15 @@ Colors.badge = defaultAccentColors.badgeColors;
 Colors.button = defaultAccentColors.buttonColors;
 Colors.interactButton = defaultAccentColors.interactButtonColors;
 
-// Preset options for the accent colour picker in Settings - reuses the
-// existing tag palette so it stays consistent with colours already in the app.
 export const ACCENT_SWATCHES = [
   Colors.accent,
   Colors.tags.green.primary,
   Colors.tags.blue.primary,
-  Colors.tags.yellow.primary,
-  Colors.tags.purple.primary,
-  Colors.tags.teal.primary,
-  Colors.tags.pink.primary,
+  "gold",
   Colors.tags.orange.primary,
+  Colors.tags.pink.primary,
+  Colors.tags.purple.primary,
+  "#333",
 ];
 
 export const Fonts = {
