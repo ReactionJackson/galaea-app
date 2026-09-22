@@ -31,6 +31,7 @@ export function OverviewPage({ collection, items, onPressItem, onPressAdd }) {
           </PageHeader.Meta>
         </PageHeader>
         <OverviewItems
+          key={collection.collectionId}
           items={collectionItems}
           onPressItem={onPressItem}
           onPressAdd={() => onPressAdd(collection.collectionId)}

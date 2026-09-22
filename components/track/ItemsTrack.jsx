@@ -339,7 +339,7 @@ export const ItemsTrack = memo(function ItemsTrack({
                   activeBookend == null &&
                   ((isScrolling && !isInternalScroll) || activeIndex === i)
                 }
-                inactiveOpacity={dimmed || locked ? 0.5 : 1}
+                inactiveOpacity={dimmed || locked ? 0.2 : 1}
                 onPress={() => handlePressItem(i)}
                 disabled={locked}
               />
