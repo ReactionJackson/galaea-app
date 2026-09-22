@@ -74,7 +74,13 @@ export function OverviewItemsBubble({ item, onPress }) {
               </CoverFill>
             )}
             {cardThumbnail && (
-              <Image {...cardThumbnail} height={BADGE_SIZE - 12} radius={4} />
+              <Image
+                {...cardThumbnail}
+                width={BADGE_SIZE - 12}
+                height={BADGE_SIZE - 12}
+                radius={4}
+                contentFit="cover"
+              />
             )}
           </HeaderText.Badge>
           <HeaderText.Title numberOfLines={1} ellipsizeMode="tail">

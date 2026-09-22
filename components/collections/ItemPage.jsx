@@ -77,8 +77,10 @@ export function ItemPage({
             {item.cardThumbnail && (
               <Image
                 {...item.cardThumbnail}
+                width={BADGE_SIZE - 12}
                 height={BADGE_SIZE - 12}
                 radius={4}
+                contentFit="cover"
               />
             )}
           </HeaderText.Badge>

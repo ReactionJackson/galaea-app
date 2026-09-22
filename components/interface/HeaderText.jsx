@@ -5,7 +5,7 @@ import { Children } from "react";
 import styled from "styled-components/native";
 
 const Container = styled.View`
-  flex: 1;
+  width: 100%;
   flex-direction: row;
   align-items: center;
   gap: 10px;

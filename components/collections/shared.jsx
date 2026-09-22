@@ -56,8 +56,8 @@ export function EntryFields({
         />
       </AnimateHeight>
       <AnimatedSpacer
-        height={15}
-        visible={!!((text && gallery.length) || editable)}
+        height={text || editable ? 15 : 10}
+        visible={!!(gallery.length || editable)}
       />
       <AnimateHeight
         visible={!!(gallery.length || editable)}
