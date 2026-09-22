@@ -25,6 +25,10 @@ export function EntryFields({
     onUpdate({ gallery: [...gallery, image] });
   };
 
+  const handleAddImages = (newImages) => {
+    onUpdate({ gallery: [...gallery, ...newImages] });
+  };
+
   const handleUpdateImage = (imageIndex, image) => {
     onUpdate({
       gallery: gallery.map((existing, i) =>
@@ -67,6 +71,7 @@ export function EntryFields({
           images={gallery}
           editMode={editable}
           onAddImage={handleAddImage}
+          onAddImages={handleAddImages}
           onUpdateImage={handleUpdateImage}
           onDeleteImage={handleDeleteImage}
           onReorderImages={handleReorderImages}

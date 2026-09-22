@@ -34,6 +34,7 @@ export function ItemPage({
   coverImageToEdit,
   orderedEntries,
   onPressCard,
+  onRemoveCard,
   onPressCover,
   onEditCover,
   onRemoveCover,
@@ -56,6 +57,7 @@ export function ItemPage({
         coverImage={item.coverImage}
         editable={editMode}
         onPressCard={onPressCard}
+        onRemoveCard={onRemoveCard}
         onPressCover={onPressCover}
         onEditCover={onEditCover}
         onRemoveCover={onRemoveCover}

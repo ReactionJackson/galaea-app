@@ -66,6 +66,7 @@ export const Gallery = memo(function Gallery({
   images,
   editMode = false,
   onAddImage,
+  onAddImages,
   onUpdateImage,
   onDeleteImage,
   onReorderImages,
@@ -114,13 +115,24 @@ export const Gallery = memo(function Gallery({
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       quality: 0.9,
+      allowsMultipleSelection: true,
     });
     if (result.canceled) return;
 
-    const asset = result.assets?.[0];
-    if (!asset?.uri) return;
-    const stored = await pickAndStoreImage(asset, "gallery");
-    setOpenItem({ mode: "edit", image: stored, index: null });
+    const assets = result.assets?.filter((asset) => asset?.uri) ?? [];
+    if (!assets.length) return;
+
+    if (assets.length === 1) {
+      const stored = await pickAndStoreImage(assets[0], "gallery");
+      setOpenItem({ mode: "edit", image: stored, index: null });
+      return;
+    }
+
+    const stored = [];
+    for (const asset of assets) {
+      stored.push(await pickAndStoreImage(asset, "gallery"));
+    }
+    onAddImages?.(stored);
   };
 
   const handleEditImage = (index) => {

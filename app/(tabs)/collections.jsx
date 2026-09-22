@@ -237,6 +237,9 @@ export default function CollectionScreen() {
 
   const handleRemoveCover = () => updateDraft({ coverImage: null });
 
+  const handleRemoveCard = () =>
+    updateDraft({ cardImage: null, cardThumbnail: null });
+
   if (!displayItem && !showOverviewPage) return <Container />;
 
   return (
@@ -259,6 +262,7 @@ export default function CollectionScreen() {
           coverImageToEdit={coverImageToEdit}
           orderedEntries={orderedEntries}
           onPressCard={handlePickCard}
+          onRemoveCard={handleRemoveCard}
           onPressCover={handlePickCover}
           onEditCover={handleEditCover}
           onRemoveCover={handleRemoveCover}

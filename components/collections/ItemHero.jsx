@@ -75,6 +75,7 @@ export function ItemHero({
   shadowRadius = 20,
   shadowOpacity = 0.5,
   onPressCard = () => {},
+  onRemoveCard = () => {},
   onPressCover = () => {},
   onEditCover = () => {},
   onRemoveCover = () => {},
@@ -139,7 +140,10 @@ export function ItemHero({
         )}
         {editable && (
           <EditOverlay>
-            <InteractionControls onAdd={onPressCard} />
+            <InteractionControls
+              onAdd={cardImage ? undefined : onPressCard}
+              onDelete={cardImage ? onRemoveCard : undefined}
+            />
           </EditOverlay>
         )}
       </CardWrap>
