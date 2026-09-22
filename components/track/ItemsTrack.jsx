@@ -96,8 +96,12 @@ export const ItemsTrack = memo(function ItemsTrack({
     onSettle: (index, { alreadyActive }) => {
       if (index === 0) {
         if (pendingBackExitRef.current && !alreadyActive) return;
-        if (alreadyActive) onPressBack();
-        else onViewCollectionCard();
+        if (alreadyActive) {
+          triggerHaptics("Light");
+          onPressBack();
+        } else {
+          onViewCollectionCard();
+        }
         return;
       }
       const item = items[index - 1];
@@ -171,7 +175,9 @@ export const ItemsTrack = memo(function ItemsTrack({
   }, [revealed, initialItemId, initialAddItem]);
 
   useEffect(() => {
-    if (!locked && activeIndex === ADD_INDEX) scrollToIndex(items.length, true);
+    if (!locked && !isScrolling && activeIndex === ADD_INDEX) {
+      scrollToIndex(items.length, true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locked]);
 
