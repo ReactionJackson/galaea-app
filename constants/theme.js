@@ -19,7 +19,7 @@ export const Colors = {
   backgroundBlurTint: "rgba(255, 255, 255, 0.4)",
   lightboxCropBox: "rgba(255, 255, 255, 0.2)",
   surfaceTint: "rgba(0, 0, 0, 0.03)",
-  emptySlotBackground: "rgba(0, 0, 0, 0.02)",
+  emptySlotBackground: "rgba(0, 0, 0, 0.025)",
   thumbnailOverlay: "rgba(0, 0, 0, 0.075)",
   editButtonBackground: "rgba(255, 255, 255, 0.8)",
   selectedBorder: "rgba(255, 255, 255, 0.85)",

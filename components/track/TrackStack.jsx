@@ -87,13 +87,17 @@ export const TrackStack = forwardRef(function TrackStack(
     setBackVisible(true);
     itemsFade.value = withTiming(0, { duration: SLIDE_TRANSITION_DURATION });
     setBrowsingItems(false);
-  }, [itemsFade]);
+    onChangeCollection(viewingCollectionId);
+  }, [itemsFade, onChangeCollection, viewingCollectionId]);
 
   const handleResetInstant = useCallback(() => {
     itemsFade.value = 0;
     setBackVisible(true);
     setBrowsingItems(false);
-  }, [itemsFade]);
+    if (viewingCollectionId != null) onChangeCollection(viewingCollectionId);
+    setViewingCollectionId(null);
+    setCollectionsSoloed(false);
+  }, [itemsFade, onChangeCollection, viewingCollectionId]);
 
   useImperativeHandle(
     ref,
