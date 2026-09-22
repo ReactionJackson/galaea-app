@@ -68,6 +68,7 @@ function migrateCollections(collections, items) {
       {
         collectionId: DEFAULT_COLLECTION_ID,
         name: "Games",
+        backgroundImage: "",
       },
       ...(collections ?? []),
     ],
@@ -94,6 +95,7 @@ function migrateBoardGamesCollection(collections, items) {
       {
         collectionId: boardGamesId,
         name: "Board Games",
+        backgroundImage: "",
       },
     ],
     items: items.map((item) =>
@@ -553,6 +555,38 @@ function appReducer(state, action) {
       ];
       return { ...state, items };
     }
+
+    // Collection mutations — these write to state.collections (global),
+    // not the item draft. Collections have no draft/edit-mode cycle of
+    // their own (unlike items and journal days): a new one is created
+    // blank and immediately live, name included.
+
+    // A brand-new collection: blank name, no background image yet (that's
+    // set behind the scenes later, not something the user edits directly).
+    // The id is computed by the caller (mirrors SAVE_ITEM_EDIT) rather than
+    // here, so it can navigate straight to the new collection once dispatched.
+    case "ADD_COLLECTION":
+      return {
+        ...state,
+        collections: [
+          ...state.collections,
+          {
+            collectionId: action.collectionId,
+            name: "",
+            backgroundImage: "",
+          },
+        ],
+      };
+
+    case "UPDATE_COLLECTION_NAME":
+      return {
+        ...state,
+        collections: state.collections.map((c) =>
+          c.collectionId === action.collectionId
+            ? { ...c, name: action.name }
+            : c,
+        ),
+      };
 
     // Tag mutations — these write to state.tags (global), not just the draft.
 

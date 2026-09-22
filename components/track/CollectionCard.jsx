@@ -48,7 +48,7 @@ const ThumbnailWrap = styled.View`
   height: 42px;
   overflow: hidden;
   border-radius: 6px;
-  background-color: ${Colors.thumbnailOverlay};
+  background-color: ${Colors.buttonBorder};
   ${({ $index }) =>
     $index === 0 &&
     css`
@@ -108,8 +108,10 @@ export function CollectionCard({
               })}
             </TopFace>
             <BottomFace>
-              <ArrowIcon rotation={-90} />
-              <ThemedText type="caption">Back</ThemedText>
+              <ArrowIcon rotation={-90} color="black" />
+              <ThemedText type="caption" color="black">
+                Back
+              </ThemedText>
             </BottomFace>
           </Slider>
         </Card>

@@ -73,7 +73,7 @@ export function AddItemCard({
     >
       <Pressable onPress={onPress} disabled={disabled}>
         <EmptyCard $width={$width} $radius={$radius} style={style}>
-          <CrossIcon size={18} color={Colors.text} />
+          <CrossIcon size={18} color={Colors.black} />
         </EmptyCard>
       </Pressable>
     </Animated.View>

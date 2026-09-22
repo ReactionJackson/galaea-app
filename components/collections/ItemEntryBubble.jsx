@@ -42,6 +42,17 @@ const Content = styled.View`
   background-color: ${Colors.background};
 `;
 
+const TitleContainer = styled.View`
+  margin: 0 0 5px -2px;
+`;
+
+const Labels = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+`;
+
 export const ItemEntryBubble = memo(function ItemEntryBubble({
   itemId = 1,
   entryId = null,
@@ -56,7 +67,9 @@ export const ItemEntryBubble = memo(function ItemEntryBubble({
   const editMode = editable ?? state.editMode;
 
   const item = itemsById[itemId];
-  const { title, cardImage, coverImage } = item ?? {};
+  const { title, cardImage, coverImage, collectionId } = item ?? {};
+  const collectionName =
+    state.collections.find((c) => c.collectionId === collectionId)?.name ?? "";
   const resolvedEntry = entryId != null ? item?.entriesById[entryId] : null;
   const entryNumber = resolvedEntry?.entryNumber ?? (item?.entryCount ?? 0) + 1;
 
@@ -89,12 +102,15 @@ export const ItemEntryBubble = memo(function ItemEntryBubble({
           />
         </Header>
         <Content>
-          <ThemedText type="title" style={{ marginBottom: 10 }}>
-            {title}
-          </ThemedText>
-          <ThemedText type="subtitle" color="text" style={{ marginBottom: 5 }}>
-            Entry {String(entryNumber).padStart(2, "0")}
-          </ThemedText>
+          <TitleContainer>
+            <ThemedText type="title">{title}</ThemedText>
+          </TitleContainer>
+          <Labels>
+            <ThemedText type="subtitle">{collectionName}</ThemedText>
+            <ThemedText type="subtitle" color="faded">
+              Entry {String(entryNumber).padStart(2, "0")}
+            </ThemedText>
+          </Labels>
           <EntryFields
             text={text}
             tagIds={tagIds}

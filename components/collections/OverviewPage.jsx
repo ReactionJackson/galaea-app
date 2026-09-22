@@ -3,7 +3,14 @@ import { ThemedText } from "@/components/interface/ThemedText";
 import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
 
-export function OverviewPage({ collection, items, onPressItem, onPressAdd }) {
+export function OverviewPage({
+  collection,
+  items,
+  editable = false,
+  onChangeName = () => {},
+  onPressItem,
+  onPressAdd,
+}) {
   const collectionItems = items.filter(
     (item) => item.collectionId === collection.collectionId,
   );
@@ -22,9 +29,13 @@ export function OverviewPage({ collection, items, onPressItem, onPressAdd }) {
             </ThemedText>
           </PageHeader.Badge>
           <PageHeader.Title
-            value={collection.name}
-            editable={false}
-            onChangeText={() => {}}
+            key={editable ? "editing" : "display"}
+            value={
+              !editable && !collection.name ? "New Collection" : collection.name
+            }
+            placeholder="New Collection"
+            editable={editable}
+            onChangeText={onChangeName}
           />
           <PageHeader.Meta>
             <ThemedText type="subtitle">Collection</ThemedText>

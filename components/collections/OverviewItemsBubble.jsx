@@ -47,12 +47,12 @@ const Content = styled.View`
 `;
 
 const Title = styled(ThemedText)`
-  margin: -4px 0 2px -2px;
+  margin: -5px 0 -2px -2px;
 `;
 
 const StatsRow = styled.View`
   flex-direction: row;
-  gap: 10px;
+  gap: 5px;
 `;
 
 export const Placeholder = styled.View`
@@ -75,7 +75,7 @@ export function AddBubble({ onPress }) {
   return (
     <Pressable onPress={onPress}>
       <AddContainer>
-        <CrossIcon size={16} color={Colors.text} />
+        <CrossIcon size={16} color={Colors.black} />
       </AddContainer>
     </Pressable>
   );

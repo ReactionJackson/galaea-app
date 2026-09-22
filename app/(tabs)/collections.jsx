@@ -123,6 +123,25 @@ export default function CollectionScreen() {
     setContentCollectionId(collectionId);
   }, []);
 
+  const handleAddCollection = useCallback(() => {
+    const collectionId =
+      Math.max(0, ...state.collections.map((c) => c.collectionId)) + 1;
+    dispatch({ type: "ADD_COLLECTION", collectionId });
+    setContentCollectionId(collectionId);
+  }, [state.collections, dispatch]);
+
+  const handleChangeCollectionName = useCallback(
+    (name) => {
+      if (!activeCollection) return;
+      dispatch({
+        type: "UPDATE_COLLECTION_NAME",
+        collectionId: activeCollection.collectionId,
+        name,
+      });
+    },
+    [activeCollection, dispatch],
+  );
+
   const handlePressRowItem = useCallback((item) => {
     triggerHaptics("Light");
     trackStackRef.current?.viewCollectionItem(item.collectionId, item.itemId);
@@ -226,6 +245,8 @@ export default function CollectionScreen() {
         <OverviewPage
           collection={activeCollection}
           items={items}
+          editable
+          onChangeName={handleChangeCollectionName}
           onPressItem={handlePressRowItem}
           onPressAdd={handlePressAddRow}
         />
@@ -268,6 +289,7 @@ export default function CollectionScreen() {
           onCancelAddItem={cancelItemEdit}
           onViewCollectionCard={handleChangeCollection}
           onChangeCollection={handleChangeCollection}
+          onAddCollection={handleAddCollection}
           onControlsChange={setTrayControls}
         />
       </TrackTray>

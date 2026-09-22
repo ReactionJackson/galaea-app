@@ -53,7 +53,7 @@ export function ItemPage({
         onSave={onSaveCover}
         targetAspectRatio={screenWidth / COLLECTION_HERO_HEIGHT}
       />
-      <PageHeader gap={7} style={{ marginBottom: 10 }}>
+      <PageHeader style={{ marginBottom: 10 }}>
         <PageHeader.Title
           key={editMode ? "editing" : "display"}
           value={!editMode && !item.title ? "New Item" : item.title}

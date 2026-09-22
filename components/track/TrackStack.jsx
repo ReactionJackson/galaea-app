@@ -35,6 +35,7 @@ export const TrackStack = forwardRef(function TrackStack(
     onViewCollectionCard = () => {},
     onControlsChange = () => {},
     onChangeCollection = () => {},
+    onAddCollection = () => {},
   },
   ref,
 ) {
@@ -152,6 +153,7 @@ export const TrackStack = forwardRef(function TrackStack(
           browsingItems={browsingItems}
           onChangeCollection={onChangeCollection}
           onPressActiveCollection={handleChooseCollection}
+          onAddCollection={onAddCollection}
           onFlipSettle={handleFlipSettle}
         />
       </Layer>

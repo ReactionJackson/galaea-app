@@ -16,6 +16,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import styled from "styled-components/native";
 import { CollectionCard } from "./CollectionCard";
 import { AddItemCard, ItemCard } from "./ItemCard";
@@ -41,7 +42,7 @@ const BookendSlot = styled(Animated.View)`
   justify-content: center;
 `;
 
-const EmptyRow = styled.View`
+const EmptyRow = styled(Animated.View)`
   flex: 1;
   flex-direction: row;
   align-items: center;
@@ -126,17 +127,14 @@ export const ItemsTrack = memo(function ItemsTrack({
 
   const canSwapLeft = activeIndex > 0;
   const canSwapRight = activeIndex < items.length - 1;
+  const pendingAfterShiftRef = useRef(null);
 
   const handleCancelAdd = () => {
     setActiveBookend(null);
     onCancelAddItem();
+    if (items.length === 0) pendingAfterShiftRef.current = onPressBack;
   };
 
-  // Shared by the bookend itself (tapped directly, already in this track)
-  // and the reveal effect below (arriving here from an "Add" press on the
-  // overview page, before the track has even been seen). Guards against a
-  // -1 lastIndex when the collection has no items yet, rather than trying
-  // to scroll to one.
   const activateAddBookend = () => {
     const lastIndex = items.length - 1;
     if (lastIndex >= 0 && activeIndex !== lastIndex) {
@@ -172,7 +170,10 @@ export const ItemsTrack = memo(function ItemsTrack({
       activateAddBookend();
       return;
     }
-    if (items.length === 0) return;
+    if (items.length === 0) {
+      if (isEditable) activateAddBookend();
+      return;
+    }
     setActiveBookend(null);
     const targetIndex = Math.max(
       0,
@@ -239,26 +240,52 @@ export const ItemsTrack = memo(function ItemsTrack({
     itemWidths.reduce((sum, w) => sum + w, 0) +
     TRACK_GAP * Math.max(0, itemWidths.length - 1);
 
-  const trackShift = useSharedValue(leadingShift);
+  const emptyCollectionShift = (TRACK_GAP + EMPTY_CARD_WIDTH) / 2;
+  const emptyAddShift = (TRACK_GAP + ITEM_HEIGHT) / 2;
+
+  const trackShift = useSharedValue(
+    items.length === 0 ? emptyCollectionShift : leadingShift,
+  );
   const isFirstShift = useRef(true);
 
   useEffect(() => {
-    const target =
-      activeBookend === "collection"
+    const empty = items.length === 0;
+    const target = empty
+      ? isEditable
+        ? activeBookend === "add"
+          ? -emptyAddShift
+          : emptyCollectionShift
+        : 0
+      : activeBookend === "collection"
         ? leadingShift
         : activeBookend === "add"
           ? -trailingShift
           : 0;
+    const afterShift = pendingAfterShiftRef.current;
+    pendingAfterShiftRef.current = null;
     if (isFirstShift.current) {
       isFirstShift.current = false;
       trackShift.value = target;
+      if (afterShift) afterShift();
       return;
     }
-    trackShift.value = withTiming(target, {
-      duration: SLIDE_TRANSITION_DURATION,
-    });
+    trackShift.value = withTiming(
+      target,
+      { duration: SLIDE_TRANSITION_DURATION },
+      (finished) => {
+        if (finished && afterShift) scheduleOnRN(afterShift);
+      },
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeBookend, leadingShift, trailingShift]);
+  }, [
+    activeBookend,
+    leadingShift,
+    trailingShift,
+    items.length,
+    isEditable,
+    emptyCollectionShift,
+    emptyAddShift,
+  ]);
 
   const trackShiftStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: trackShift.value }],
@@ -266,7 +293,7 @@ export const ItemsTrack = memo(function ItemsTrack({
 
   if (items.length === 0) {
     return (
-      <EmptyRow>
+      <EmptyRow style={trackShiftStyle}>
         <CollectionCard
           thumbnails={collectionThumbnails}
           active
