@@ -16,7 +16,7 @@ const Inner = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  height: 60px;
+  height: 45px;
   padding: 0 20px;
 `;
 
@@ -25,7 +25,6 @@ export function AppHeader() {
     <Container>
       <Inner>
         <ThemedText type="title">Galaea</ThemedText>
-        <ThemedText type="title">O</ThemedText>
       </Inner>
     </Container>
   );
