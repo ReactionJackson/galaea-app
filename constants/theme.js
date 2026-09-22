@@ -15,7 +15,6 @@ export const Colors = {
   overlayBorder: "rgba(255, 255, 255, 0.6)",
   imageOverlay: "rgba(0, 0, 0, 0.45)",
   accent: "#f96156",
-  accentFaded: "rgba(249, 97, 86, 0.2)",
   background: "#fff",
   backgroundBlurTint: "rgba(255, 255, 255, 0.4)",
   lightboxCropBox: "rgba(255, 255, 255, 0.2)",

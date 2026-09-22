@@ -27,6 +27,7 @@ export function InteractButton({
   variant = "secondary",
   haptics = "Light",
   disabled = false,
+  transition = true,
   onPress,
   style,
   children,
@@ -53,8 +54,12 @@ export function InteractButton({
 
   return (
     <Animated.View
-      entering={FadeIn.duration(FADE_TRANSITION_DURATION)}
-      exiting={FadeOut.duration(FADE_TRANSITION_DURATION)}
+      entering={
+        transition ? FadeIn.duration(FADE_TRANSITION_DURATION) : undefined
+      }
+      exiting={
+        transition ? FadeOut.duration(FADE_TRANSITION_DURATION) : undefined
+      }
       style={style}
     >
       <Animated.View style={dimmedStyle}>

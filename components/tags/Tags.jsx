@@ -113,7 +113,7 @@ export function Tags({
       <AnimatedSpacer visible={editMode || !!tagIds.length} height={15} />
       <AnimateHeight visible={editMode}>
         <Row>
-          <InteractButton onPress={() => openEditRow(null)}>
+          <InteractButton transition={false} onPress={() => openEditRow(null)}>
             <CrossIcon />
           </InteractButton>
 

@@ -62,7 +62,7 @@ export function ItemPage({
           editable={editMode}
         />
         <PageHeader.Meta>
-          <ThemedText type="subtitle">{collectionName} Collection</ThemedText>
+          <ThemedText type="subtitle">{collectionName}</ThemedText>
         </PageHeader.Meta>
       </PageHeader>
       <FadeInOnMount>

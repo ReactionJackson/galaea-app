@@ -47,7 +47,7 @@ const Content = styled.View`
 `;
 
 const Title = styled(ThemedText)`
-  margin: -5px 0 0 -2px;
+  margin: -4px 0 2px -2px;
 `;
 
 const StatsRow = styled.View`
