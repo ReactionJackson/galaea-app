@@ -9,7 +9,7 @@ import {
   useRef,
 } from "react";
 import styled from "styled-components/native";
-import { PageHeader } from "./PageHeader";
+import { StickyHeader } from "./StickyHeader";
 
 const ScrollContainer = styled.ScrollView`
   flex: 1;
@@ -45,7 +45,7 @@ export const PageScroll = forwardRef(function PageScroll(
 
   const stickyHeaderIndices = useMemo(() => {
     const index = Children.toArray(children).findIndex(
-      (child) => child?.type === PageHeader,
+      (child) => child?.type === StickyHeader,
     );
     return index === -1 ? undefined : [index];
   }, [children]);

@@ -11,7 +11,7 @@ import styled from "styled-components/native";
 
 const HORIZONTAL_PADDING = 40;
 const ROW_GAP = 10;
-const ROWS_PER_PAGE = 4;
+const ROWS_PER_PAGE = 5;
 const PAGE_HEIGHT = ROW_HEIGHT * ROWS_PER_PAGE + ROW_GAP * (ROWS_PER_PAGE - 1);
 const ADD_SLOT = { isAddSlot: true };
 

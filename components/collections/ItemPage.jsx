@@ -1,17 +1,30 @@
 import { ItemEntry } from "@/components/collections/ItemEntry";
 import { ItemHero } from "@/components/collections/ItemHero";
+import { CoverImage } from "@/components/image/CoverImage";
+import { Image } from "@/components/image/Image";
 import { AnimatedSpacer } from "@/components/interface/AnimateHeight";
 import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
-import { ThemedText } from "@/components/interface/ThemedText";
+import { HeaderText } from "@/components/interface/HeaderText";
 import { EditLightbox } from "@/components/lightbox/EditLightbox";
-import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
+import { StickyHeader } from "@/components/page/StickyHeader";
 import {
   COLLECTION_HERO_HEIGHT,
   COLLECTION_HERO_SPACING,
 } from "@/constants/values";
 import { Fragment } from "react";
 import { useWindowDimensions } from "react-native";
+import styled from "styled-components/native";
+
+const BADGE_SIZE = 54;
+
+const CoverFill = styled.View`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+`;
 
 export function ItemPage({
   item,
@@ -53,18 +66,32 @@ export function ItemPage({
         onSave={onSaveCover}
         targetAspectRatio={screenWidth / COLLECTION_HERO_HEIGHT}
       />
-      <PageHeader style={{ marginBottom: 10 }}>
-        <PageHeader.Title
-          key={editMode ? "editing" : "display"}
-          value={!editMode && !item.title ? "New Item" : item.title}
-          placeholder="New Item"
-          onChangeText={onChangeTitle}
-          editable={editMode}
-        />
-        <PageHeader.Meta>
-          <ThemedText type="subtitle">{collectionName}</ThemedText>
-        </PageHeader.Meta>
-      </PageHeader>
+      <StickyHeader style={{ marginBottom: 10 }}>
+        <HeaderText>
+          <HeaderText.Badge shape="image" size={BADGE_SIZE}>
+            {item.coverImage && (
+              <CoverFill>
+                <CoverImage {...item.coverImage} addOverlay />
+              </CoverFill>
+            )}
+            {item.cardThumbnail && (
+              <Image
+                {...item.cardThumbnail}
+                height={BADGE_SIZE - 12}
+                radius={4}
+              />
+            )}
+          </HeaderText.Badge>
+          <HeaderText.Title
+            key={editMode ? "editing" : "display"}
+            value={!editMode && !item.title ? "New Item" : item.title}
+            placeholder="New Item"
+            onChangeText={onChangeTitle}
+            editable={editMode}
+          />
+          <HeaderText.Subtitle>{collectionName}</HeaderText.Subtitle>
+        </HeaderText>
+      </StickyHeader>
       <FadeInOnMount>
         <Fragment key={contentKey}>
           {orderedEntries.map((entry) => (

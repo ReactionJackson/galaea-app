@@ -1,4 +1,4 @@
-import { ThemedText } from "@/components/interface/ThemedText";
+import { HeaderText } from "@/components/interface/HeaderText";
 import { Colors } from "@/constants/theme";
 import {
   CARD_SHADOW_OPACITY,
@@ -42,14 +42,7 @@ const Content = styled.View`
   background-color: ${Colors.background};
 `;
 
-const TitleContainer = styled.View`
-  margin: 0 0 5px -2px;
-`;
-
-const Labels = styled.View`
-  flex-direction: row;
-  align-items: center;
-  gap: 5px;
+const HeaderWrap = styled.View`
   margin-bottom: 10px;
 `;
 
@@ -102,15 +95,15 @@ export const ItemEntryBubble = memo(function ItemEntryBubble({
           />
         </Header>
         <Content>
-          <TitleContainer>
-            <ThemedText type="title">{title}</ThemedText>
-          </TitleContainer>
-          <Labels>
-            <ThemedText type="subtitle">{collectionName}</ThemedText>
-            <ThemedText type="subtitle" color="faded">
-              Entry {String(entryNumber).padStart(2, "0")}
-            </ThemedText>
-          </Labels>
+          <HeaderWrap>
+            <HeaderText>
+              <HeaderText.Title>{title}</HeaderText.Title>
+              <HeaderText.Subtitle>{collectionName}</HeaderText.Subtitle>
+              <HeaderText.SubtitleFaded>
+                Entry {String(entryNumber).padStart(2, "0")}
+              </HeaderText.SubtitleFaded>
+            </HeaderText>
+          </HeaderWrap>
           <EntryFields
             text={text}
             tagIds={tagIds}

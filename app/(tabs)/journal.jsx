@@ -4,9 +4,10 @@ import {
   AnimatedSpacer,
 } from "@/components/interface/AnimateHeight";
 import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
+import { HeaderText } from "@/components/interface/HeaderText";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
+import { StickyHeader } from "@/components/page/StickyHeader";
 import { Tags } from "@/components/tags/Tags";
 import { JournalTrack } from "@/components/track/JournalTrack";
 import { PickerTrack } from "@/components/track/PickerTrack";
@@ -105,28 +106,30 @@ function JournalScreen() {
   return (
     <Container>
       <PageScroll ref={pageScrollRef} resetKey={activeEntry.dayId}>
-        <PageHeader>
-          <PageHeader.Badge>
-            <ThemedText type="date-number">{formatDate("day")}</ThemedText>
-          </PageHeader.Badge>
-          <PageHeader.Title
-            key={editMode ? "editing" : "display"}
-            value={
-              !editMode && !activeEntry.title
-                ? formatDate("weekday")
-                : activeEntry.title
-            }
-            placeholder={formatDate("weekday")}
-            onChangeText={(title) => dispatch({ type: "UPDATE_TITLE", title })}
-            editable={editMode}
-          />
-          <PageHeader.Meta>
-            <ThemedText type="subtitle">{formatDate("month")}</ThemedText>
-            <ThemedText type="subtitle" color="faded">
+        <StickyHeader>
+          <HeaderText>
+            <HeaderText.Badge>
+              <ThemedText type="date-number">{formatDate("day")}</ThemedText>
+            </HeaderText.Badge>
+            <HeaderText.Title
+              key={editMode ? "editing" : "display"}
+              value={
+                !editMode && !activeEntry.title
+                  ? formatDate("weekday")
+                  : activeEntry.title
+              }
+              placeholder={formatDate("weekday")}
+              onChangeText={(title) =>
+                dispatch({ type: "UPDATE_TITLE", title })
+              }
+              editable={editMode}
+            />
+            <HeaderText.Subtitle>{formatDate("month")}</HeaderText.Subtitle>
+            <HeaderText.SubtitleFaded>
               {formatDate("year")}
-            </ThemedText>
-          </PageHeader.Meta>
-        </PageHeader>
+            </HeaderText.SubtitleFaded>
+          </HeaderText>
+        </StickyHeader>
 
         <FadeInOnMount>
           <Fragment key={activeEntry.dayId}>

@@ -1,7 +1,8 @@
 import { OverviewItems } from "@/components/collections/OverviewItems";
+import { HeaderText } from "@/components/interface/HeaderText";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { PageHeader } from "@/components/page/PageHeader";
 import { PageScroll } from "@/components/page/PageScroll";
+import { StickyHeader } from "@/components/page/StickyHeader";
 
 export function OverviewPage({
   collection,
@@ -22,25 +23,27 @@ export function OverviewPage({
         resetKey={`collection-${collection.collectionId}`}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 130 }}
       >
-        <PageHeader>
-          <PageHeader.Badge variant="secondary">
-            <ThemedText type="date-number" color="title">
-              {String(collectionItems.length).padStart(2, "0")}
-            </ThemedText>
-          </PageHeader.Badge>
-          <PageHeader.Title
-            key={editable ? "editing" : "display"}
-            value={
-              !editable && !collection.name ? "New Collection" : collection.name
-            }
-            placeholder="New Collection"
-            editable={editable}
-            onChangeText={onChangeName}
-          />
-          <PageHeader.Meta>
-            <ThemedText type="subtitle">Collection</ThemedText>
-          </PageHeader.Meta>
-        </PageHeader>
+        <StickyHeader>
+          <HeaderText>
+            <HeaderText.Badge variant="secondary">
+              <ThemedText type="date-number" color="title">
+                {String(collectionItems.length).padStart(2, "0")}
+              </ThemedText>
+            </HeaderText.Badge>
+            <HeaderText.Title
+              key={editable ? "editing" : "display"}
+              value={
+                !editable && !collection.name
+                  ? "New Collection"
+                  : collection.name
+              }
+              placeholder="New Collection"
+              editable={editable}
+              onChangeText={onChangeName}
+            />
+            <HeaderText.Subtitle>Collection</HeaderText.Subtitle>
+          </HeaderText>
+        </StickyHeader>
         <OverviewItems
           key={collection.collectionId}
           items={collectionItems}
