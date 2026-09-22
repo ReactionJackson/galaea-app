@@ -1,22 +1,38 @@
 import { HapticTab } from "@/components/interface/HapticTab";
-import { Colors } from "@/constants/theme";
 import { AppProvider } from "@/context/AppContext";
+import { useSettings } from "@/context/SettingsContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
 export default function TabLayout() {
+  const { accent } = useSettings();
+
   return (
     <AppProvider>
       <Tabs
         initialRouteName="journal"
         screenOptions={{
-          tabBarActiveTintColor: Colors.accent,
+          tabBarActiveTintColor: accent,
           headerShown: false,
           tabBarButton: HapticTab,
         }}
       >
         {/* Required by Expo Router to resolve the root path — hidden from the tab bar */}
         <Tabs.Screen name="index" options={{ href: null }} />
+
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: "Settings",
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons
+                size={28}
+                name={focused ? "settings" : "settings-outline"}
+                color={color}
+              />
+            ),
+          }}
+        />
 
         <Tabs.Screen
           name="friends"

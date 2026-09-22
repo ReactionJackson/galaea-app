@@ -71,47 +71,71 @@ export const Colors = {
   },
 };
 
-Colors.badge = {
-  primary: {
-    fill: Colors.accent,
-    border: Colors.transparent,
-  },
-  secondary: {
-    fill: Colors.transparent,
-    border: Colors.buttonBorder,
-  },
-};
+// Everything below is derived from the accent colour, so it can be
+// recomputed live when the user picks a different one in Settings -
+// see SettingsContext. The static Colors.* versions just call this with
+// the default accent, for anything that only ever needs that default.
+export function deriveAccentColors(accent) {
+  return {
+    badgeColors: {
+      primary: {
+        fill: accent,
+        border: Colors.transparent,
+      },
+      secondary: {
+        fill: Colors.transparent,
+        border: Colors.buttonBorder,
+      },
+    },
+    buttonColors: {
+      primary: {
+        text: Colors.white,
+        fill: accent,
+        border: Colors.buttonBorder,
+      },
+      secondary: {
+        text: Colors.black,
+        fill: Colors.transparent,
+        border: Colors.buttonBorder,
+      },
+      "secondary-dark": {
+        text: Colors.white,
+        fill: Colors.transparent,
+        border: Colors.overlayBorder,
+      },
+    },
+    interactButtonColors: {
+      primary: {
+        fill: accent,
+        border: Colors.buttonBorder,
+        icon: Colors.white,
+      },
+      secondary: {
+        fill: Colors.editButtonBackground,
+        border: Colors.tags.default.primary,
+        icon: Colors.tags.default.primary,
+      },
+    },
+  };
+}
 
-Colors.button = {
-  primary: {
-    text: Colors.white,
-    fill: Colors.accent,
-    border: Colors.buttonBorder,
-  },
-  secondary: {
-    text: Colors.black,
-    fill: Colors.transparent,
-    border: Colors.buttonBorder,
-  },
-  "secondary-dark": {
-    text: Colors.white,
-    fill: Colors.transparent,
-    border: Colors.overlayBorder,
-  },
-};
+const defaultAccentColors = deriveAccentColors(Colors.accent);
+Colors.badge = defaultAccentColors.badgeColors;
+Colors.button = defaultAccentColors.buttonColors;
+Colors.interactButton = defaultAccentColors.interactButtonColors;
 
-Colors.interactButton = {
-  primary: {
-    fill: Colors.accent,
-    border: Colors.buttonBorder,
-    icon: Colors.white,
-  },
-  secondary: {
-    fill: Colors.editButtonBackground,
-    border: Colors.tags.default.primary,
-    icon: Colors.tags.default.primary,
-  },
-};
+// Preset options for the accent colour picker in Settings - reuses the
+// existing tag palette so it stays consistent with colours already in the app.
+export const ACCENT_SWATCHES = [
+  Colors.accent,
+  Colors.tags.green.primary,
+  Colors.tags.blue.primary,
+  Colors.tags.yellow.primary,
+  Colors.tags.purple.primary,
+  Colors.tags.teal.primary,
+  Colors.tags.pink.primary,
+  Colors.tags.orange.primary,
+];
 
 export const Fonts = {
   regular: "Outfit400",

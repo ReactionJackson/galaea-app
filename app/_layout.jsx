@@ -1,4 +1,5 @@
 import { AppHeader } from "@/components/AppHeader";
+import { SettingsProvider } from "@/context/SettingsContext";
 import {
   Outfit_400Regular as Outfit400,
   Outfit_500Medium as Outfit500,
@@ -34,11 +35,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={DefaultTheme}>
-      <AppHeader />
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-      <StatusBar style="dark" />
+      <SettingsProvider>
+        <AppHeader />
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+        <StatusBar style="dark" />
+      </SettingsProvider>
     </ThemeProvider>
   );
 }

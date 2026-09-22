@@ -3,6 +3,7 @@ import {
   CONDENSED_BUTTON_HEIGHT,
   FADE_TRANSITION_DURATION,
 } from "@/constants/values";
+import { useSettings } from "@/context/SettingsContext";
 import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { triggerHaptics } from "@/utils/haptics";
 import { Children, cloneElement, isValidElement } from "react";
@@ -32,7 +33,8 @@ export function InteractButton({
   style,
   children,
 }) {
-  const { fill, border, icon } = Colors.interactButton[variant];
+  const { interactButtonColors } = useSettings();
+  const { fill, border, icon } = interactButtonColors[variant];
 
   const coloredChildren = Children.map(children, (child) =>
     isValidElement(child)

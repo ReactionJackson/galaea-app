@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
+import { useSettings } from "@/context/SettingsContext";
 import { Children } from "react";
 import styled from "styled-components/native";
 
@@ -110,6 +111,7 @@ function Badge({
   children,
   ...rest
 }) {
+  const { badgeColors } = useSettings();
   if (shape === "image") {
     return (
       <BadgeImage $size={size} {...rest}>
@@ -117,7 +119,7 @@ function Badge({
       </BadgeImage>
     );
   }
-  const { fill, border } = Colors.badge[variant];
+  const { fill, border } = badgeColors[variant];
   return (
     <BadgeCircle
       $backgroundColor={fill}

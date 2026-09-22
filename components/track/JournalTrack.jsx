@@ -1,10 +1,10 @@
-import { Colors } from "@/constants/theme";
 import {
   DAY_CIRCLE_HEIGHT,
   INDICATOR_DOT_SCALE_DURATION,
   TRACK_GAP,
 } from "@/constants/values";
 import { resolveEntryGalleryPairs, useApp } from "@/context/AppContext";
+import { useSettings } from "@/context/SettingsContext";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
 import { deleteDroppedImages } from "@/utils/images";
 import { triggerHaptics } from "@/utils/haptics";
@@ -50,7 +50,7 @@ const RedIndicator = styled(Animated.View)`
   width: ${DAY_CIRCLE_HEIGHT}px;
   height: ${DAY_CIRCLE_HEIGHT}px;
   border-radius: 50%;
-  background-color: ${Colors.accent};
+  background-color: ${({ $accent }) => $accent};
   pointer-events: none;
 `;
 
@@ -62,6 +62,7 @@ export function JournalTrack({
   onControlsChange = () => {},
 }) {
   const { state, dispatch } = useApp();
+  const { accent } = useSettings();
   const { entries, editMode } = state;
 
   const showAddButton = useMemo(() => {
@@ -260,7 +261,7 @@ export function JournalTrack({
           />
         ))}
       </MonthLabels>
-      <RedIndicator style={indicatorStyle} />
+      <RedIndicator $accent={accent} style={indicatorStyle} />
       <ScrollContainer
         horizontal
         ref={trackRef}
