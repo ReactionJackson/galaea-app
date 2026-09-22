@@ -270,7 +270,7 @@ export const ItemsTrack = memo(function ItemsTrack({
         <CollectionCard
           thumbnails={collectionThumbnails}
           active
-          inactiveOpacity={locked ? 0.1 : 0.5}
+          inactiveOpacity={locked ? 0.5 : 1}
           flipped={browsingItems}
           onPress={onPressBack}
           disabled={locked}
@@ -279,7 +279,7 @@ export const ItemsTrack = memo(function ItemsTrack({
           <AddItemCard
             width={EMPTY_CARD_WIDTH}
             active={activeBookend === "add"}
-            inactiveOpacity={locked ? 0.1 : 0.5}
+            inactiveOpacity={locked ? 0.5 : 1}
             onPress={handlePressAddBookend}
             disabled={locked}
           />
@@ -317,7 +317,7 @@ export const ItemsTrack = memo(function ItemsTrack({
           <CollectionCard
             thumbnails={collectionThumbnails}
             active={activeBookend === "collection"}
-            inactiveOpacity={locked ? 0.1 : 0.5}
+            inactiveOpacity={locked ? 0.5 : 1}
             flipped={browsingItems}
             onPress={handlePressCollectionCard}
             disabled={locked}
@@ -339,7 +339,7 @@ export const ItemsTrack = memo(function ItemsTrack({
                   activeBookend == null &&
                   ((isScrolling && !isInternalScroll) || activeIndex === i)
                 }
-                inactiveOpacity={dimmed || locked ? 0.1 : 0.5}
+                inactiveOpacity={dimmed || locked ? 0.5 : 1}
                 onPress={() => handlePressItem(i)}
                 disabled={locked}
               />
@@ -354,7 +354,7 @@ export const ItemsTrack = memo(function ItemsTrack({
             <AddItemCard
               width={EMPTY_CARD_WIDTH}
               active={activeBookend === "add"}
-              inactiveOpacity={locked ? 0.1 : 0.5}
+              inactiveOpacity={locked ? 0.5 : 1}
               onPress={handlePressAddBookend}
               disabled={locked}
             />
