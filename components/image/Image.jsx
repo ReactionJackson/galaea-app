@@ -17,7 +17,6 @@ const ShadowWrap = styled.View`
 `;
 
 const StyledImage = styled(ExpoImage).attrs({
-  contentFit: "contain",
   cachePolicy: "memory-disk",
 })`
   position: absolute;
@@ -36,6 +35,7 @@ export function Image({
   radius,
   shadowRadius,
   shadowOpacity,
+  contentFit = "contain",
   style,
   ...rest
 }) {
@@ -53,7 +53,14 @@ export function Image({
       shadowOpacity={shadowOpacity}
       style={style}
     >
-      {exists && <StyledImage source={{ uri }} radius={radius} {...rest} />}
+      {exists && (
+        <StyledImage
+          source={{ uri }}
+          radius={radius}
+          contentFit={contentFit}
+          {...rest}
+        />
+      )}
     </ShadowWrap>
   );
 }

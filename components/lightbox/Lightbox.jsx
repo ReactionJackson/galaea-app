@@ -1,6 +1,7 @@
 import { LIGHTBOX_PADDING } from "@/constants/values";
 import { BlurView } from "expo-blur";
 import { Modal, Pressable } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import styled from "styled-components/native";
 
 const Backdrop = styled(BlurView).attrs({
@@ -36,9 +37,11 @@ export function Lightbox({ visible, onClose, children }) {
       animationType="fade"
       onRequestClose={onClose}
     >
-      <Backdrop>
-        <CenteredArea onPress={onClose}>{children}</CenteredArea>
-      </Backdrop>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Backdrop>
+          <CenteredArea onPress={onClose}>{children}</CenteredArea>
+        </Backdrop>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
