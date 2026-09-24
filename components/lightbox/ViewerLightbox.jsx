@@ -1,9 +1,20 @@
 import { GALLERY_ITEM_RADIUS } from "@/components/gallery/shared";
-import { Image } from "@/components/image/Image";
 import { CAPTION_SETTLE_DELAY_DURATION } from "@/constants/values";
+import {
+  Canvas,
+  FilterMode,
+  Group,
+  MipmapMode,
+  rect,
+  rrect,
+  Image as SkiaImage,
+  useImage,
+} from "@shopify/react-native-skia";
+import { useState } from "react";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, {
+import {
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withDelay,
   withSpring,
@@ -14,7 +25,6 @@ import { ThemedText } from "../interface/ThemedText";
 import { Lightbox } from "./Lightbox";
 
 const MAX_SCALE = 4;
-const IMAGE_BLEED_SCALE = 1 + MAX_SCALE * 0.005;
 
 const Container = styled.View`
   width: 100%;
@@ -24,11 +34,13 @@ const Container = styled.View`
 
 const ImageCrop = styled.View`
   width: 100%;
-  border-radius: ${GALLERY_ITEM_RADIUS}px;
-  overflow: hidden;
+  aspect-ratio: ${({ $aspectRatio }) => $aspectRatio ?? 1};
 `;
 
 function InteractiveImage({ image }) {
+  const skImage = useImage(image.uri);
+  const [layout, setLayout] = useState({ width: 0, height: 0 });
+
   const scale = useSharedValue(1);
   const rotation = useSharedValue(0);
   const translateX = useSharedValue(0);
@@ -39,51 +51,37 @@ function InteractiveImage({ image }) {
   const containerHeight = useSharedValue(0);
   const focalOffsetX = useSharedValue(0);
   const focalOffsetY = useSharedValue(0);
-  const anchorTranslateX = useSharedValue(0);
-  const anchorTranslateY = useSharedValue(0);
-
-  const updateAnchor = () => {
-    "worklet";
-    const cos = Math.cos(rotation.value);
-    const sin = Math.sin(rotation.value);
-    const rotatedX = focalOffsetX.value * cos - focalOffsetY.value * sin;
-    const rotatedY = focalOffsetX.value * sin + focalOffsetY.value * cos;
-    anchorTranslateX.value = focalOffsetX.value - scale.value * rotatedX;
-    anchorTranslateY.value = focalOffsetY.value - scale.value * rotatedY;
-  };
 
   const pinch = Gesture.Pinch()
     .onBegin((e) => {
+      if (activeGestures.value === 0) {
+        focalOffsetX.value = e.focalX - containerWidth.value / 2;
+        focalOffsetY.value = e.focalY - containerHeight.value / 2;
+      }
       activeGestures.value += 1;
-      focalOffsetX.value = e.focalX - containerWidth.value / 2;
-      focalOffsetY.value = e.focalY - containerHeight.value / 2;
     })
     .onUpdate((e) => {
       scale.value = Math.min(e.scale, MAX_SCALE);
-      updateAnchor();
     })
     .onFinalize(() => {
       activeGestures.value = Math.max(0, activeGestures.value - 1);
       scale.value = withSpring(1);
-      anchorTranslateX.value = withSpring(0);
-      anchorTranslateY.value = withSpring(0);
     });
 
   const rotate = Gesture.Rotation()
     .onBegin((e) => {
+      if (activeGestures.value === 0) {
+        focalOffsetX.value = e.anchorX - containerWidth.value / 2;
+        focalOffsetY.value = e.anchorY - containerHeight.value / 2;
+      }
       activeGestures.value += 1;
-      focalOffsetX.value = e.anchorX - containerWidth.value / 2;
-      focalOffsetY.value = e.anchorY - containerHeight.value / 2;
     })
     .onUpdate((e) => {
       rotation.value = e.rotation;
-      updateAnchor();
     })
     .onFinalize(() => {
       activeGestures.value = Math.max(0, activeGestures.value - 1);
       rotation.value = withSpring(0);
-      anchorTranslateX.value = withSpring(0);
-      anchorTranslateY.value = withSpring(0);
     });
 
   const pan = Gesture.Pan()
@@ -103,14 +101,24 @@ function InteractiveImage({ image }) {
 
   const gesture = Gesture.Simultaneous(pinch, rotate, pan);
 
-  const imageStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value + anchorTranslateX.value },
-      { translateY: translateY.value + anchorTranslateY.value },
+  const marginX = (layout.width * MAX_SCALE) / 2;
+  const marginY = (layout.height * MAX_SCALE) / 2;
+  const canvasWidth = layout.width + marginX * 2;
+  const canvasHeight = layout.height + marginY * 2;
+  const transform = useDerivedValue(() => {
+    const pivotX = marginX + layout.width / 2 + focalOffsetX.value;
+    const pivotY = marginY + layout.height / 2 + focalOffsetY.value;
+    return [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { translateX: pivotX },
+      { translateY: pivotY },
       { scale: scale.value },
-      { rotateZ: `${rotation.value}rad` },
-    ],
-  }));
+      { rotate: rotation.value },
+      { translateX: -pivotX },
+      { translateY: -pivotY },
+    ];
+  });
 
   const captionStyle = useAnimatedStyle(() => ({
     opacity:
@@ -122,23 +130,49 @@ function InteractiveImage({ image }) {
   return (
     <>
       <GestureDetector gesture={gesture}>
-        <Animated.View
-          style={imageStyle}
+        <ImageCrop
+          $aspectRatio={image.aspectRatio}
           onLayout={(e) => {
-            containerWidth.value = e.nativeEvent.layout.width;
-            containerHeight.value = e.nativeEvent.layout.height;
+            const { width, height } = e.nativeEvent.layout;
+            containerWidth.value = width;
+            containerHeight.value = height;
+            setLayout({ width, height });
           }}
         >
-          <ImageCrop>
-            <Image
-              {...image}
-              width="100%"
-              radius={GALLERY_ITEM_RADIUS}
-              contentFit="cover"
-              style={{ transform: [{ scale: IMAGE_BLEED_SCALE }] }}
-            />
-          </ImageCrop>
-        </Animated.View>
+          {skImage && layout.width > 0 && layout.height > 0 && (
+            <Canvas
+              style={{
+                position: "absolute",
+                left: -marginX,
+                top: -marginY,
+                width: canvasWidth,
+                height: canvasHeight,
+              }}
+            >
+              <Group
+                transform={transform}
+                clip={rrect(
+                  rect(marginX, marginY, layout.width, layout.height),
+                  GALLERY_ITEM_RADIUS,
+                  GALLERY_ITEM_RADIUS,
+                )}
+              >
+                <SkiaImage
+                  image={skImage}
+                  x={marginX}
+                  y={marginY}
+                  width={layout.width}
+                  height={layout.height}
+                  fit="cover"
+                  sampling={{
+                    filter: FilterMode.Linear,
+                    mipmap: MipmapMode.Linear,
+                  }}
+                />
+              </Group>
+            </Canvas>
+          )}
+        </ImageCrop>
       </GestureDetector>
       {!!image.caption && (
         <ThemedText
