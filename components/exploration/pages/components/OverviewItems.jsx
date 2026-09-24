@@ -3,7 +3,7 @@ import {
   OverviewItemsBubble,
   Placeholder,
   ROW_HEIGHT,
-} from "@/components/collections/OverviewItemsBubble";
+} from "@/components/exploration/pages/components/OverviewItemsBubble";
 import { TRACK_GAP } from "@/constants/values";
 import { usePagedScrollWidth } from "@/hooks/usePagedScrollWidth";
 import { useMemo } from "react";

@@ -1,10 +1,10 @@
-import { OverviewItems } from "@/components/collections/OverviewItems";
+import { OverviewItems } from "@/components/exploration/pages/components/OverviewItems";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { PageScroll } from "@/components/page/PageScroll";
-import { StickyHeader } from "@/components/page/StickyHeader";
+import { PageScroll } from "@/components/exploration/pages/components/PageScroll";
+import { StickyHeader } from "@/components/exploration/pages/components/StickyHeader";
 
-export function OverviewPage({
+export function CollectionPage({
   collection,
   items,
   editable = false,

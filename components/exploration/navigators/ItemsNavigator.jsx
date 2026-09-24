@@ -11,8 +11,11 @@ import { triggerHaptics } from "@/utils/haptics";
 import { memo, useEffect, useMemo, useRef } from "react";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { CollectionCard } from "./CollectionCard";
-import { AddItemCard, ItemCard } from "./ItemCard";
+import { CollectionCard } from "@/components/exploration/navigators/components/CollectionCard";
+import {
+  AddItemCard,
+  ItemCard,
+} from "@/components/exploration/navigators/components/ItemCard";
 
 // Styled Components:
 
@@ -24,7 +27,7 @@ const ScrollContainer = styled(Animated.ScrollView)`
 
 // Component:
 
-export const ItemsTrack = memo(function ItemsTrack({
+export const ItemsNavigator = memo(function ItemsNavigator({
   collectionId,
   initialItemId = null,
   initialAddItem = false,

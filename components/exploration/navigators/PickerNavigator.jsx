@@ -1,4 +1,4 @@
-import { TrackStack } from "@/components/track/TrackStack";
+import { TrackStack } from "@/components/exploration/navigators/NavigatorManager";
 import { Colors } from "@/constants/theme";
 import { ITEM_HEIGHT } from "@/constants/values";
 import { forwardRef, useCallback } from "react";
@@ -19,7 +19,7 @@ const TrackArea = styled.View`
   height: ${ITEM_HEIGHT + SCROLL_SLACK}px;
 `;
 
-export const PickerTrack = forwardRef(function PickerTrack(
+export const PickerNavigator = forwardRef(function PickerNavigator(
   { attachedItemIds = [], onSelect = () => {} },
   ref,
 ) {

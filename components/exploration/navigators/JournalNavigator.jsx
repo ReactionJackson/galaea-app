@@ -3,22 +3,30 @@ import {
   INDICATOR_DOT_SCALE_DURATION,
   TRACK_GAP,
 } from "@/constants/values";
-import { resolveEntryGalleryPairs, useApp } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
 import { useSettings } from "@/context/SettingsContext";
+import { useEditModeActions } from "@/hooks/useEditModeActions";
+import { useRowManager } from "@/hooks/useRowManager";
 import { useSnapTrack } from "@/hooks/useSnapTrack";
-import { deleteDroppedImages } from "@/utils/images";
 import { triggerHaptics } from "@/utils/haptics";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Animated, {
   Easing,
+  scrollTo,
+  useAnimatedReaction,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import styled from "styled-components/native";
-import { AddDayCircle, DayCircle } from "./DayCircle";
-import { StickyLabel } from "./StickyLabel";
+import {
+  AddDayCircle,
+  DayCircle,
+} from "@/components/exploration/navigators/components/DayCircle";
+import { StickyLabel } from "@/components/exploration/navigators/components/StickyLabel";
+import { NavigatorManager } from "@/components/exploration/navigators/NavigatorManager";
 
 // Styled Components:
 
@@ -56,14 +64,13 @@ const RedIndicator = styled(Animated.View)`
 
 // Component:
 
-export function JournalTrack({
-  onEnterEdit = () => {},
-  onCancelEdit = () => {},
-  onControlsChange = () => {},
-}) {
-  const { state, dispatch } = useApp();
+export function JournalNavigator() {
+  const { progress, activeDriver, setDriver, setProgress, settleDriver } =
+    useRowManager();
+  const { state, activeEntry, dispatch } = useApp();
   const { accent } = useSettings();
   const { entries, editMode } = state;
+  const { onEnterEdit, onCancelEdit, onSaveEdit } = useEditModeActions();
 
   const showAddButton = useMemo(() => {
     if (entries.length === 0) return true;
@@ -134,7 +141,6 @@ export function JournalTrack({
   const {
     ADD_INDEX,
     activeIndex,
-    isScrolling,
     isInternalScroll,
     basePadding,
     paddingEnd,
@@ -142,6 +148,7 @@ export function JournalTrack({
     initialContentOffset,
     trackRef,
     goToIndex,
+    syncActiveIndex,
     handleTrackLayout,
     handleContentSizeChange,
     handleScrollBeginDrag,
@@ -173,30 +180,76 @@ export function JournalTrack({
     onCancelAdd: onCancelEdit,
   });
 
-  useEffect(() => {
-    onControlsChange({
-      onCancel: () => goToIndex(activeIndex),
-      onSave: () => {
-        for (const { draftGallery, storedGallery } of resolveEntryGalleryPairs(
-          state.items,
-          state.draft?.items ?? [],
-        )) {
-          deleteDroppedImages(storedGallery, draftGallery);
-        }
-        dispatch({ type: "SAVE_EDIT" });
-      },
-    });
-  });
+  const syncActiveDay = (index) => {
+    const entry = entries[index];
+    if (!entry) return;
+    syncActiveIndex(index);
+    if (entry.dayId !== activeEntry.dayId) {
+      dispatch({ type: "CHANGE_DAY", dayId: entry.dayId });
+    }
+  };
+
+  const [isPaginating, setIsPaginating] = useState(false);
+
+  const handleDriverChange = (dragging, settledIndex) => {
+    if (!dragging && settledIndex !== null) {
+      syncActiveDay(settledIndex);
+    }
+    setIsPaginating(dragging);
+  };
+
+  useAnimatedReaction(
+    () => activeDriver.value !== null,
+    (dragging, previous) => {
+      if (dragging === previous) return;
+      const settledIndex = dragging ? null : Math.round(progress.value);
+      scheduleOnRN(handleDriverChange, dragging, settledIndex);
+    },
+  );
 
   const scrollX = useSharedValue(0);
   const halfTrackWidth = useSharedValue(0);
   const trackPaddingLeft = useSharedValue(0);
+  const itemStride = DAY_CIRCLE_HEIGHT + TRACK_GAP;
+
+  const hasScrolledSinceTouch = useSharedValue(false);
+
+  const handleTrackTouchStart = () => {
+    if (editMode) return;
+    hasScrolledSinceTouch.value = false;
+    setDriver("bottom");
+  };
+
+  const handleTrackTouchEnd = () => {
+    if (activeDriver.value === "bottom" && !hasScrolledSinceTouch.value) {
+      settleDriver("bottom");
+    }
+  };
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
+      hasScrolledSinceTouch.value = true;
       scrollX.value = event.contentOffset.x;
+      if (activeDriver.value === "bottom") {
+        setProgress(event.contentOffset.x / itemStride);
+      }
+    },
+    onBeginDrag: () => {
+      setDriver("bottom");
+    },
+    onMomentumEnd: () => {
+      settleDriver("bottom");
     },
   });
+
+  useAnimatedReaction(
+    () => progress.value,
+    (value) => {
+      if (activeDriver.value !== "bottom") {
+        scrollTo(trackRef, value * itemStride, 0, false);
+      }
+    },
+  );
 
   useEffect(() => {
     trackPaddingLeft.value = basePadding;
@@ -211,7 +264,7 @@ export function JournalTrack({
   const indicatorOpacity = useSharedValue(1);
 
   useEffect(() => {
-    if (isScrolling) {
+    if (isPaginating) {
       const config = {
         duration: INDICATOR_DOT_SCALE_DURATION,
         easing: Easing.in(Easing.quad),
@@ -227,7 +280,7 @@ export function JournalTrack({
       indicatorOpacity.value = withTiming(1, config);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isScrolling]);
+  }, [isPaginating]);
 
   const indicatorStyle = useAnimatedStyle(() => ({
     opacity: indicatorOpacity.value,
@@ -237,7 +290,13 @@ export function JournalTrack({
   // Render:
 
   return (
-    <>
+    <NavigatorManager
+      editMode={editMode}
+      trackHeight={90}
+      trackPaddingTop={25}
+      onCancel={onCancelEdit}
+      onSave={onSaveEdit}
+    >
       <YearLabels>
         {yearGroups.map((group) => (
           <StickyLabel
@@ -268,9 +327,16 @@ export function JournalTrack({
         contentOffset={initialContentOffset}
         onScroll={scrollHandler}
         onLayout={handleTrackLayoutAndWidth}
+        onTouchStart={handleTrackTouchStart}
+        onTouchEnd={handleTrackTouchEnd}
+        onTouchCancel={handleTrackTouchEnd}
         onScrollBeginDrag={handleScrollBeginDrag}
-        onScrollEndDrag={handleScrollEndDrag}
-        onMomentumScrollEnd={handleMomentumScrollEnd}
+        onScrollEndDrag={(event) => {
+          if (activeDriver.value === "bottom") handleScrollEndDrag(event);
+        }}
+        onMomentumScrollEnd={(event) => {
+          if (activeDriver.value === "bottom") handleMomentumScrollEnd(event);
+        }}
         scrollEnabled={!editMode}
         snapToOffsets={offsets}
         decelerationRate="fast"
@@ -288,11 +354,8 @@ export function JournalTrack({
             key={`day-${dayNumber}-${i}`}
             dayNumber={dayNumber}
             isActive={activeIndex === i}
-            highlighted={
-              activeIndex === i && !(isScrolling && !isInternalScroll)
-            }
+            highlighted={activeIndex === i && !isPaginating}
             isInternalScroll={isInternalScroll}
-            editMode={editMode}
             onPress={() => goToIndex(i)}
           />
         ))}
@@ -300,14 +363,11 @@ export function JournalTrack({
           <AddDayCircle
             key="add-button"
             isActive={activeIndex === ADD_INDEX}
-            highlighted={
-              activeIndex === ADD_INDEX && !(isScrolling && !isInternalScroll)
-            }
-            editMode={editMode}
+            highlighted={activeIndex === ADD_INDEX && !isPaginating}
             onPress={() => goToIndex(ADD_INDEX)}
           />
         )}
       </ScrollContainer>
-    </>
+    </NavigatorManager>
   );
 }

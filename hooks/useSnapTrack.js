@@ -1,6 +1,7 @@
 import { triggerHaptics } from "@/utils/haptics";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useWindowDimensions } from "react-native";
+import { useAnimatedRef } from "react-native-reanimated";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // useSnapTrack
@@ -40,7 +41,10 @@ export function useSnapTrack({
   const [halfTrackWidth, setHalfTrackWidth] = useState(windowWidth / 2);
   const [addActive, setAddActive] = useState(false);
 
-  const trackRef = useRef(null);
+  // An animated ref rather than a plain one so a caller can also drive
+  // this same scroll view imperatively from a worklet (scrollTo), on top of
+  // the ordinary trackRef.current?.scrollTo(...) calls already used below.
+  const trackRef = useAnimatedRef();
   const scrollToAddAfterResize = useRef(false);
   const prevItemCountRef = useRef(itemCount);
   const prevItemWidthsRef = useRef(itemWidths);
@@ -148,6 +152,12 @@ export function useSnapTrack({
 
   const handleTrackLayout = (event) => {
     setHalfTrackWidth(event.nativeEvent.layout.width / 2);
+  };
+
+  const syncActiveIndex = (index) => {
+    if (index === activeIndex || index < 0 || index >= itemCount) return;
+    setActiveIndex(index);
+    activeItemIdRef.current = itemIds[index] ?? null;
   };
 
   const handleContentSizeChange = () => {
@@ -319,6 +329,7 @@ export function useSnapTrack({
     trackRef,
     goToIndex,
     scrollToIndex,
+    syncActiveIndex,
     handleTrackLayout,
     handleContentSizeChange,
     handleScrollBeginDrag,

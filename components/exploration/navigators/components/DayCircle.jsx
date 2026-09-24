@@ -6,6 +6,7 @@ import {
   DAY_CIRCLE_HEIGHT,
   DAY_CIRCLE_HIGHLIGHT_DURATION,
 } from "@/constants/values";
+import { useApp } from "@/context/AppContext";
 import { useFadeStyle } from "@/hooks/useFadeStyle";
 import { Pressable } from "react-native";
 import Animated from "react-native-reanimated";
@@ -25,9 +26,11 @@ export function DayCircle({
   isActive,
   highlighted,
   isInternalScroll,
-  editMode,
   onPress,
 }) {
+  const {
+    state: { editMode },
+  } = useApp();
   const fadeStyle = useFadeStyle(!editMode || isActive, 0.1);
 
   return (
@@ -50,7 +53,10 @@ export function DayCircle({
   );
 }
 
-export function AddDayCircle({ isActive, highlighted, editMode, onPress }) {
+export function AddDayCircle({ isActive, highlighted, onPress }) {
+  const {
+    state: { editMode },
+  } = useApp();
   const fadeStyle = useFadeStyle(!editMode || isActive, 0.1);
 
   return (

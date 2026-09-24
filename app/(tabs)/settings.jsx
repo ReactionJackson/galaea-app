@@ -1,8 +1,8 @@
 import { HeaderText } from "@/components/interface/HeaderText";
 import { TickIcon } from "@/components/interface/icons/TickIcon";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { PageScroll } from "@/components/page/PageScroll";
-import { StickyHeader } from "@/components/page/StickyHeader";
+import { PageScroll } from "@/components/exploration/pages/components/PageScroll";
+import { StickyHeader } from "@/components/exploration/pages/components/StickyHeader";
 import { ACCENT_SWATCHES, Colors } from "@/constants/theme";
 import { useSettings } from "@/context/SettingsContext";
 import { triggerHaptics } from "@/utils/haptics";

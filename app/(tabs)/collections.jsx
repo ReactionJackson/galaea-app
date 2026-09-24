@@ -1,7 +1,7 @@
-import { ItemPage } from "@/components/collections/ItemPage";
-import { OverviewPage } from "@/components/collections/OverviewPage";
-import { TrackStack } from "@/components/track/TrackStack";
-import { TrackTray } from "@/components/track/TrackTray";
+import { ItemPage } from "@/components/exploration/pages/ItemPage";
+import { CollectionPage } from "@/components/exploration/pages/CollectionPage";
+import { TrackStack } from "@/components/exploration/navigators/NavigatorManager";
+import { NavigatorManager } from "@/components/exploration/navigators/NavigatorManager";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
 import { triggerHaptics } from "@/utils/haptics";
@@ -245,7 +245,7 @@ export default function CollectionScreen() {
   return (
     <Container>
       {showOverviewPage ? (
-        <OverviewPage
+        <CollectionPage
           collection={activeCollection}
           items={items}
           editable
@@ -275,7 +275,7 @@ export default function CollectionScreen() {
         />
       )}
 
-      <TrackTray
+      <NavigatorManager
         editMode={editMode}
         trackHeight={125}
         trackPaddingTop={6}
@@ -296,7 +296,7 @@ export default function CollectionScreen() {
           onAddCollection={handleAddCollection}
           onControlsChange={setTrayControls}
         />
-      </TrackTray>
+      </NavigatorManager>
     </Container>
   );
 }
