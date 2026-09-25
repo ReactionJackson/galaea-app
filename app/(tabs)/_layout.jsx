@@ -10,7 +10,7 @@ export default function TabLayout() {
   return (
     <AppProvider>
       <Tabs
-        initialRouteName="journal"
+        initialRouteName="exploration"
         screenOptions={{
           tabBarActiveTintColor: accent,
           headerShown: false,
@@ -70,6 +70,20 @@ export default function TabLayout() {
               <Ionicons
                 size={28}
                 name={focused ? "book" : "book-outline"}
+                color={color}
+              />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="exploration"
+          options={{
+            title: "Exploration",
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons
+                size={28}
+                name={focused ? "flask" : "flask-outline"}
                 color={color}
               />
             ),
