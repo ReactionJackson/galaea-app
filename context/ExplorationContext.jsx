@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { loadContent } from "@/utils/storage";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const ExplorationContext = createContext(null);
 
@@ -11,27 +12,60 @@ export function ExplorationProvider({ children }) {
   const [images, setImages] = useState([]);
   const [tags, setTags] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [isContentLoaded, setIsContentLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadContent().then((content) => {
+      if (cancelled) return;
+      if (content) {
+        setPosts(content.posts ?? []);
+        setCollections(content.collections ?? []);
+        setItems(content.items ?? []);
+        setEntries(content.entries ?? []);
+        setGalleries(content.galleries ?? []);
+        setImages(content.images ?? []);
+        setTags(content.tags ?? []);
+        setIsEditing(content.isEditing ?? false);
+      }
+      setIsContentLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const value = useMemo(
     () => ({
       posts,
-      setPosts,
       collections,
-      setCollections,
       items,
-      setItems,
       entries,
-      setEntries,
       galleries,
-      setGalleries,
       images,
-      setImages,
       tags,
-      setTags,
       isEditing,
+      isContentLoaded,
+      setPosts,
+      setCollections,
+      setItems,
+      setEntries,
+      setGalleries,
+      setImages,
+      setTags,
       setIsEditing,
     }),
-    [posts, collections, items, entries, galleries, images, tags, isEditing],
+    [
+      posts,
+      collections,
+      items,
+      entries,
+      galleries,
+      images,
+      tags,
+      isEditing,
+      isContentLoaded,
+    ],
   );
 
   return (
@@ -68,7 +102,7 @@ export function useApp() {
 //   text: "",
 //   date: new Date(),
 //   tags: [], // [tag.id]
-//   isDraft: true,
+//   draft: {},
 // };
 
 // const collection = {
@@ -76,7 +110,7 @@ export function useApp() {
 //   title: "",
 //   items: [], // [item.id]
 //   order: null,
-//   isDraft: true,
+//   draft: {},
 // };
 
 // const item = {
@@ -89,7 +123,7 @@ export function useApp() {
 //   },
 //   entries: [], // [entry.id]
 //   order: null,
-//   isDraft: true,
+//   draft: {},
 // }
 
 // const entry = {
@@ -101,7 +135,7 @@ export function useApp() {
 //     post: null, // post.id
 //     item: null, // item.id
 //   },
-//   isDraft: true,
+//   draft: {},
 // };
 
 // const gallery = {
@@ -113,7 +147,7 @@ export function useApp() {
 //       order: null,
 //     }
 //   ],
-//   isDraft: true,
+//   draft: {},
 // }
 
 // const image = {
@@ -125,12 +159,12 @@ export function useApp() {
 //   height: null,
 //   contentPosition: null,
 //   aspectRatio: null,
-//   isDraft: true,
+//   draft: {},
 // }
 
 // const tag = {
 //   id: null,
 //   title: "",
 //   color: "",
-//   isDraft: true,
+//   draft: {},
 // }
