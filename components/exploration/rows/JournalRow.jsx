@@ -3,13 +3,18 @@ import { JournalPage } from "@/components/exploration/pages/JournalPage";
 import { RowManager } from "@/components/exploration/rows/RowManager";
 import { useApp } from "@/context/AppContext";
 
-export function JournalRow() {
-  const { state, activeEntry } = useApp();
+// Main Component:
 
+export function JournalRow() {
+  // State and Constants:
+
+  const { state, activeEntry } = useApp();
   const startIndex = Math.max(
     0,
     state.entries.findIndex((e) => e.dayId === activeEntry.dayId),
   );
+
+  // Render:
 
   return (
     <RowManager itemsCount={state.entries.length} startIndex={startIndex}>

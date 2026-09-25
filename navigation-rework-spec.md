@@ -2,16 +2,56 @@
 
 Status: design in progress. Journal's proof of concept (step 1, plus the RowManager compound-component pattern) is built and stable; Collections/Items are not yet ported. This sits alongside `spec.md` rather than replacing any of it, and covers the generalisation of the Journal `RowManager`/`Navigator` proof of concept into the app's whole navigation model.
 
-## Terminology
+## Terminology & Hierarchy
 
-- `ExplorationManager`: the single top level component wrapping the whole main part of the app (Journal and Collections both). Owns `currentTab`, and handles everything to do with moving between `Row`s: which one is currently visible, the transition itself (`transitionRows()`), and anything that ought to happen as a result of that move (the implicit edit-mode cancel on switching tabs, disabling pagination while a page is being edited, and so on). It does not own pagination within a `Row`, that's the `Row`'s own job. Not yet built (stub only).
-- `RowManager`: purely the horizontal navigation mechanism already built in the proof of concept (the shared `progress`/`activeDriver` sync with its `Navigator`, the card stack transform, settling, all of it). It is completely content agnostic, it just expects a number of pages and moves between them, it has no idea what those pages actually contain. Exposed as a compound component rather than taking data/rendering props: `<RowManager itemsCount={} startIndex={}><RowManager.Pages>...</RowManager.Pages><RowManager.Navigator>...</RowManager.Navigator></RowManager>`, so the caller supplies its own pages and its own `Navigator` as children instead of `RowManager` owning any mapping/rendering logic.
-- `JournalRow`, `CollectionsRow`, `ItemsRow`, `AddPageRow`: the actual components used around the app. Each is a thin wrapper that supplies `RowManager` with its own specific set of pages (Journal's day pages, Collections' own pages, a collection's items, an add-X page) and its own `Navigator`, via `RowManager`'s compound children. `RowManager` itself is never used directly, only through one of these. `JournalRow` is built; `CollectionsRow`, `ItemsRow`, and `AddPageRow` are still stubs.
-- `Navigator`: the small horizontal strip mechanism used to jump between a `Row`'s pages, kept strictly to that one job now that edit mode no longer overloads it. There is no single generic `Navigator` component paired to a `Row` by a shared mechanism, instead each domain owns its own (`JournalNavigator`, `CollectionsNavigator`, `ItemsNavigator`), housed directly rather than in a separate wrapper (the old `TrackTray` concept is gone). `JournalNavigator` is built and content agnostic like the rest of the pattern; `CollectionsNavigator`/`ItemsNavigator` exist but are currently still driven by the old picker flip mechanism rather than through a `Row` (see Open questions).
-- `Page`: a single page within a `Row` (`JournalPage`, `CollectionPage`, `ItemPage`, `AddCollectionPage`, `AddItemPage`, `AddJournalPage`).
-- `PageManager`: not in the original terminology, added since. The generic per-page wrapper meant to own the static Edit button + `AnimateHeight` collapse mechanism from step 3, shared across every editable `Page` rather than each `Page` reimplementing it. Currently an empty stub, this is step 3 work.
+Below is a description of the app's core structure. One thing to note initially is that all `XManager` files are there to drive the base functionality of the related level of the app, so the other files have to do as little work as possible and can just deal with loading in the correct content, hooking things up and any specific differences.
 
-A given `Row` is always wired to one specific `Navigator` by hand (the `CollectionsRow` always talks to the `CollectionsNavigator` for example), there is no generic pairing mechanism.
+### Components
+
+This isn't a specific folder but it basically covers all small parts of any gives page. Gallery, Buttons, StickyHeader etc. These have folders at the top level of `/components/` but also some within different areas when they are localised.
+
+### Pages
+
+Pages are any single app view that you scroll through to explore its content. This is basically a traditional app page built up with components.
+
+- `JournalPage`: Contains a title, intro text and tags area, then a list of attached item entries
+- `CollectionPage`: Contains the contents page for a collection of items, which shows a list of all items that work as a shortcut to jump to that item's page
+- `ItemPage`: Contains a hero section and then a chronological list of all entries related to this item
+- `AddXPage:` Contains the empty "create new" page, which is effectively an empty copy of the equivalent pages
+- `PageManager`: Contains all functionality that is shared and needed by Pages.
+
+### Rows
+
+Rows are a sequence of instances of Pages. Instead of the app having a single "Journal Page" where we load in new values in situ for each journal entry, we instead mount and render all journal pages in individual pages almost like a list of cards in a row. This is necessary for both the performance aspect of the app but also for the transitions between pages.
+
+- `JournalRow`: Contains a list of `JournalPage` pages and wires navigation up to the `JournalNavigator`.
+- `CollectionsRow`: Contains a list of `CollectionPage`s and wires navigation up to the `CollectionsNavigator`.
+- `ItemsRow`: Contains a list of `ItemPage`s and wires navigation up to the `ItemsNavigator`.
+- `AddPageRow`: Contains a single `AddXPage`, one row for each.
+- `RowManager`: Contains all functionality shared and needed by rows, including the handling of animated transitions and hooking up Rows to Navigators.
+
+### Navigators
+
+Navigators are the horizontally scrolling components that act as a way of navigating across a row of pages.
+
+- `JournalNavigator`: Contains a set of `DayCircle` components which each relate to a `JournalPage`. It also uses `StickyLabel`s for the year and months that appear above the day circles. The scroll-snapping has regular intervals.
+- `CollectionsNavigator`: Contains a set of `CollectionCard` components which each relate to a `CollectionPage`. The scroll-snapping has regular intervals.
+- `ItemsNavigator`: Contains a set of `ItemCard` components which each relate to an `ItemPage`. The scroll-snapping has irregular intervals due to each item card having a different aspect ratio.
+- `LibraryNavigator`: Contains both the `CollectionsNavigator` and the `ItemsNavigator` and basically acts as a way to transition between the two navigators.
+- `PickerNavigator`: Contains what is essentially the `LibraryNavigator` but with differences as it is used when adding content on a journal page, therefore it doesn't have an edit mode and has a different container.
+- `NavigatorManager`: Contains all functionality that is shared and needed by Navigators. This includes regular and irregular scroll snapping, controlling the active item, edit mode controls such as cancel, save and reorder etc.
+
+### Spaces
+
+Spaces are effectively app pages, though due to how the content loading and animation between content is done, we are faking the app tab navigation with spaces for collections and journal.
+
+- `JournalSpace`: Contains a `JournalRow` and `AddPageRow` for `AddJournalPage`.
+- `CollectionsSpace`: Contains a `CollectionsRow`, an `ItemsRow`, an `AddPageRow` for `AddCollectionPage` and an `AddPageRow` for `AddItemPage`.
+- `SpaceManager`: Contains all functionality that is shared and needed by Spaces. This primarily includes dealing with the transitions between rows.
+
+### Exploration
+
+Exploration is not a folder but a single `ExplorationManager` file that lives at the very top of the stack. It deals with transitioning between spaces and dealing with cancelling edit states when doing so.
 
 ## Open questions
 
