@@ -1,10 +1,8 @@
 import { HeaderText } from "@/components/interface/HeaderText";
 import { TickIcon } from "@/components/interface/icons/TickIcon";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { PageScroll } from "@/components/exploration/pages/components/PageScroll";
-import { StickyHeader } from "@/components/exploration/pages/components/StickyHeader";
 import { ACCENT_SWATCHES, Colors } from "@/constants/theme";
-import { useSettings } from "@/context/SettingsContext";
+import { useApp } from "@/context/AppContext";
 import { triggerHaptics } from "@/utils/haptics";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
@@ -39,36 +37,31 @@ const Swatch = styled.View`
 `;
 
 export default function SettingsScreen() {
-  const { accent, setAccent } = useSettings();
-
+  const { accentColor, setAccentColor } = useApp();
   return (
     <Container>
-      <PageScroll>
-        <StickyHeader>
-          <HeaderText>
-            <HeaderText.Title>Settings</HeaderText.Title>
-          </HeaderText>
-        </StickyHeader>
+      <HeaderText>
+        <HeaderText.Title>Settings</HeaderText.Title>
+      </HeaderText>
 
-        <Section>
-          <ThemedText type="subtitle">Accent Colour</ThemedText>
-          <SwatchRow>
-            {ACCENT_SWATCHES.map((color) => (
-              <Pressable
-                key={color}
-                onPress={() => {
-                  triggerHaptics("Light");
-                  setAccent(color);
-                }}
-              >
-                <Swatch $color={color} $selected={color === accent}>
-                  {color === accent && <TickIcon color={Colors.white} />}
-                </Swatch>
-              </Pressable>
-            ))}
-          </SwatchRow>
-        </Section>
-      </PageScroll>
+      <Section>
+        <ThemedText type="subtitle">Accent Colour</ThemedText>
+        <SwatchRow>
+          {ACCENT_SWATCHES.map((color) => (
+            <Pressable
+              key={color}
+              onPress={() => {
+                triggerHaptics("Light");
+                setAccentColor(color);
+              }}
+            >
+              <Swatch $color={color} $selected={color === accentColor}>
+                {color === accentColor && <TickIcon color={Colors.white} />}
+              </Swatch>
+            </Pressable>
+          ))}
+        </SwatchRow>
+      </Section>
     </Container>
   );
 }

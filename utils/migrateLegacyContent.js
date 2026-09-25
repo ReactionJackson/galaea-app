@@ -114,7 +114,7 @@ export function migrateLegacyContent(legacy) {
   );
 
   const posts = (legacy.entries ?? []).map((oldDay) => {
-    const postId = oldDay.dayId;
+    const postId = nextId(counters, "post");
 
     (oldDay.items ?? []).forEach((ref) => {
       const legacyItem = legacyItemsById.get(ref.itemId);

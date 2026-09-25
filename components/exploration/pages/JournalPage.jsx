@@ -1,88 +1,50 @@
-import { ItemEntryBubble } from "@/components/exploration/pages/components/ItemEntryBubble";
-import { PageScroll } from "@/components/exploration/pages/components/PageScroll";
-import { StickyHeader } from "@/components/exploration/pages/components/StickyHeader";
-import {
-  AnimatedSpacer,
-  AnimateHeight,
-} from "@/components/interface/AnimateHeight";
-import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
-import { HeaderText } from "@/components/interface/HeaderText";
+import { HeaderBar } from "@/components/interface/HeaderBar";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { Tags } from "@/components/tags/Tags";
-import { PickerNavigator } from "@/components/exploration/navigators/PickerNavigator";
 import { useApp } from "@/context/AppContext";
-import { Fragment } from "react";
-import { View } from "react-native";
+import { formatDate } from "@/utils/formatDate";
+import { PageManager } from "./PageManager";
+import { NumberBadge } from "./components/NumberBadge";
 
-function formatEntryDate(dateString, format) {
-  const date = new Date(dateString);
-  switch (format) {
-    case "day":
-      return date.getDate().toString();
-    case "month":
-      return date.toLocaleString("default", { month: "long" });
-    case "weekday":
-      return date.toLocaleString("default", { weekday: "long" });
-    case "year":
-      return date.getFullYear().toString();
-  }
-}
+// Sub Components:
 
-export function JournalPage({ entry }) {
-  const { state, activeEntry, dispatch } = useApp();
-  const { editMode } = state;
-  const isActive = entry.dayId === activeEntry.dayId;
-  const data = isActive ? activeEntry : entry;
-  const pageEditMode = isActive && editMode;
-  const textVisible = !!(data.text || pageEditMode);
-  const tagsVisible = !!(data.tags.length || pageEditMode);
-
-  const formatDate = (format) => formatEntryDate(data.date, format);
-
-  const handleToggleTag = (tagId) => dispatch({ type: "TOGGLE_TAG", tagId });
-  const handleChangeTitle = (title) =>
-    dispatch({ type: "UPDATE_TITLE", title });
-  const handleChangeText = (text) => dispatch({ type: "UPDATE_TEXT", text });
-  const handleSelectItem = (itemId) => dispatch({ type: "ADD_ITEM", itemId });
-
+const Header = ({ title, date }) => {
   return (
-    <PageScroll resetKey={entry.dayId}>
-      <StickyHeader>
-        <HeaderText>
-          <HeaderText.Badge>
-            <ThemedText type="date-number">{formatDate("day")}</ThemedText>
-          </HeaderText.Badge>
-          <HeaderText.Title
-            key={pageEditMode ? "editing" : "display"}
-            value={
-              !pageEditMode && !data.title ? formatDate("weekday") : data.title
-            }
-            placeholder={formatDate("weekday")}
-            onChangeText={handleChangeTitle}
-            editable={pageEditMode}
-          />
-          <HeaderText.Subtitle>{formatDate("month")}</HeaderText.Subtitle>
-          <HeaderText.SubtitleFaded>
-            {formatDate("year")}
-          </HeaderText.SubtitleFaded>
-        </HeaderText>
-      </StickyHeader>
+    <HeaderBar>
+      <HeaderBar.Badge>
+        <NumberBadge variant="primary">{formatDate(date, "day")}</NumberBadge>
+      </HeaderBar.Badge>
+      <HeaderBar.Title placeholder={formatDate(date, "weekday")}>
+        {title || formatDate(date, "weekday")}
+      </HeaderBar.Title>
+      <HeaderBar.Subtitle>{formatDate(date, "month")}</HeaderBar.Subtitle>
+      <HeaderBar.SubtitleFaded>
+        {formatDate(date, "year")}
+      </HeaderBar.SubtitleFaded>
+    </HeaderBar>
+  );
+};
 
-      <FadeInOnMount>
-        <Fragment key={entry.dayId}>
-          <AnimateHeight visible={textVisible}>
-            <ThemedText
-              key={pageEditMode ? "editing" : "display"}
-              isInput
-              multiline={true}
-              value={data.text}
-              placeholder="Write something about today..."
-              onChangeText={handleChangeText}
-              editable={pageEditMode}
-            />
-          </AnimateHeight>
+// Main Component:
 
-          <Tags
+export const JournalPage = () => {
+  const { posts } = useApp();
+  const { title, date, text } = posts.find((post) => post.id === 5) ?? {};
+  return (
+    <PageManager>
+      <PageManager.Header>
+        <Header title={title} date={date} />
+      </PageManager.Header>
+      <PageManager.Content>
+        <ThemedText
+          isInput
+          multiline={true}
+          placeholder="Write something about today..."
+        >
+          {text}
+        </ThemedText>
+      </PageManager.Content>
+
+      {/* <Tags
             tagIds={data.tags}
             editMode={pageEditMode}
             onToggleTag={handleToggleTag}
@@ -124,9 +86,7 @@ export function JournalPage({ entry }) {
               </AnimateHeight>
               <AnimatedSpacer visible={editMode} height={70} />
             </>
-          )}
-        </Fragment>
-      </FadeInOnMount>
-    </PageScroll>
+          )} */}
+    </PageManager>
   );
-}
+};

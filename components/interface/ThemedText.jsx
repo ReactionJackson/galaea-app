@@ -4,8 +4,9 @@ import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { forwardRef } from "react";
 import { Platform, StyleSheet, TextInput } from "react-native";
 import Animated from "react-native-reanimated";
+import { AnimateHeight } from "./AnimateHeight";
 
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+// Constants:
 
 const TYPE_STYLES = {
   title: "title",
@@ -17,9 +18,14 @@ const TYPE_STYLES = {
   tag: "tag",
 };
 
-function resolveColor(color) {
-  return Colors.tags[color]?.primary ?? Colors[color] ?? color;
-}
+// Helpers:
+
+const resolveColor = (color) =>
+  Colors.tags[color]?.primary ?? Colors[color] ?? color;
+
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
+// Main Component:
 
 export const ThemedText = forwardRef(function ThemedText(
   {
@@ -29,8 +35,10 @@ export const ThemedText = forwardRef(function ThemedText(
     colorSwitch,
     isInput = false,
     multiline = false,
-    value,
+    value = "???",
     editable,
+    isVisible = true,
+    children,
     ...rest
   },
   ref,
@@ -44,11 +52,6 @@ export const ThemedText = forwardRef(function ThemedText(
 
   const fromColor = resolveColor(colorSwitch?.colors[0] ?? defaultColor);
   const toColor = resolveColor(colorSwitch?.colors[1] ?? defaultColor);
-
-  // Always applied — never conditional. Reanimated writes colour values directly
-  // to the native node, so conditionally removing this style leaves stale values
-  // behind. When no colorSwitch is present, from === to === defaultColor, making
-  // it a consistent no-op rather than fighting the native layer.
   const animatedColorStyle = useAnimatedTransition(
     colorSwitch?.active ?? false,
     { color: [fromColor, toColor] },
@@ -58,14 +61,7 @@ export const ThemedText = forwardRef(function ThemedText(
   const baseStyle = [
     styles[TYPE_STYLES[type]],
     isInput ? styles.inputReset : null,
-    // Single-line inputs: drop explicit height so iOS lays out text and
-    // placeholder using the same metrics (misalignment occurs when height is
-    // set without a matching lineHeight). Keep lineHeight so both text and
-    // placeholder are governed by the same value — removing it causes iOS to
-    // calculate them slightly differently, which shifts the placeholder.
     isInput && !multiline ? { height: undefined } : null,
-    // Multiline inputs must be at least one line tall even when empty,
-    // otherwise the parent AnimateHeight measures 0 and can't animate open.
     isInput && multiline
       ? { minHeight: styles[TYPE_STYLES[type]]?.lineHeight ?? 24 }
       : null,
@@ -74,34 +70,34 @@ export const ThemedText = forwardRef(function ThemedText(
     style,
   ];
 
-  if (isInput) {
-    return (
-      <AnimatedTextInput
-        ref={ref}
-        style={baseStyle}
-        multiline={multiline}
-        // Single-line inputs don't need RN's own scroll-view-backed caret
-        // tracking — iOS already keeps a single-line field's caret in view
-        // natively. Leaving this true meant every controlled re-render (e.g.
-        // typing into the title, which round-trips through global state)
-        // raced against the native auto-scroll, producing a visible
-        // flash-then-correct jump. Multiline still relies on its own
-        // AnimateHeight-driven auto-grow rather than internal scrolling,
-        // so it stays disabled there too.
-        scrollEnabled={false}
-        value={value}
-        editable={editable}
-        pointerEvents={editable ? "auto" : "none"}
-        placeholderTextColor={Colors.placeholder}
-        spellCheck={false}
-        autoCorrect={true}
-        {...rest}
-      />
-    );
-  }
+  // Render:
 
-  return <Animated.Text ref={ref} style={baseStyle} {...rest} />;
+  return (
+    <AnimateHeight isVisible={isVisible}>
+      {isInput ? (
+        <AnimatedTextInput
+          ref={ref}
+          style={baseStyle}
+          multiline={multiline}
+          scrollEnabled={false}
+          value={children ?? value}
+          editable={editable}
+          pointerEvents={editable ? "auto" : "none"}
+          placeholderTextColor={Colors.placeholder}
+          spellCheck={false}
+          autoCorrect={true}
+          {...rest}
+        />
+      ) : (
+        <Animated.Text ref={ref} style={baseStyle} {...rest}>
+          {children}
+        </Animated.Text>
+      )}
+    </AnimateHeight>
+  );
 });
+
+// Typography Styles:
 
 const webTextStyles = Platform.select({
   web: {

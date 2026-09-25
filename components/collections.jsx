@@ -1,9 +1,8 @@
-import { ItemPage } from "@/components/exploration/pages/ItemPage";
+import { NavigatorManager, TrackStack } from "@/components/exploration/navigators/NavigatorManager";
 import { CollectionPage } from "@/components/exploration/pages/CollectionPage";
-import { TrackStack } from "@/components/exploration/navigators/NavigatorManager";
-import { NavigatorManager } from "@/components/exploration/navigators/NavigatorManager";
+import { ItemPage } from "@/components/exploration/pages/ItemPage";
 import { Colors } from "@/constants/theme";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/context/OldContext";
 import { triggerHaptics } from "@/utils/haptics";
 import {
   collectItemImages,

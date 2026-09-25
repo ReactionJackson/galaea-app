@@ -57,3 +57,4 @@
     - // Handlers:
     - // Render:
 - Do not pass entire sets of data arrays when all that is needed is a length count
+- All components should be written as `const Component = () => {}` and the primary component of the file should be exported as `export const Component = () => {}`.

@@ -88,7 +88,7 @@ const SubtitleFaded = ({ children }) => (
 
 // Main Component:
 
-export const HeaderText = ({ children }) => {
+export const HeaderBar = ({ children }) => {
   const badge = childrenByType(children, Badge);
   const title = childrenByType(children, Title);
   const subtitle = childrenByType(children, Subtitle);
@@ -107,7 +107,7 @@ export const HeaderText = ({ children }) => {
   );
 };
 
-HeaderText.Title = Title;
-HeaderText.Subtitle = Subtitle;
-HeaderText.SubtitleFaded = SubtitleFaded;
-HeaderText.Badge = Badge;
+HeaderBar.Title = Title;
+HeaderBar.Subtitle = Subtitle;
+HeaderBar.SubtitleFaded = SubtitleFaded;
+HeaderBar.Badge = Badge;

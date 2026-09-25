@@ -11,7 +11,7 @@ import Animated, {
 const OPEN_MAX_HEIGHT = 9999;
 
 function AnimateHeightActive({
-  visible,
+  isVisible: visible,
   bornVisible,
   duration,
   style,
@@ -108,7 +108,7 @@ function AnimateHeightActive({
 }
 
 export function AnimateHeight({
-  visible,
+  isVisible: visible = true,
   children,
   duration = SLIDE_TRANSITION_DURATION,
   animateOnMount = false,

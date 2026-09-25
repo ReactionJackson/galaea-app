@@ -1,5 +1,5 @@
+import { JournalPage } from "@/components/exploration/pages/JournalPage";
 import { Colors } from "@/constants/theme";
-import { ExplorationProvider } from "@/context/ExplorationContext";
 import styled from "styled-components/native";
 
 // Styled Components:
@@ -14,11 +14,10 @@ const Container = styled.View`
 // Main Component:
 
 function ExplorationScreen() {
-  // Render:
   return (
-    <ExplorationProvider>
-      <Container />
-    </ExplorationProvider>
+    <Container>
+      <JournalPage />
+    </Container>
   );
 }
 

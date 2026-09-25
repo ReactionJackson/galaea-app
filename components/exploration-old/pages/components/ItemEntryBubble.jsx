@@ -1,11 +1,11 @@
 import { HeaderText } from "@/components/interface/HeaderText";
 import { Colors } from "@/constants/theme";
 import {
-  CARD_SHADOW_OPACITY,
-  CARD_SHADOW_RADIUS,
-  HERO_HEIGHT,
+    CARD_SHADOW_OPACITY,
+    CARD_SHADOW_RADIUS,
+    HERO_HEIGHT,
 } from "@/constants/values";
-import { useApp } from "@/context/AppContext";
+import { useApp } from "@/context/OldContext";
 import { memo } from "react";
 import styled from "styled-components/native";
 import { ItemHero } from "./ItemHero";

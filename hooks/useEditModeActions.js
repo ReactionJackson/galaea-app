@@ -1,4 +1,4 @@
-import { resolveEntryGalleryPairs, useApp } from "@/context/AppContext";
+import { resolveEntryGalleryPairs, useApp } from "@/context/OldContext";
 import { deleteDroppedImages } from "@/utils/images";
 
 // Generic app-wide edit mode dispatches, shared by any Navigator's

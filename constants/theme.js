@@ -14,7 +14,6 @@ export const Colors = {
   overlay: "rgba(0, 0, 0, 0.9)",
   overlayBorder: "rgba(255, 255, 255, 0.6)",
   imageOverlay: "rgba(0, 0, 0, 0.45)",
-  accent: "#f96156",
   background: "#fff",
   backgroundBlurTint: "rgba(255, 255, 255, 0.4)",
   lightboxCropBox: "rgba(255, 255, 255, 0.2)",
@@ -23,6 +22,16 @@ export const Colors = {
   thumbnailOverlay: "rgba(0, 0, 0, 0.075)",
   editButtonBackground: "rgba(255, 255, 255, 0.8)",
   selectedBorder: "rgba(255, 255, 255, 0.85)",
+  accent: "#f96156",
+  accents: {
+    red: "#f96156",
+    green: "mediumseagreen",
+    blue: "dodgerblue",
+    yellow: "gold",
+    purple: "rebeccapurple",
+    orange: "darkorange",
+    black: "#333",
+  },
   tags: {
     default: {
       primary: "#777",
