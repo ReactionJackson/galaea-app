@@ -123,6 +123,7 @@ export function useApp() {
 //   quality: 1,
 //   width: null,
 //   height: null,
+//   contentPosition: null,
 //   aspectRatio: null,
 //   isDraft: true,
 // }
