@@ -39,7 +39,7 @@ const GradientFill = styled(LinearGradient)`
 `;
 
 export const FadeTrack = forwardRef(function FadeTrack(
-  { children, contentContainerStyle },
+  { children, contentContainerStyle = { gap: 10 } },
   ref,
 ) {
   const leftOpacity = useSharedValue(0);

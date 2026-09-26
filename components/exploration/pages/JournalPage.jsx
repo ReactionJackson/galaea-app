@@ -1,8 +1,10 @@
 import { HeaderBar } from "@/components/interface/HeaderBar";
 import { ThemedText } from "@/components/interface/ThemedText";
+import { Tags } from "@/components/tags/Tags";
 import { useApp } from "@/context/AppContext";
 import { formatDate } from "@/utils/formatDate";
-import { PageManager } from "./PageManager";
+import { Page } from "./Page";
+import { ItemEntryBubble } from "./components/ItemEntryBubble";
 import { NumberBadge } from "./components/NumberBadge";
 
 // Sub Components:
@@ -27,66 +29,42 @@ const Header = ({ title, date }) => {
 // Main Component:
 
 export const JournalPage = () => {
-  const { posts } = useApp();
-  const { title, date, text } = posts.find((post) => post.id === 5) ?? {};
+  const { posts, entries, isEditing } = useApp();
+  const postId = 5;
+  const { title, date, text, tags } =
+    posts.find((post) => post.id === postId) ?? {};
+  const currentEntries = entries.filter(
+    (entry) => entry.parents.post === postId,
+  );
+
   return (
-    <PageManager>
-      <PageManager.Header>
+    <Page>
+      <Page.Header>
         <Header title={title} date={date} />
-      </PageManager.Header>
-      <PageManager.Content>
+      </Page.Header>
+      <Page.Content>
         <ThemedText
           isInput
           multiline={true}
-          placeholder="Write something about today..."
+          placeholder="Something that happened today..."
+          isEditable={isEditing}
+          isVisible={!!text || isEditing}
         >
           {text}
         </ThemedText>
-      </PageManager.Content>
-
-      {/* <Tags
-            tagIds={data.tags}
-            editMode={pageEditMode}
-            onToggleTag={handleToggleTag}
-          />
-          <AnimatedSpacer visible={textVisible || tagsVisible} height={25} />
-
-          {data.items.map(
-            ({ itemId, entryId, isNew, text, tags, gallery }, i) => (
-              <View key={`${itemId}-${String(entryId)}-${i}`}>
-                <AnimateHeight visible>
-                  <ItemEntryBubble
-                    itemId={itemId}
-                    entryId={entryId}
-                    index={i}
-                    isNew={isNew}
-                    editable={pageEditMode}
-                    text={text}
-                    tagIds={tags}
-                    gallery={gallery}
-                  />
-                </AnimateHeight>
-                {i !== data.items.length - 1 && <AnimatedSpacer visible />}
-              </View>
-            ),
-          )}
-          <AnimatedSpacer visible={data.items.length > 0} />
-
-          {pageEditMode && (
-            <>
-              <AnimateHeight
-                visible={editMode}
-                animateOnMount
-                style={{ marginHorizontal: -20 }}
-              >
-                <PickerNavigator
-                  attachedItemIds={activeEntry.items.map((it) => it.itemId)}
-                  onSelect={handleSelectItem}
-                />
-              </AnimateHeight>
-              <AnimatedSpacer visible={editMode} height={70} />
-            </>
-          )} */}
-    </PageManager>
+        <Tags tagIds={tags} />
+        {currentEntries.map(
+          ({ id, text, tags, gallery, parents: { item } }) => (
+            <ItemEntryBubble
+              key={`entry-${id}`}
+              text={text}
+              tags={tags}
+              gallery={gallery}
+              itemId={item}
+            />
+          ),
+        )}
+      </Page.Content>
+    </Page>
   );
 };

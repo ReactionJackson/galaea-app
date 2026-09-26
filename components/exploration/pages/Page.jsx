@@ -53,7 +53,7 @@ const Content = ({ children }) => {
 
 // Main Component:
 
-export const PageManager = ({ children }) => {
+export const Page = ({ children }) => {
   const hero = childrenByType(children, Hero);
   const header = childrenByType(children, Header);
   const content = childrenByType(children, Content);
@@ -67,6 +67,6 @@ export const PageManager = ({ children }) => {
   );
 };
 
-PageManager.Hero = Hero;
-PageManager.Header = Header;
-PageManager.Content = Content;
+Page.Hero = Hero;
+Page.Header = Header;
+Page.Content = Content;

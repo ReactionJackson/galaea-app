@@ -1,10 +1,10 @@
 import { Gallery } from "@/components/gallery/Gallery";
 import {
-  AnimateHeight,
-  AnimatedSpacer,
+    AnimateHeight,
+    AnimatedSpacer,
 } from "@/components/interface/AnimateHeight";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { Tags } from "@/components/tags/Tags";
+import { Tags } from "@/components/tags/TagsOld";
 
 export function EntryFields({
   text = "",

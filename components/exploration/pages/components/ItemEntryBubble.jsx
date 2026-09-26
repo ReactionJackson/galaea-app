@@ -1,15 +1,13 @@
 import { HeaderText } from "@/components/interface/HeaderText";
 import { Colors } from "@/constants/theme";
 import {
-    CARD_SHADOW_OPACITY,
-    CARD_SHADOW_RADIUS,
-    HERO_HEIGHT,
+  CARD_SHADOW_OPACITY,
+  CARD_SHADOW_RADIUS,
+  HERO_HEIGHT,
 } from "@/constants/values";
-import { useApp } from "@/context/OldContext";
-import { memo } from "react";
+import { useApp } from "@/context/AppContext";
 import styled from "styled-components/native";
 import { ItemHero } from "./ItemHero";
-import { EntryFields } from "./shared";
 
 const ShadowWrap = styled.View`
   width: 100%;
@@ -46,50 +44,28 @@ const HeaderWrap = styled.View`
   margin-bottom: 10px;
 `;
 
-export const ItemEntryBubble = memo(function ItemEntryBubble({
+export const ItemEntryBubble = ({
   itemId = 1,
-  entryId = null,
-  index,
-  isNew = false,
-  editable,
-  text: textProp,
-  tagIds: tagIdsProp,
-  gallery: galleryProp,
-}) {
-  const { state, dispatch, itemsById } = useApp();
-  const editMode = editable ?? state.editMode;
-
-  const item = itemsById[itemId];
-  const { title, cardImage, coverImage, collectionId } = item ?? {};
-  const collectionName =
-    state.collections.find((c) => c.collectionId === collectionId)?.name ?? "";
-  const resolvedEntry = entryId != null ? item?.entriesById[entryId] : null;
-  const entryNumber = resolvedEntry?.entryNumber ?? (item?.entryCount ?? 0) + 1;
-
+  text = "",
+  tags = [],
+  gallery = null,
+}) => {
+  const { items } = useApp();
   const {
-    text: dataText = "",
-    tags: dataTagIds = [],
-    gallery: dataGallery = [],
-  } = resolvedEntry ?? {};
-
-  const text = textProp ?? dataText;
-  const tagIds = tagIdsProp ?? dataTagIds;
-  const gallery = galleryProp ?? dataGallery;
-
-  const updateItem = (changes) =>
-    dispatch({ type: "UPDATE_ITEM", index, changes });
+    title,
+    images: { card, cover },
+  } = items.find((item) => item.id === itemId);
 
   return (
     <ShadowWrap>
       <Container>
         <Header>
           <ItemHero
-            height={HERO_HEIGHT}
-            spacing={15}
-            cardImage={cardImage}
-            coverImage={coverImage}
-            animateCoverReveal={isNew}
             nestedInCard
+            spacing={15}
+            height={HERO_HEIGHT}
+            cardImage={card}
+            coverImage={cover}
             shadowRadius={CARD_SHADOW_RADIUS}
             shadowOpacity={CARD_SHADOW_OPACITY}
           />
@@ -98,21 +74,31 @@ export const ItemEntryBubble = memo(function ItemEntryBubble({
           <HeaderWrap>
             <HeaderText>
               <HeaderText.Title>{title}</HeaderText.Title>
-              <HeaderText.Subtitle>{collectionName}</HeaderText.Subtitle>
-              <HeaderText.SubtitleFaded>
-                Entry {String(entryNumber).padStart(2, "0")}
-              </HeaderText.SubtitleFaded>
+              <HeaderText.Subtitle>Collection Name</HeaderText.Subtitle>
+              <HeaderText.SubtitleFaded>Entry X</HeaderText.SubtitleFaded>
             </HeaderText>
           </HeaderWrap>
-          <EntryFields
-            text={text}
-            tagIds={tagIds}
-            gallery={gallery}
-            editable={editMode}
-            onUpdate={updateItem}
-          />
+          {/* <ThemedText
+          isInput
+          multiline={true}
+          value={text}
+          placeholder="Write something about this..."
+          onChangeText={() => {}}
+        /> */}
+
+          {/* <Gallery
+          images={gallery}
+          editMode={editable}
+          onAddImage={handleAddImage}
+          onAddImages={handleAddImages}
+          onUpdateImage={handleUpdateImage}
+          onDeleteImage={handleDeleteImage}
+          onReorderImages={handleReorderImages}
+          horizontalPadding={horizontalPadding}
+        /> */}
+          {/* <Tags tagIds={tags} /> */}
         </Content>
       </Container>
     </ShadowWrap>
   );
-});
+};

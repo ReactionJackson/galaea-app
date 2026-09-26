@@ -1,15 +1,15 @@
 import { PickerNavigator } from "@/components/exploration/navigators/PickerNavigator";
-import { ItemEntryBubble } from "@/components/exploration/pages/components/ItemEntryBubble";
+import { ItemEntryBubble } from "@/components/exploration/pages/components/ItemEntryBubbleOLD";
 import { PageScroll } from "@/components/exploration/pages/components/PageScroll";
 import { StickyHeader } from "@/components/exploration/pages/components/StickyHeader";
 import {
-    AnimatedSpacer,
-    AnimateHeight,
+  AnimatedSpacer,
+  AnimateHeight,
 } from "@/components/interface/AnimateHeight";
 import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { Tags } from "@/components/tags/Tags";
+import { Tags } from "@/components/tags/TagsOld";
 import { useApp } from "@/context/OldContext";
 import { Fragment } from "react";
 import { View } from "react-native";

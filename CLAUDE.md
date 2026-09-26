@@ -47,14 +47,14 @@
   2. useEffect hooks
   3. Handler functions
   4. Retuned JSX
-- Make sure component files have a comment heading for each area plus a new line after the comment, except imports which needs no heading:
+- Make sure component files have a comment heading for each area plus a new line before and after the comment, except imports which needs no heading:
   - // Constants:
   - // Styled Components:
   - // Sub Components:
   - // Main Comomponent:
-    - // State and Constants:
-    - // Effects:
+    - State, variables and consyants at the top do not need a comment
     - // Handlers:
+    - // Hooks:
     - // Render:
 - Do not pass entire sets of data arrays when all that is needed is a length count
 - All components should be written as `const Component = () => {}` and the primary component of the file should be exported as `export const Component = () => {}`.

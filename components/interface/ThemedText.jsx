@@ -36,7 +36,7 @@ export const ThemedText = forwardRef(function ThemedText(
     isInput = false,
     multiline = false,
     value = "???",
-    editable,
+    isEditable: editable,
     isVisible = true,
     children,
     ...rest
