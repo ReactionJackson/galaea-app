@@ -2,7 +2,7 @@ import { Gallery } from "@/components/gallery/Gallery";
 import {
     AnimateHeight,
     AnimatedSpacer,
-} from "@/components/interface/AnimateHeight";
+} from "@/components/interface/AnimateHeightOld";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Tags } from "@/components/tags/TagsOld";
 

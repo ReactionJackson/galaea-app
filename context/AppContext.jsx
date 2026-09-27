@@ -1,85 +1,116 @@
 import { Colors } from "@/constants/theme";
-import { loadContent } from "@/utils/storage";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { buildIndexById, buildReverseIndex } from "@/utils/lookup";
+import { STORAGE_KEY, loadContent, saveContent } from "@/utils/storage";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
-  // Primary Content:
-  const [posts, setPosts] = useState([]);
-  const [collections, setCollections] = useState([]);
-  const [items, setItems] = useState([]);
-  const [entries, setEntries] = useState([]);
-  const [galleries, setGalleries] = useState([]);
-  const [images, setImages] = useState([]);
-  const [tags, setTags] = useState([]);
+  const [appState, setAppState] = useState({
+    posts: [],
+    collections: [],
+    items: [],
+    entries: [],
+    galleries: [],
+    images: [],
+    tags: [],
+  });
+  const [settingsState, setSettingsState] = useState({
+    accentColor: Colors.accents.red,
+  });
 
   // Flags:
-  const [isEditing, setIsEditing] = useState(false);
-  const [isContentLoaded, setIsContentLoaded] = useState(false);
 
-  // Settings:
-  const [accentColor, setAccentColor] = useState(Colors.accents.red);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   // Effects:
+
   useEffect(() => {
-    let cancelled = false;
-    loadContent().then((content) => {
-      if (cancelled) return;
-      if (content) {
-        setPosts(content.posts ?? []);
-        setCollections(content.collections ?? []);
-        setItems(content.items ?? []);
-        setEntries(content.entries ?? []);
-        setGalleries(content.galleries ?? []);
-        setImages(content.images ?? []);
-        setTags(content.tags ?? []);
-        setIsEditing(content.isEditing ?? false);
-      }
-      setIsContentLoaded(true);
-    });
-    return () => {
-      cancelled = true;
-    };
+    Promise.all([
+      loadContent(STORAGE_KEY.CONTENT, setAppState),
+      loadContent(STORAGE_KEY.SETTINGS, setSettingsState),
+    ]).then(() => setIsReady(true));
   }, []);
+
+  // Lookups:
+
+  const indexes = useMemo(
+    () => ({
+      posts: buildIndexById(appState.posts),
+      collections: buildIndexById(appState.collections),
+      items: buildIndexById(appState.items),
+      entries: buildIndexById(appState.entries),
+      galleries: buildIndexById(appState.galleries),
+      images: buildIndexById(appState.images),
+      tags: buildIndexById(appState.tags),
+    }),
+    [appState],
+  );
+
+  const collectionIdByItemId = useMemo(
+    () =>
+      buildReverseIndex(appState.collections, (collection) => collection.items),
+    [appState.collections],
+  );
+
+  const getById = useCallback((list, id) => indexes[list]?.[id], [indexes]);
+
+  // Handlers:
+
+  const updateEntity = (key, id, patch) => {
+    setAppState((prev) => {
+      const next = {
+        ...prev,
+        [key]: prev[key].map((e) => (e.id === id ? { ...e, ...patch } : e)),
+      };
+      saveContent(STORAGE_KEY.CONTENT, next);
+      return next;
+    });
+  };
+
+  const updateSettings = (patch) => {
+    setSettingsState((prev) => {
+      const next = {
+        ...prev,
+        ...patch,
+      };
+      saveContent(STORAGE_KEY.SETTINGS, next);
+      return next;
+    });
+  };
+
+  const replaceContent = (content) => {
+    setAppState(content);
+  };
+
+  // Context Sendables:
 
   const value = useMemo(
     () => ({
-      posts,
-      collections,
-      items,
-      entries,
-      galleries,
-      images,
-      tags,
-      accentColor,
+      ...appState,
+      settings: settingsState,
       isEditing,
-      setPosts,
-      setCollections,
-      setItems,
-      setEntries,
-      setGalleries,
-      setImages,
-      setTags,
-      setAccentColor,
+      getById,
       setIsEditing,
+      updateEntity,
+      updateSettings,
+      replaceContent,
+      collectionIdByItemId,
     }),
-    [
-      posts,
-      collections,
-      items,
-      entries,
-      galleries,
-      images,
-      tags,
-      accentColor,
-      isEditing,
-    ],
+    [getById, appState, settingsState, isEditing, collectionIdByItemId],
   );
 
   return (
     <AppContext.Provider value={value}>
-      {isContentLoaded ? children : null}
+      {isReady ? children : null}
     </AppContext.Provider>
   );
 }
@@ -150,7 +181,7 @@ export function useApp() {
 
 // const image = {
 //   id: null,
-//   url: "",
+//   uri: "",
 //   format: "",
 //   quality: 1,
 //   width: null,

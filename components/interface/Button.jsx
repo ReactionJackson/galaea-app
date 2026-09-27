@@ -1,6 +1,6 @@
 import { ThemedText } from "@/components/interface/ThemedText";
+import { Colors } from "@/constants/theme";
 import { BUTTON_HEIGHT } from "@/constants/values";
-import { useSettings } from "@/context/SettingsContext";
 import { triggerHaptics } from "@/utils/haptics";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
@@ -22,8 +22,7 @@ export function Button({
   children,
   ...props
 }) {
-  const { buttonColors } = useSettings();
-  const { text, fill, border } = buttonColors[variant];
+  const { text, fill, border } = Colors.button[variant];
 
   const handlePress = (e) => {
     triggerHaptics(haptics);

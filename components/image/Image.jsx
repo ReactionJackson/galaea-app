@@ -36,7 +36,6 @@ export function Image({
   shadowRadius,
   shadowOpacity,
   contentFit = "contain",
-  style,
   ...rest
 }) {
   const exists = useMemo(() => fileExists(uri), [uri]);
@@ -51,7 +50,6 @@ export function Image({
       radius={radius}
       shadowRadius={shadowRadius}
       shadowOpacity={shadowOpacity}
-      style={style}
     >
       {exists && (
         <StyledImage

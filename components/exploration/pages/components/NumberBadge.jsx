@@ -19,7 +19,9 @@ const Container = styled.View`
 // Main Component:
 
 export const NumberBadge = ({ variant = "primary", children }) => {
-  const { accentColor } = useApp();
+  const {
+    settings: { accentColor },
+  } = useApp();
   const fill = variant === "primary" ? accentColor : Colors.transparent;
   const border =
     variant === "primary" ? Colors.transparent : Colors.buttonBorder;

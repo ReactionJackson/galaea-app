@@ -1,16 +1,16 @@
 import { ItemEntry } from "@/components/exploration/pages/components/ItemEntry";
 import { ItemHero } from "@/components/exploration/pages/components/ItemHero";
+import { PageScroll } from "@/components/exploration/pages/components/PageScroll";
+import { StickyHeader } from "@/components/exploration/pages/components/StickyHeader";
 import { CoverImage } from "@/components/image/CoverImage";
 import { Image } from "@/components/image/Image";
-import { AnimatedSpacer } from "@/components/interface/AnimateHeight";
+import { AnimatedSpacer } from "@/components/interface/AnimateHeightOld";
 import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { EditLightbox } from "@/components/lightbox/EditLightbox";
-import { PageScroll } from "@/components/exploration/pages/components/PageScroll";
-import { StickyHeader } from "@/components/exploration/pages/components/StickyHeader";
 import {
-  COLLECTION_HERO_HEIGHT,
-  COLLECTION_HERO_SPACING,
+    COLLECTION_HERO_HEIGHT,
+    COLLECTION_HERO_SPACING,
 } from "@/constants/values";
 import { Fragment } from "react";
 import { useWindowDimensions } from "react-native";

@@ -1,38 +1,23 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const STORAGE_KEY = "galaea/state/v3";
-export const CONTENT_STORAGE_KEY = "galaea/content";
+export const STORAGE_KEY = {
+  CONTENT: "galaea/content",
+  SETTINGS: "galaea/settings",
+};
 
-export async function loadPersistedState() {
+export async function loadContent(key, onLoad) {
   try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const raw = await AsyncStorage.getItem(key);
+    if (raw) onLoad(JSON.parse(raw));
   } catch {
-    return null;
+    // best-effort — leave defaults in place
   }
 }
 
-export async function savePersistedState(persistable) {
+export async function saveContent(key, content) {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(persistable));
+    await AsyncStorage.setItem(key, JSON.stringify(content));
   } catch {
-    // Best-effort — a failed save shouldn't crash the app.
-  }
-}
-
-export async function loadContent() {
-  try {
-    const raw = await AsyncStorage.getItem(CONTENT_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-export async function saveContent(content) {
-  try {
-    await AsyncStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(content));
-  } catch {
-    // Best-effort — a failed save shouldn't crash the app.
+    // best-effort — a failed save shouldn't crash the app
   }
 }

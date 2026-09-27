@@ -28,11 +28,9 @@ const Header = ({ title, date }) => {
 
 // Main Component:
 
-export const JournalPage = () => {
-  const { posts, entries, isEditing } = useApp();
-  const postId = 5;
-  const { title, date, text, tags } =
-    posts.find((post) => post.id === postId) ?? {};
+export const JournalPage = ({ postId = 1 }) => {
+  const { getById, entries, isEditing } = useApp();
+  const { title, date, text, tags } = getById("posts", postId) ?? {};
   const currentEntries = entries.filter(
     (entry) => entry.parents.post === postId,
   );
@@ -52,18 +50,10 @@ export const JournalPage = () => {
         >
           {text}
         </ThemedText>
-        <Tags tagIds={tags} />
-        {currentEntries.map(
-          ({ id, text, tags, gallery, parents: { item } }) => (
-            <ItemEntryBubble
-              key={`entry-${id}`}
-              text={text}
-              tags={tags}
-              gallery={gallery}
-              itemId={item}
-            />
-          ),
-        )}
+        <Tags tagIds={tags} isVisible={!!tags} />
+        {currentEntries.map((entry) => (
+          <ItemEntryBubble key={`entry-${entry.id}`} {...entry} />
+        ))}
       </Page.Content>
     </Page>
   );

@@ -1,3 +1,4 @@
+import { AnimateHeight } from "@/components/interface/AnimateHeight";
 import { FadeTrack } from "@/components/interface/FadeTrack";
 import { InteractionControls } from "@/components/interface/InteractionControls";
 import { Tag } from "@/components/tags/Tag";
@@ -35,8 +36,11 @@ const emptyTag = () => ({
 
 // Main Component:
 
-export const Tags = forwardRef(function Tags({ tagIds = [] }, ref) {
-  const { tags: initialTags } = useApp();
+export const Tags = forwardRef(function Tags(
+  { tagIds = [], isVisible = false },
+  ref,
+) {
+  const { tags: initialTags, isEditing } = useApp();
   const [tags, setTags] = useState([...initialTags]);
   const [isCreatingTag, setIsCreatingTag] = useState(false);
   const [draftTag, setDraftTag] = useState(emptyTag());
@@ -88,66 +92,70 @@ export const Tags = forwardRef(function Tags({ tagIds = [] }, ref) {
   //Render:
 
   return (
-    <Container>
-      <TagRow>
-        <InteractionControls onAdd={() => setIsCreatingTag(true)} />
-        <FadeTrack>
-          {tags.map(({ id, title, color }) => {
-            const isActive = activeTags.find((tag) => tag.id === id);
-            return (
-              <Tag
-                key={`tag-${id}`}
-                $color={isActive ? "disabled" : color}
-                onPress={() => handleToggleTag(id)}
-              >
-                {title}
-              </Tag>
-            );
-          })}
-        </FadeTrack>
-      </TagRow>
-      {isCreatingTag && (
+    <AnimateHeight isVisible={isVisible}>
+      <Container>
+        {isEditing && (
+          <TagRow>
+            <InteractionControls onAdd={() => setIsCreatingTag(true)} />
+            <FadeTrack>
+              {tags.map(({ id, title, color }) => {
+                const isActive = activeTags.find((tag) => tag.id === id);
+                return (
+                  <Tag
+                    key={`tag-${id}`}
+                    $color={isActive ? "disabled" : color}
+                    onPress={() => handleToggleTag(id)}
+                  >
+                    {title}
+                  </Tag>
+                );
+              })}
+            </FadeTrack>
+          </TagRow>
+        )}
+        {isCreatingTag && (
+          <TagRow>
+            <Tag
+              $color={draftTag.color}
+              onPress={() => inputRef.current?.focus()}
+            >
+              {draftTag.title || "New Tag"}
+            </Tag>
+            <FadeTrack>
+              {colors.map((color) => (
+                <Tag
+                  key={`tag-${color}`}
+                  $color={color}
+                  onPress={() => handleSelectColor(color)}
+                />
+              ))}
+            </FadeTrack>
+            <InteractionControls
+              direction="row-reverse"
+              onConfirm={() => handleAddTag()}
+              onCancel={() => handleDiscardTag()}
+            />
+          </TagRow>
+        )}
         <TagRow>
-          <Tag
-            $color={draftTag.color}
-            onPress={() => inputRef.current?.focus()}
-          >
-            {draftTag.title || "New Tag"}
-          </Tag>
-          <FadeTrack>
-            {colors.map((color) => (
-              <Tag
-                key={`tag-${color}`}
-                $color={color}
-                onPress={() => handleSelectColor(color)}
-              />
-            ))}
-          </FadeTrack>
-          <InteractionControls
-            direction="row-reverse"
-            onConfirm={() => handleAddTag()}
-            onCancel={() => handleDiscardTag()}
-          />
+          {activeTags.map(({ id, title, color }) => (
+            <Tag
+              key={`tag-${id}`}
+              $color={color}
+              onPress={() => handleToggleTag(id)}
+            >
+              {title}
+            </Tag>
+          ))}
         </TagRow>
-      )}
-      <TagRow>
-        {activeTags.map(({ id, title, color }) => (
-          <Tag
-            key={`tag-${id}`}
-            $color={color}
-            onPress={() => handleToggleTag(id)}
-          >
-            {title}
-          </Tag>
-        ))}
-      </TagRow>
-      <HiddenInput
-        ref={inputRef}
-        value={draftTag.title}
-        onChangeText={(title) => setDraftTag((prev) => ({ ...prev, title }))}
-        returnKeyType="done"
-        onSubmitEditing={() => handleAddTag()}
-      />
-    </Container>
+        <HiddenInput
+          ref={inputRef}
+          value={draftTag.title}
+          onChangeText={(title) => setDraftTag((prev) => ({ ...prev, title }))}
+          returnKeyType="done"
+          onSubmitEditing={() => handleAddTag()}
+        />
+      </Container>
+    </AnimateHeight>
   );
 });

@@ -1,8 +1,10 @@
+import { Button } from "@/components/interface/Button";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { TickIcon } from "@/components/interface/icons/TickIcon";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { ACCENT_SWATCHES, Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
+import { runLegacyMigration } from "@/utils/migrateLegacyContent";
 import { triggerHaptics } from "@/utils/haptics";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
@@ -37,7 +39,17 @@ const Swatch = styled.View`
 `;
 
 export default function SettingsScreen() {
-  const { accentColor, setAccentColor } = useApp();
+  const {
+    settings: { accentColor },
+    updateSettings,
+    replaceContent,
+  } = useApp();
+
+  const handleMigrate = async () => {
+    const content = await runLegacyMigration();
+    if (content) replaceContent(content);
+  };
+
   return (
     <Container>
       <HeaderText>
@@ -52,7 +64,7 @@ export default function SettingsScreen() {
               key={color}
               onPress={() => {
                 triggerHaptics("Light");
-                setAccentColor(color);
+                updateSettings({ accentColor: color });
               }}
             >
               <Swatch $color={color} $selected={color === accentColor}>
@@ -61,6 +73,11 @@ export default function SettingsScreen() {
             </Pressable>
           ))}
         </SwatchRow>
+      </Section>
+
+      <Section>
+        <ThemedText type="subtitle">Legacy Content</ThemedText>
+        <Button onPress={handleMigrate}>Migrate Legacy Content</Button>
       </Section>
     </Container>
   );

@@ -1,5 +1,5 @@
+import { STORAGE_KEY, saveContent } from "@/utils/storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { saveContent } from "@/utils/storage";
 
 const LEGACY_STORAGE_KEY = "galaea/state/v3";
 
@@ -20,7 +20,7 @@ function migrateImage(oldImage, counters, images) {
   const id = nextId(counters, "image");
   images.push({
     id,
-    url: oldImage.uri ?? "",
+    uri: oldImage.uri ?? "",
     format: migrateImageFormat(oldImage.uri),
     quality: MIGRATED_IMAGE_QUALITY,
     width: oldImage.rawWidth ?? null,
@@ -184,7 +184,7 @@ export async function runLegacyMigration() {
   const legacy = JSON.parse(raw);
   const content = migrateLegacyContent(legacy);
 
-  await saveContent(content);
+  await saveContent(STORAGE_KEY.CONTENT, content);
 
   return content;
 }

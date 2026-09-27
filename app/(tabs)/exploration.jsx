@@ -16,7 +16,7 @@ const Container = styled.View`
 function ExplorationScreen() {
   return (
     <Container>
-      <JournalPage />
+      <JournalPage postId={2} />
     </Container>
   );
 }

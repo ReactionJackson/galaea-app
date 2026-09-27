@@ -24,28 +24,14 @@ const Overlay = styled.View`
   background-color: ${Colors.imageOverlay};
 `;
 
-export function CoverImage({
-  uri,
-  focus,
-  addOverlay = false,
-  style,
-  rawWidth,
-  rawHeight,
-  aspectRatio,
-  ...rest
-}) {
+export function CoverImage({ uri, contentPosition }) {
   const exists = useMemo(() => fileExists(uri), [uri]);
 
   if (!uri || !exists) return null;
   return (
     <>
-      <StyledImage
-        source={{ uri }}
-        contentPosition={focus ?? undefined}
-        style={style}
-        {...rest}
-      />
-      {addOverlay && <Overlay />}
+      <StyledImage source={{ uri }} contentPosition={contentPosition} />
+      <Overlay />
     </>
   );
 }

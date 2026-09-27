@@ -5,7 +5,7 @@ import { StickyHeader } from "@/components/exploration/pages/components/StickyHe
 import {
   AnimatedSpacer,
   AnimateHeight,
-} from "@/components/interface/AnimateHeight";
+} from "@/components/interface/AnimateHeightOld";
 import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { ThemedText } from "@/components/interface/ThemedText";

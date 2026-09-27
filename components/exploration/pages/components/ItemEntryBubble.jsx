@@ -1,4 +1,7 @@
 import { HeaderText } from "@/components/interface/HeaderText";
+import { Spacer } from "@/components/interface/Spacer";
+import { ThemedText } from "@/components/interface/ThemedText";
+import { Tags } from "@/components/tags/Tags";
 import { Colors } from "@/constants/theme";
 import {
   CARD_SHADOW_OPACITY,
@@ -6,10 +9,11 @@ import {
   HERO_HEIGHT,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
+import { useState } from "react";
 import styled from "styled-components/native";
 import { ItemHero } from "./ItemHero";
 
-const ShadowWrap = styled.View`
+const Shadow = styled.View`
   width: 100%;
   shadow-color: ${Colors.black};
   shadow-offset: 0px 0px;
@@ -20,17 +24,11 @@ const ShadowWrap = styled.View`
 const Container = styled.View`
   width: 100%;
   border-radius: 30px;
+  overflow: hidden;
   background-color: ${Colors.background};
 `;
 
-const Header = styled.View`
-  width: 100%;
-  border-top-left-radius: 30px;
-  border-top-right-radius: 30px;
-  overflow: hidden;
-`;
-
-const Content = styled.View`
+const Content = styled.Pressable`
   padding: 20px;
   padding-top: 15px;
   border: 1px solid ${Colors.border};
@@ -40,52 +38,41 @@ const Content = styled.View`
   background-color: ${Colors.background};
 `;
 
-const HeaderWrap = styled.View`
-  margin-bottom: 10px;
-`;
+export const ItemEntryBubble = ({ text, tags, gallery, parents, draft }) => {
+  const { getById, collectionIdByItemId } = useApp();
+  const { title: itemTitle, images: { card, cover } = {} } =
+    getById("items", parents.item) ?? {};
+  const { title: collectionTitle } =
+    getById("collections", collectionIdByItemId[parents.item]) ?? {};
 
-export const ItemEntryBubble = ({
-  itemId = 1,
-  text = "",
-  tags = [],
-  gallery = null,
-}) => {
-  const { items } = useApp();
-  const {
-    title,
-    images: { card, cover },
-  } = items.find((item) => item.id === itemId);
+  const [tester, setTester] = useState(false);
 
   return (
-    <ShadowWrap>
+    <Shadow>
       <Container>
-        <Header>
-          <ItemHero
-            nestedInCard
-            spacing={15}
-            height={HERO_HEIGHT}
-            cardImage={card}
-            coverImage={cover}
-            shadowRadius={CARD_SHADOW_RADIUS}
-            shadowOpacity={CARD_SHADOW_OPACITY}
-          />
-        </Header>
-        <Content>
-          <HeaderWrap>
-            <HeaderText>
-              <HeaderText.Title>{title}</HeaderText.Title>
-              <HeaderText.Subtitle>Collection Name</HeaderText.Subtitle>
-              <HeaderText.SubtitleFaded>Entry X</HeaderText.SubtitleFaded>
-            </HeaderText>
-          </HeaderWrap>
-          {/* <ThemedText
-          isInput
-          multiline={true}
-          value={text}
-          placeholder="Write something about this..."
-          onChangeText={() => {}}
-        /> */}
-
+        <ItemHero
+          cardId={card}
+          coverId={cover}
+          height={HERO_HEIGHT}
+          shadowRadius={CARD_SHADOW_RADIUS}
+          shadowOpacity={CARD_SHADOW_OPACITY}
+        />
+        <Content onPress={() => setTester(!tester)}>
+          <HeaderText>
+            <HeaderText.Title>{itemTitle}</HeaderText.Title>
+            <HeaderText.Subtitle>{collectionTitle}</HeaderText.Subtitle>
+            <HeaderText.SubtitleFaded>Entry X</HeaderText.SubtitleFaded>
+          </HeaderText>
+          <Spacer isVisible={!!text} height={10} />
+          <ThemedText
+            isInput
+            multiline={true}
+            placeholder="Write something about this..."
+            onChangeText={() => {}}
+            isVisible={!!text}
+          >
+            {text}
+          </ThemedText>
           {/* <Gallery
           images={gallery}
           editMode={editable}
@@ -96,9 +83,10 @@ export const ItemEntryBubble = ({
           onReorderImages={handleReorderImages}
           horizontalPadding={horizontalPadding}
         /> */}
-          {/* <Tags tagIds={tags} /> */}
+          <Spacer isVisible={!!tags} />
+          <Tags tagIds={tags} isVisible={!!tags} />
         </Content>
       </Container>
-    </ShadowWrap>
+    </Shadow>
   );
 };
