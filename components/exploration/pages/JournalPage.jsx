@@ -1,3 +1,5 @@
+import { AnimateHeight } from "@/components/interface/AnimateHeight";
+import { Button } from "@/components/interface/Button";
 import { HeaderBar } from "@/components/interface/HeaderBar";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Tags } from "@/components/tags/Tags";
@@ -54,6 +56,9 @@ export const JournalPage = ({ postId = 1 }) => {
         {currentEntries.map((entry) => (
           <ItemEntryBubble key={`entry-${entry.id}`} {...entry} />
         ))}
+        <AnimateHeight isVisible={true}>
+          <Button variant="primary">Add Item</Button>
+        </AnimateHeight>
       </Page.Content>
     </Page>
   );
