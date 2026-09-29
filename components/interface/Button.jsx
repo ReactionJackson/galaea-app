@@ -6,6 +6,7 @@ import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
 const StyledButton = styled(Pressable)`
+  align-self: flex-start;
   height: ${BUTTON_HEIGHT}px;
   justify-content: center;
   padding: 4px 14px;
