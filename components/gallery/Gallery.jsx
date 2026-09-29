@@ -1,284 +1,101 @@
-import {
-  ITEM_ASPECT_RATIO,
-  SLIDE_TRANSITION_DURATION,
-  TRACK_GAP,
-} from "@/constants/values";
-import { usePagedScrollWidth } from "@/hooks/usePagedScrollWidth";
-import { deleteStoredImage, pickAndStoreImage } from "@/utils/images";
-import * as ImagePicker from "expo-image-picker";
-import { memo, useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
-import { scheduleOnRN } from "react-native-worklets";
-import styled, { css } from "styled-components/native";
-import { InteractionControls } from "../interface/InteractionControls";
-import { ThemedText } from "../interface/ThemedText";
-import { EditLightbox } from "../lightbox/EditLightbox";
-import { ViewerLightbox } from "../lightbox/ViewerLightbox";
-import { GalleryItem } from "./GalleryItem";
-import { GalleryPagination } from "./GalleryPagination";
-import {
-  CAPTION_REVEAL_EASING,
-  CAPTION_REVEAL_HEIGHT,
-  CaptionTray,
-  EditableView,
-  GallerySlot,
-  Item,
-} from "./shared";
+import { CoverImage } from "@/components/image/CoverImage";
+import { AnimateHeight } from "@/components/interface/AnimateHeight";
+import { ThemedText } from "@/components/interface/ThemedText";
+import { useApp } from "@/context/AppContext";
+import { ScrollView, useWindowDimensions } from "react-native";
+import styled from "styled-components/native";
 
-const GalleryScrollView = styled(ScrollView)`
-  height: ${({ $height }) => $height}px;
+// Constants:
+
+const GALLERY_GUTTERS = 20;
+const GALLERY_TRACK_GAP = GALLERY_GUTTERS / 2;
+const GALLERY_ITEM_RADIUS = 15;
+const GALLERY_ASPECT_RATIO = 3 / 2;
+
+// Styled Components:
+
+const ScrollContainer = styled(ScrollView)`
+  width: ${({ $width }) => $width}px;
+  margin: 0 ${-GALLERY_GUTTERS}px;
 `;
 
-const ControlsOverlay = styled(InteractionControls)`
-  position: absolute;
-  top: 10px;
-  left: 20px;
+const Slot = styled.View`
   width: ${({ $width }) => $width}px;
-  align-items: flex-end;
-  padding-right: 10px;
-`;
-
-const PaginationOverlay = styled(GalleryPagination)`
-  position: absolute;
-  bottom: ${10 + CAPTION_REVEAL_HEIGHT}px;
-  left: 20px;
-  width: ${({ $width }) => $width}px;
+  aspect-ratio: ${GALLERY_ASPECT_RATIO};
   justify-content: center;
+  align-items: center;
 `;
 
-const RevealContainer = styled(Animated.View)`
-  position: relative;
-  overflow: ${({ $transitioning, $editMode }) =>
-    $transitioning || !$editMode ? "hidden" : "visible"};
-  ${({ $transitioning, $editMode, $trackHeight }) =>
-    !$transitioning &&
-    css`
-      height: ${$trackHeight + ($editMode ? CAPTION_REVEAL_HEIGHT : 0)}px;
-    `}
-`;
+// Helpers:
 
-export const Gallery = memo(function Gallery({
-  images,
-  editMode = false,
-  onAddImage,
-  onAddImages,
-  onUpdateImage,
-  onDeleteImage,
-  onReorderImages,
-  horizontalPadding = 80,
-}) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [transitioning, setTransitioning] = useState(false);
-  const [openItem, setOpenItem] = useState(null); // { mode: "edit" | "view", image, index }
+const getScrollDimensions = (screenWidth) => {
+  const galleryWidth = screenWidth - GALLERY_GUTTERS * 2;
+  const slotWidth = galleryWidth - GALLERY_GUTTERS * 2;
+  const scrollInterval = slotWidth + GALLERY_TRACK_GAP;
+  return { galleryWidth, slotWidth, scrollInterval };
+};
 
-  const { containerWidth, scrollInterval } = usePagedScrollWidth(
-    horizontalPadding,
-    TRACK_GAP,
-  );
-  const scrollRef = useRef(null);
-  const revealShift = useSharedValue(0);
+// Main Component:
 
-  const trackHeight = Math.round(containerWidth / ITEM_ASPECT_RATIO);
-  const itemCount = images.length + (editMode ? 1 : 0);
-  const onAddTile = editMode && activeIndex >= images.length;
-  const revealContainerAnimatedStyle = useAnimatedStyle(() => ({
-    height: trackHeight + revealShift.value,
-  }));
-  const addTileTrayStyle = useAnimatedStyle(() => ({
-    bottom: CAPTION_REVEAL_HEIGHT - revealShift.value,
-  }));
+export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
+  const { getById, isEditing } = useApp();
+  const { width: windowWidth } = useWindowDimensions();
+  const { galleryWidth, slotWidth, scrollInterval } =
+    getScrollDimensions(windowWidth);
+  const slides = getById("galleries", gallery)?.slides ?? [];
+  const sortedSlides = [...slides]
+    .map(({ caption, image, order }) => ({
+      image: getById("images", image) ?? {},
+      caption,
+      order,
+    }))
+    .sort((a, b) => a.order - b.order);
 
-  useEffect(() => {
-    setTransitioning(true);
-    revealShift.value = withTiming(
-      editMode ? CAPTION_REVEAL_HEIGHT : 0,
-      { duration: SLIDE_TRANSITION_DURATION, easing: CAPTION_REVEAL_EASING },
-      (finished) => {
-        if (finished) scheduleOnRN(setTransitioning, false);
-      },
-    );
-  }, [editMode, revealShift]);
+  console.log("sortedSlides", sortedSlides);
 
-  useEffect(() => {
-    setActiveIndex((i) => Math.min(i, Math.max(itemCount - 1, 0)));
-  }, [itemCount]);
+  // Handlers:
 
-  const handleAddImage = async () => {
-    if (!(await ImagePicker.requestMediaLibraryPermissionsAsync()).granted)
-      return;
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 0.9,
-      allowsMultipleSelection: true,
-    });
-    if (result.canceled) return;
-
-    const assets = result.assets?.filter((asset) => asset?.uri) ?? [];
-    if (!assets.length) return;
-
-    if (assets.length === 1) {
-      const stored = await pickAndStoreImage(assets[0], "gallery");
-      setOpenItem({ mode: "edit", image: stored, index: null });
-      return;
-    }
-
-    const stored = [];
-    for (const asset of assets) {
-      stored.push(await pickAndStoreImage(asset, "gallery"));
-    }
-    onAddImages?.(stored);
+  const handleScroll = (event) => {
+    // ...
   };
 
-  const handleEditImage = (index) => {
-    setOpenItem({ mode: "edit", image: images[index], index });
-  };
-
-  const handleViewImage = (image, index) => {
-    setOpenItem({ mode: "view", image, index });
-  };
-
-  const handleSaveEdit = (focus) => {
-    if (!openItem) return;
-    const { uri, rawWidth, rawHeight, aspectRatio, caption } = openItem.image;
-    const image = {
-      uri,
-      rawWidth,
-      rawHeight,
-      aspectRatio,
-      ...(focus ? { focus } : {}),
-      ...(caption ? { caption } : {}),
-    };
-    if (openItem.index == null) {
-      onAddImage?.(image);
-    } else {
-      onUpdateImage?.(openItem.index, image);
-    }
-    setOpenItem(null);
-  };
-
-  const handleClose = () => {
-    if (openItem?.mode === "edit" && openItem.index == null) {
-      deleteStoredImage(openItem.image);
-    }
-    setOpenItem(null);
-  };
-
-  const handleChangeCaption = (index, text) => {
-    onUpdateImage?.(index, { ...images[index], caption: text });
-  };
-
-  const handleScroll = (e) => {
-    const clamped = Math.max(
-      0,
-      Math.min(
-        Math.round(e.nativeEvent.contentOffset.x / scrollInterval),
-        itemCount - 1,
-      ),
-    );
-    setActiveIndex((prev) => (prev === clamped ? prev : clamped));
-  };
-
-  const moveImage = (toIndex) => {
-    if (toIndex < 0 || toIndex >= images.length) return;
-    onReorderImages?.(activeIndex, toIndex);
-    setActiveIndex(toIndex);
-    scrollRef.current?.scrollTo({
-      x: toIndex * scrollInterval,
-      animated: false,
-    });
-  };
-
-  const handleMoveLeft = () => moveImage(activeIndex - 1);
-  const handleMoveRight = () => moveImage(activeIndex + 1);
+  // Render:
 
   return (
-    <>
-      <RevealContainer
-        $transitioning={transitioning}
-        $editMode={editMode}
-        $trackHeight={trackHeight}
-        style={transitioning ? revealContainerAnimatedStyle : undefined}
+    <AnimateHeight isVisible={isVisible} gap={gap}>
+      <ScrollContainer
+        $width={galleryWidth}
+        horizontal
+        snapToInterval={scrollInterval}
+        decelerationRate="fast"
+        showsHorizontalScrollIndicator={false}
+        scrollEnabled={true}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={{
+          gap: GALLERY_TRACK_GAP,
+          paddingInlineStart: GALLERY_GUTTERS,
+          paddingInlineEnd: GALLERY_GUTTERS,
+        }}
       >
-        <GalleryScrollView
-          ref={scrollRef}
-          $height={trackHeight + CAPTION_REVEAL_HEIGHT}
-          horizontal
-          snapToInterval={scrollInterval}
-          decelerationRate="fast"
-          showsHorizontalScrollIndicator={false}
-          scrollEnabled={itemCount > 1}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          contentContainerStyle={{
-            gap: TRACK_GAP,
-            paddingInlineStart: 20,
-            paddingInlineEnd: 20,
-          }}
-        >
-          {images.map((image, i) => {
-            if (!image) return null;
-            return (
-              <GalleryItem
-                key={image.uri}
-                image={image}
-                index={i}
-                containerWidth={containerWidth}
-                trackHeight={trackHeight}
-                editMode={editMode}
-                revealShift={revealShift}
-                onPressView={handleViewImage}
-                onChangeCaption={handleChangeCaption}
+        {sortedSlides.map(
+          ({ image: { uri, contentPosition }, caption, order }) => (
+            <Slot key={`slot-${order}`} $width={slotWidth}>
+              <CoverImage
+                uri={uri}
+                radius={GALLERY_ITEM_RADIUS}
+                contentPosition={contentPosition}
               />
-            );
-          })}
-          {editMode && (
-            <GallerySlot
-              $width={containerWidth}
-              $height={trackHeight + CAPTION_REVEAL_HEIGHT}
-            >
-              <CaptionTray $height={trackHeight / 2} style={addTileTrayStyle} />
-              <Item $width={containerWidth}>
-                <Pressable onPress={handleAddImage} style={{ flex: 1 }}>
-                  <EditableView>
-                    <ThemedText>Add Image</ThemedText>
-                  </EditableView>
-                </Pressable>
-              </Item>
-            </GallerySlot>
-          )}
-        </GalleryScrollView>
-        {editMode && !onAddTile && (
-          <ControlsOverlay
-            onEdit={() => handleEditImage(activeIndex)}
-            onDelete={() => onDeleteImage?.(activeIndex)}
-            $width={containerWidth}
-          />
+              {/* <ThemedText>{caption}</ThemedText> */}
+            </Slot>
+          ),
         )}
-        {editMode && images.length > 1 && !onAddTile && (
-          <PaginationOverlay
-            index={activeIndex}
-            total={images.length}
-            onPressLeft={handleMoveLeft}
-            onPressRight={handleMoveRight}
-            $width={containerWidth}
-          />
+        {isEditing && (
+          <Slot $width={slotWidth}>
+            <ThemedText>Add Image</ThemedText>
+          </Slot>
         )}
-      </RevealContainer>
-      <EditLightbox
-        image={openItem?.mode === "edit" ? openItem.image : null}
-        onClose={handleClose}
-        onSave={handleSaveEdit}
-      />
-      <ViewerLightbox
-        image={openItem?.mode === "view" ? openItem.image : null}
-        onClose={handleClose}
-      />
-    </>
+      </ScrollContainer>
+    </AnimateHeight>
   );
-});
+};

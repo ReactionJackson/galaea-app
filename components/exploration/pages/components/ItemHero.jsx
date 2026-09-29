@@ -88,10 +88,14 @@ export function ItemHero({
 
   return (
     <Container $height={height}>
-      <CoverImage key={`cover-image-${coverId}`} {...coverImage} />
+      <CoverImage
+        uri={coverImage.uri}
+        contentPosition={coverImage.contentPosition}
+        isDarkened
+      />
       <Image
-        {...cardImage}
-        key={`card-image-${cardId}`}
+        uri={cardImage.uri}
+        aspectRatio={cardImage.aspectRatio}
         height={ITEM_HEIGHT}
         radius={8}
       />

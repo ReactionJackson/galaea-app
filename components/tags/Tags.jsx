@@ -5,7 +5,13 @@ import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
 import { TAG_HEIGHT } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { TextInput } from "react-native";
 import styled from "styled-components/native";
 
@@ -35,7 +41,7 @@ const emptyTag = () => ({
 // Main Component:
 
 export const Tags = forwardRef(function Tags(
-  { tagIds = [], isVisible = false, gap = 0 },
+  { tagIds = [], isVisible = true, gap = 0 },
   ref,
 ) {
   const { tags: initialTags, isEditing } = useApp();

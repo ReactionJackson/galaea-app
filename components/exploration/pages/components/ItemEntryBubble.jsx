@@ -1,3 +1,5 @@
+import { Gallery } from "@/components/gallery/Gallery";
+import { AnimateHeight } from "@/components/interface/AnimateHeight";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { Spacer } from "@/components/interface/Spacer";
 import { ThemedText } from "@/components/interface/ThemedText";
@@ -9,7 +11,6 @@ import {
   HERO_HEIGHT,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
-import { useState } from "react";
 import styled from "styled-components/native";
 import { ItemHero } from "./ItemHero";
 
@@ -28,7 +29,7 @@ const Container = styled.View`
   background-color: ${Colors.background};
 `;
 
-const Content = styled.Pressable`
+const Content = styled.View`
   padding: 20px;
   padding-top: 15px;
   border: 1px solid ${Colors.border};
@@ -38,55 +39,54 @@ const Content = styled.Pressable`
   background-color: ${Colors.background};
 `;
 
-export const ItemEntryBubble = ({ text, tags, gallery, parents, draft }) => {
+export const ItemEntryBubble = ({
+  text,
+  tags,
+  gallery,
+  parents,
+  draft,
+  isVisible = true,
+  gap = 20,
+}) => {
   const { getById, collectionIdByItemId } = useApp();
   const { title: itemTitle, images: { card, cover } = {} } =
     getById("items", parents.item) ?? {};
   const { title: collectionTitle } =
     getById("collections", collectionIdByItemId[parents.item]) ?? {};
 
-  const [tester, setTester] = useState(false);
-
   return (
-    <Shadow>
-      <Container>
-        <ItemHero
-          cardId={card}
-          coverId={cover}
-          height={HERO_HEIGHT}
-          shadowRadius={CARD_SHADOW_RADIUS}
-          shadowOpacity={CARD_SHADOW_OPACITY}
-        />
-        <Content onPress={() => setTester(!tester)}>
-          <HeaderText>
-            <HeaderText.Title>{itemTitle}</HeaderText.Title>
-            <HeaderText.Subtitle>{collectionTitle}</HeaderText.Subtitle>
-            <HeaderText.SubtitleFaded>Entry X</HeaderText.SubtitleFaded>
-          </HeaderText>
-          <Spacer isVisible={!!text} height={10} />
-          <ThemedText
-            isInput
-            multiline={true}
-            placeholder="Write something about this..."
-            onChangeText={() => {}}
-            isVisible={!!text}
-          >
-            {text}
-          </ThemedText>
-          {/* <Gallery
-          images={gallery}
-          editMode={editable}
-          onAddImage={handleAddImage}
-          onAddImages={handleAddImages}
-          onUpdateImage={handleUpdateImage}
-          onDeleteImage={handleDeleteImage}
-          onReorderImages={handleReorderImages}
-          horizontalPadding={horizontalPadding}
-        /> */}
-          <Spacer isVisible={!!tags} />
-          <Tags tagIds={tags} isVisible={!!tags} />
-        </Content>
-      </Container>
-    </Shadow>
+    <AnimateHeight isVisible={isVisible} gap={gap}>
+      <Shadow>
+        <Container>
+          <ItemHero
+            cardId={card}
+            coverId={cover}
+            height={HERO_HEIGHT}
+            shadowRadius={CARD_SHADOW_RADIUS}
+            shadowOpacity={CARD_SHADOW_OPACITY}
+          />
+          <Content>
+            <HeaderText>
+              <HeaderText.Title>{itemTitle}</HeaderText.Title>
+              <HeaderText.Subtitle>{collectionTitle}</HeaderText.Subtitle>
+              <HeaderText.SubtitleFaded>Entry X</HeaderText.SubtitleFaded>
+            </HeaderText>
+            <Spacer isVisible={!!text} height={10} />
+            <ThemedText
+              isInput
+              multiline={true}
+              placeholder="Write something about this..."
+              onChangeText={() => {}}
+              isVisible={!!text}
+              gap={15}
+            >
+              {text}
+            </ThemedText>
+            <Gallery gallery={gallery} isVisible={!!gallery} gap={15} />
+            <Tags tagIds={tags} isVisible={!!tags} />
+          </Content>
+        </Container>
+      </Shadow>
+    </AnimateHeight>
   );
 };
