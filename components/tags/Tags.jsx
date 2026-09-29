@@ -3,21 +3,19 @@ import { FadeTrack } from "@/components/interface/FadeTrack";
 import { InteractionControls } from "@/components/interface/InteractionControls";
 import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
+import { TAG_HEIGHT } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { TextInput } from "react-native";
 import styled from "styled-components/native";
 
 // Styled Components:
 
 const Container = styled.View`
-  gap: 10px;
-`;
-
-const TagRow = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
   gap: 10px;
+  height: ${TAG_HEIGHT};
 `;
 
 const HiddenInput = styled(TextInput)`
@@ -37,7 +35,7 @@ const emptyTag = () => ({
 // Main Component:
 
 export const Tags = forwardRef(function Tags(
-  { tagIds = [], isVisible = false },
+  { tagIds = [], isVisible = false, gap = 0 },
   ref,
 ) {
   const { tags: initialTags, isEditing } = useApp();
@@ -89,55 +87,59 @@ export const Tags = forwardRef(function Tags(
     blur: () => inputRef.current?.blur(),
   }));
 
+  useEffect(() => {
+    if (!isEditing) setIsCreatingTag(false);
+  }, [isEditing]);
+
   //Render:
 
   return (
-    <AnimateHeight isVisible={isVisible}>
-      <Container>
-        {isEditing && (
-          <TagRow>
-            <InteractionControls onAdd={() => setIsCreatingTag(true)} />
-            <FadeTrack>
-              {tags.map(({ id, title, color }) => {
-                const isActive = activeTags.find((tag) => tag.id === id);
-                return (
-                  <Tag
-                    key={`tag-${id}`}
-                    $color={isActive ? "disabled" : color}
-                    onPress={() => handleToggleTag(id)}
-                  >
-                    {title}
-                  </Tag>
-                );
-              })}
-            </FadeTrack>
-          </TagRow>
-        )}
-        {isCreatingTag && (
-          <TagRow>
-            <Tag
-              $color={draftTag.color}
-              onPress={() => inputRef.current?.focus()}
-            >
-              {draftTag.title || "New Tag"}
-            </Tag>
-            <FadeTrack>
-              {colors.map((color) => (
+    <AnimateHeight isVisible={isVisible} gap={gap}>
+      <AnimateHeight isVisible={!!isEditing} gap={10}>
+        <Container>
+          <InteractionControls onAdd={() => setIsCreatingTag(true)} />
+          <FadeTrack>
+            {tags.map(({ id, title, color }) => {
+              const isActive = activeTags.find((tag) => tag.id === id);
+              return (
                 <Tag
-                  key={`tag-${color}`}
-                  $color={color}
-                  onPress={() => handleSelectColor(color)}
-                />
-              ))}
-            </FadeTrack>
-            <InteractionControls
-              direction="row-reverse"
-              onConfirm={() => handleAddTag()}
-              onCancel={() => handleDiscardTag()}
-            />
-          </TagRow>
-        )}
-        <TagRow>
+                  key={`tag-${id}`}
+                  $color={isActive ? "disabled" : color}
+                  onPress={() => handleToggleTag(id)}
+                >
+                  {title}
+                </Tag>
+              );
+            })}
+          </FadeTrack>
+        </Container>
+      </AnimateHeight>
+      <AnimateHeight isVisible={!!isCreatingTag && isEditing} gap={10}>
+        <Container>
+          <Tag
+            $color={draftTag.color}
+            onPress={() => inputRef.current?.focus()}
+          >
+            {draftTag.title || "New Tag"}
+          </Tag>
+          <FadeTrack>
+            {colors.map((color) => (
+              <Tag
+                key={`tag-${color}`}
+                $color={color}
+                onPress={() => handleSelectColor(color)}
+              />
+            ))}
+          </FadeTrack>
+          <InteractionControls
+            direction="row-reverse"
+            onConfirm={() => handleAddTag()}
+            onCancel={() => handleDiscardTag()}
+          />
+        </Container>
+      </AnimateHeight>
+      <AnimateHeight isVisible={!!activeTags.length}>
+        <Container>
           {activeTags.map(({ id, title, color }) => (
             <Tag
               key={`tag-${id}`}
@@ -147,15 +149,15 @@ export const Tags = forwardRef(function Tags(
               {title}
             </Tag>
           ))}
-        </TagRow>
-        <HiddenInput
-          ref={inputRef}
-          value={draftTag.title}
-          onChangeText={(title) => setDraftTag((prev) => ({ ...prev, title }))}
-          returnKeyType="done"
-          onSubmitEditing={() => handleAddTag()}
-        />
-      </Container>
+        </Container>
+      </AnimateHeight>
+      <HiddenInput
+        ref={inputRef}
+        value={draftTag.title}
+        onChangeText={(title) => setDraftTag((prev) => ({ ...prev, title }))}
+        returnKeyType="done"
+        onSubmitEditing={() => handleAddTag()}
+      />
     </AnimateHeight>
   );
 });

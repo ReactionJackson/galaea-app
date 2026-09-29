@@ -14,14 +14,17 @@ const TRANSITION_SETTINGS = {
   easing: Easing.inOut(Easing.quad),
 };
 
-export const AnimateHeight = ({ isVisible, children }) => {
+export const AnimateHeight = ({ isVisible, gap = 0, children }) => {
   const naturalHeight = useRef(0);
   const isFirstRender = useRef(true);
   const [isMeasured, setIsMeasured] = useState(isVisible);
   const heightValue = useSharedValue(isVisible ? OPEN_MAX_HEIGHT : 0);
+  const gapValue = useSharedValue(isVisible ? gap : 0);
   const animatedStyle = useAnimatedStyle(() => ({
     maxHeight: heightValue.get(),
     overflow: heightValue.get() >= OPEN_MAX_HEIGHT ? "visible" : "hidden",
+    display: heightValue.get() > 0 ? "flex" : "none",
+    marginBottom: gapValue.get(),
   }));
   const measuringStyle = { position: "absolute", width: "100%", opacity: 0 };
 
@@ -47,9 +50,11 @@ export const AnimateHeight = ({ isVisible, children }) => {
           if (finished) heightValue.set(OPEN_MAX_HEIGHT);
         }),
       );
+      gapValue.set(withTiming(gap, TRANSITION_SETTINGS));
     } else {
       heightValue.set(naturalHeight.current);
       heightValue.set(withTiming(0, TRANSITION_SETTINGS));
+      gapValue.set(withTiming(0, TRANSITION_SETTINGS));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible]);

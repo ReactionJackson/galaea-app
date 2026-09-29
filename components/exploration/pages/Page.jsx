@@ -33,7 +33,6 @@ const HeaderContainer = styled(BlurView)`
 `;
 
 const ContentContainer = styled.View`
-  gap: ${CONTENT_GAP}px;
   padding: 0 ${PAGE_GUTTER}px;
   padding-bottom: ${CONTENT_GAP}px;
 `;

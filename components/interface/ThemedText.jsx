@@ -38,6 +38,7 @@ export const ThemedText = forwardRef(function ThemedText(
     value = "???",
     isEditable: editable,
     isVisible = true,
+    gap = 0,
     children,
     ...rest
   },
@@ -73,7 +74,7 @@ export const ThemedText = forwardRef(function ThemedText(
   // Render:
 
   return (
-    <AnimateHeight isVisible={isVisible}>
+    <AnimateHeight isVisible={isVisible} gap={gap}>
       {isInput ? (
         <AnimatedTextInput
           ref={ref}
