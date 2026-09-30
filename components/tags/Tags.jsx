@@ -3,7 +3,6 @@ import { FadeTrack } from "@/components/interface/FadeTrack";
 import { InteractionControls } from "@/components/interface/InteractionControls";
 import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
-import { TAG_HEIGHT } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import {
   forwardRef,
@@ -21,7 +20,6 @@ const Container = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
   gap: 10px;
-  height: ${TAG_HEIGHT}px;
 `;
 
 const HiddenInput = styled(TextInput)`

@@ -51,8 +51,6 @@ export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
     }))
     .sort((a, b) => a.order - b.order);
 
-  console.log("sortedSlides", sortedSlides);
-
   // Handlers:
 
   const handleScroll = (event) => {
