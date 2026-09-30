@@ -21,7 +21,7 @@ const Container = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
   gap: 10px;
-  height: ${TAG_HEIGHT};
+  height: ${TAG_HEIGHT}px;
 `;
 
 const HiddenInput = styled(TextInput)`
