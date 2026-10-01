@@ -5,6 +5,15 @@ import { useApp } from "@/context/AppContext";
 import { ScrollView, useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
 
+// RefactorTasks:
+/*
+  - Captions UI
+  - Viewer Lightbox
+  - Edit Lightbox
+  - Sticky controls and handlers
+  - Add image and cancel handling
+*/
+
 // Constants:
 
 const GALLERY_GUTTERS = 20;
