@@ -1,8 +1,10 @@
 import { CoverImage } from "@/components/image/CoverImage";
 import { AnimateHeight } from "@/components/interface/AnimateHeight";
+import { InteractionControls } from "@/components/interface/InteractionControls";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { useApp } from "@/context/AppContext";
-import { ScrollView, useWindowDimensions } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
 
 // RefactorTasks:
@@ -35,6 +37,16 @@ const Slot = styled.View`
   align-items: center;
 `;
 
+const ImageContainer = styled(Pressable)`
+  background-color: gold;
+`;
+
+const ControlsContainer = styled.View`
+  position: absolute;
+  top: 10px;
+  left: 20px;
+`;
+
 // Helpers:
 
 const getScrollDimensions = (screenWidth) => {
@@ -51,6 +63,7 @@ export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
   const { width: windowWidth } = useWindowDimensions();
   const { galleryWidth, slotWidth, scrollInterval } =
     getScrollDimensions(windowWidth);
+  const [activeSlot, setActiveSlot] = useState(0);
   const slides = getById("galleries", gallery)?.slides ?? [];
   const sortedSlides = [...slides]
     .map(({ caption, image, order }) => ({
@@ -62,9 +75,28 @@ export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
 
   // Handlers:
 
-  const handleScroll = (event) => {
+  const handleScroll = (e) => {
+    const activeSlotIndex = Math.max(
+      0,
+      Math.min(
+        Math.round(e.nativeEvent.contentOffset.x / scrollInterval),
+        sortedSlides.length - 1,
+      ),
+    );
+    setActiveSlot((prev) =>
+      prev === activeSlotIndex ? prev : activeSlotIndex,
+    );
+  };
+
+  const handleViewImage = () => {
     // ...
   };
+
+  // Effects:
+
+  useEffect(() => {
+    console.log("activeSlot", activeSlot);
+  }, [activeSlot]);
 
   // Render:
 
@@ -88,11 +120,13 @@ export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
         {sortedSlides.map(
           ({ image: { uri, contentPosition }, caption, order }) => (
             <Slot key={`slot-${order}`} $width={slotWidth}>
-              <CoverImage
-                uri={uri}
-                radius={GALLERY_ITEM_RADIUS}
-                contentPosition={contentPosition}
-              />
+              <ImageContainer onPress={() => handleViewImage()}>
+                <CoverImage
+                  uri={uri}
+                  radius={GALLERY_ITEM_RADIUS}
+                  contentPosition={contentPosition}
+                />
+              </ImageContainer>
               {/* <ThemedText>{caption}</ThemedText> */}
             </Slot>
           ),
@@ -103,6 +137,11 @@ export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
           </Slot>
         )}
       </ScrollContainer>
+      {isEditing && (
+        <ControlsContainer>
+          <InteractionControls onEdit={() => {}} onDelete={() => {}} />
+        </ControlsContainer>
+      )}
     </AnimateHeight>
   );
 };
