@@ -1,6 +1,6 @@
 import { Button } from "@/components/interface/Button";
 import { HeaderBar } from "@/components/interface/HeaderBar";
-import { ThemedText } from "@/components/interface/ThemedText";
+import { MultilineText } from "@/components/interface/MultilineText";
 import { Tags } from "@/components/tags/Tags";
 import { useApp } from "@/context/AppContext";
 import { formatDate } from "@/utils/formatDate";
@@ -60,17 +60,10 @@ export const JournalPage = ({ postId = 1 }) => {
             Save
           </Button>
         </View>
-        <ThemedText
-          isInput
-          multiline={true}
-          placeholder="Something that happened today..."
-          isEditable={isEditing}
-          isVisible={!!text || isEditing}
-          gap={20}
-        >
+        <MultilineText isVisible={!!text || isEditing} gap={20}>
           {text}
-        </ThemedText>
-        <Tags tagIds={tags} isVisible={!!tags} gap={20} />
+        </MultilineText>
+        <Tags tagIds={tags} isVisible={!!tags} gap={5} />
         {currentEntries.map((entry) => (
           <ItemEntryBubble key={`entry-${entry.id}`} {...entry} />
         ))}

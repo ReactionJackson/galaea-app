@@ -1,8 +1,7 @@
 import { Gallery } from "@/components/gallery/Gallery";
 import { AnimateHeight } from "@/components/interface/AnimateHeight";
 import { HeaderText } from "@/components/interface/HeaderText";
-import { Spacer } from "@/components/interface/Spacer";
-import { ThemedText } from "@/components/interface/ThemedText";
+import { MultilineText } from "@/components/interface/MultilineText";
 import { Tags } from "@/components/tags/Tags";
 import { Colors } from "@/constants/theme";
 import {
@@ -71,19 +70,11 @@ export const ItemEntryBubble = ({
               <HeaderText.Subtitle>{collectionTitle}</HeaderText.Subtitle>
               <HeaderText.SubtitleFaded>Entry X</HeaderText.SubtitleFaded>
             </HeaderText>
-            <Spacer isVisible={!!text} height={10} />
-            <ThemedText
-              isInput
-              multiline={true}
-              placeholder="Write something about this..."
-              onChangeText={() => {}}
-              isVisible={!!text}
-              gap={15}
-            >
+            <MultilineText isVisible={!!text} gap={10}>
               {text}
-            </ThemedText>
+            </MultilineText>
             <Gallery gallery={gallery} isVisible={!!gallery} gap={15} />
-            <Tags tagIds={tags} isVisible={!!tags} />
+            <Tags tagIds={tags} isVisible={!!tags.length} gap={5} />
           </Content>
         </Container>
       </Shadow>

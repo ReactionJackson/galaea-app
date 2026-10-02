@@ -142,7 +142,7 @@ export const Tags = forwardRef(function Tags(
           />
         </Container>
       </AnimateHeight>
-      <AnimateHeight isVisible={!!activeTags.length}>
+      <AnimateHeight isVisible={!!activeTags.length} gap={10}>
         <Container>
           {activeTags.map(({ id, title, color }) => (
             <Tag

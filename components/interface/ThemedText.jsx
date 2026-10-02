@@ -4,7 +4,6 @@ import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { forwardRef } from "react";
 import { Platform, StyleSheet, TextInput } from "react-native";
 import Animated from "react-native-reanimated";
-import { AnimateHeight } from "./AnimateHeight";
 
 // Constants:
 
@@ -37,8 +36,6 @@ export const ThemedText = forwardRef(function ThemedText(
     multiline = false,
     value = "???",
     isEditable: editable,
-    isVisible = true,
-    gap = 0,
     children,
     ...rest
   },
@@ -73,28 +70,24 @@ export const ThemedText = forwardRef(function ThemedText(
 
   // Render:
 
-  return (
-    <AnimateHeight isVisible={isVisible} gap={gap}>
-      {isInput ? (
-        <AnimatedTextInput
-          ref={ref}
-          style={baseStyle}
-          multiline={multiline}
-          scrollEnabled={false}
-          value={children ?? value}
-          editable={editable}
-          pointerEvents={editable ? "auto" : "none"}
-          placeholderTextColor={Colors.placeholder}
-          spellCheck={false}
-          autoCorrect={true}
-          {...rest}
-        />
-      ) : (
-        <Animated.Text ref={ref} style={baseStyle} {...rest}>
-          {children}
-        </Animated.Text>
-      )}
-    </AnimateHeight>
+  return isInput ? (
+    <AnimatedTextInput
+      ref={ref}
+      style={baseStyle}
+      multiline={multiline}
+      scrollEnabled={false}
+      value={children ?? value}
+      editable={editable}
+      pointerEvents={editable ? "auto" : "none"}
+      placeholderTextColor={Colors.placeholder}
+      spellCheck={false}
+      autoCorrect={true}
+      {...rest}
+    />
+  ) : (
+    <Animated.Text ref={ref} style={baseStyle} {...rest}>
+      {children}
+    </Animated.Text>
   );
 });
 
