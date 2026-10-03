@@ -1,6 +1,7 @@
 import { Gallery } from "@/components/gallery/Gallery";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { MultilineText } from "@/components/interface/MultilineText";
+import { Spacer } from "@/components/interface/Spacer";
 import { ToggleBox } from "@/components/interface/ToggleBox";
 import { Tags } from "@/components/tags/Tags";
 import { Colors } from "@/constants/theme";
@@ -47,7 +48,7 @@ export const ItemEntryBubble = ({
   isVisible = true,
   gap = 20,
 }) => {
-  const { getById, collectionIdByItemId } = useApp();
+  const { getById, collectionIdByItemId, isEditing } = useApp();
   const { title: itemTitle, images: { card, cover } = {} } =
     getById("items", parents.item) ?? {};
   const { title: collectionTitle } =
@@ -73,8 +74,17 @@ export const ItemEntryBubble = ({
             <MultilineText isVisible={!!text} gap={10}>
               {text}
             </MultilineText>
-            <Gallery galleryId={gallery} isVisible={!!gallery} gap={15} />
-            <Tags tagIds={tags} isVisible={!!tags.length} gap={15} />
+            <Spacer isVisible={!gallery && !!tags.length} height={15} />
+            <Gallery
+              galleryId={gallery}
+              isVisible={isEditing || !!gallery}
+              gap={15}
+            />
+            <Spacer
+              isVisible={isEditing | (!!gallery && !!tags.length)}
+              height={15}
+            />
+            <Tags tagIds={tags} />
           </Content>
         </Container>
       </Shadow>

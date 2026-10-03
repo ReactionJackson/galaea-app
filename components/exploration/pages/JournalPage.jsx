@@ -63,7 +63,7 @@ export const JournalPage = ({ postId = 1 }) => {
         <MultilineText isVisible={!!text || isEditing} gap={20}>
           {text}
         </MultilineText>
-        <Tags tagIds={tags} isVisible={!!tags.length} gap={15} />
+        <Tags tagIds={tags} isVisible={!!tags?.length} gap={15} />
         {currentEntries.map((entry) => (
           <ItemEntryBubble key={`entry-${entry.id}`} {...entry} />
         ))}

@@ -1,6 +1,7 @@
 import { FadeTrack } from "@/components/interface/FadeTrack";
 import { HiddenInput } from "@/components/interface/HiddenInput";
 import { InteractionControls } from "@/components/interface/InteractionControls";
+import { Spacer } from "@/components/interface/Spacer";
 import { ToggleBox } from "@/components/interface/ToggleBox";
 import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
@@ -25,7 +26,7 @@ const emptyTag = () => ({
 
 // Main Component:
 
-export const Tags = ({ tagIds = [], gap = 0 }) => {
+export const Tags = ({ tagIds = [] }) => {
   const { tags: initialTags, isEditing } = useApp();
   const [tags, setTags] = useState([...initialTags]);
   const [isCreatingTag, setIsCreatingTag] = useState(false);
@@ -78,7 +79,7 @@ export const Tags = ({ tagIds = [], gap = 0 }) => {
 
   return (
     <>
-      <ToggleBox isVisible={!!isEditing} gap={gap}>
+      <ToggleBox isVisible={!!isEditing}>
         <Container>
           <InteractionControls onAdd={() => setIsCreatingTag(true)} />
           <FadeTrack>
@@ -97,7 +98,8 @@ export const Tags = ({ tagIds = [], gap = 0 }) => {
           </FadeTrack>
         </Container>
       </ToggleBox>
-      <ToggleBox isVisible={!!isCreatingTag && isEditing} gap={10}>
+      <Spacer isVisible={isEditing && !!activeTags.length} height={10} />
+      <ToggleBox isVisible={!!isCreatingTag && isEditing}>
         <Container>
           <Tag
             $color={draftTag.color}
@@ -121,7 +123,8 @@ export const Tags = ({ tagIds = [], gap = 0 }) => {
           />
         </Container>
       </ToggleBox>
-      <ToggleBox isVisible={!!activeTags.length} gap={10}>
+      <Spacer isVisible={isEditing && isCreatingTag} height={10} />
+      <ToggleBox isVisible={!!activeTags.length}>
         <Container>
           {activeTags.map(({ id, title, color }) => (
             <Tag
