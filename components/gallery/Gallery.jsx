@@ -1,8 +1,8 @@
 import { GallerySlot } from "@/components/gallery/GallerySlot";
-import { ToggleBox } from "@/components/interface/ToggleBox";
 import { InteractionControls } from "@/components/interface/InteractionControls";
+import { ToggleBox } from "@/components/interface/ToggleBox";
 import { useApp } from "@/context/AppContext";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { ScrollView, useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
 
@@ -70,7 +70,7 @@ export const Gallery = ({ galleryId, isVisible = false, gap = 0 }) => {
       0,
       Math.min(
         Math.round(e.nativeEvent.contentOffset.x / scrollInterval),
-        sortedSlides.length - 1,
+        sortedSlides.length,
       ),
     );
     setActiveSlot((prev) =>
@@ -90,12 +90,6 @@ export const Gallery = ({ galleryId, isVisible = false, gap = 0 }) => {
       ),
     }));
   };
-
-  // Effects:
-
-  useEffect(() => {
-    console.log("activeSlot", activeSlot);
-  }, [activeSlot]);
 
   // Render:
 
@@ -127,8 +121,11 @@ export const Gallery = ({ galleryId, isVisible = false, gap = 0 }) => {
             </GallerySlot>
           ),
         )}
+        <GallerySlot key={`slot-placeholder`} width={slotWidth}>
+          <GallerySlot.Placeholder />
+        </GallerySlot>
       </ScrollContainer>
-      {isEditing && (
+      {isEditing && activeSlot < sortedSlides.length && (
         <ControlsContainer>
           <InteractionControls onEdit={() => {}} onDelete={() => {}} />
         </ControlsContainer>

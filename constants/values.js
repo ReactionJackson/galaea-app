@@ -2,7 +2,6 @@
 
 export const ITEM_HEIGHT = 100;
 export const EMPTY_CARD_WIDTH = 70;
-export const ITEM_ASPECT_RATIO = 3 / 2;
 export const HERO_HEIGHT = 130;
 export const COLLECTION_HERO_HEIGHT = 250;
 export const COLLECTION_HERO_SPACING = 30;
@@ -15,6 +14,11 @@ export const TAG_HEIGHT = 26;
 export const CONDENSED_BUTTON_HEIGHT = TAG_HEIGHT;
 export const TRACK_GAP = 10;
 export const GALLERY_ITEM_RADIUS = 15;
+
+// Ratios:
+
+export const GALLERY_ASPECT_RATIO = 3 / 2;
+export const ITEM_ASPECT_RATIO = 3 / 2;
 
 // Durations:
 

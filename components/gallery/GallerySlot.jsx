@@ -1,31 +1,34 @@
 import { CoverImage } from "@/components/image/CoverImage";
-import { ToggleBox } from "@/components/interface/ToggleBox";
+import { Spacer } from "@/components/interface/Spacer";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
+import { GALLERY_ASPECT_RATIO, GALLERY_ITEM_RADIUS } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { childrenByType } from "@/utils/childrenByType";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
-import { GALLERY_ITEM_RADIUS } from "./shared";
 
 const CAPTION_HEIGHT = 60;
-const GALLERY_ASPECT_RATIO = 3 / 2;
 
 const Container = styled.View`
   width: ${({ $width }) => $width}px;
-  border-radius: ${GALLERY_ITEM_RADIUS}px;
-  overflow: hidden;
 `;
 
 const ImageContainer = styled(Pressable)`
   aspect-ratio: ${GALLERY_ASPECT_RATIO};
+  border-radius: ${GALLERY_ITEM_RADIUS}px;
   overflow: hidden;
 `;
 
-const SlideContainer = styled.View`
-  margin-top: -${CAPTION_HEIGHT}px;
+const PlaceholderContainer = styled.View`
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: ${GALLERY_ASPECT_RATIO};
+  border: 1px solid ${Colors.border};
+  border-radius: ${GALLERY_ITEM_RADIUS}px;
+  background-color: #fafafa;
 `;
 
 const TrayContainer = styled.View`
@@ -43,18 +46,13 @@ const TrayContainer = styled.View`
   background-color: ${Colors.surfaceTint};
 `;
 
-const GradientContainer = styled.View`
+const GradientContainer = styled(LinearGradient)`
   z-index: 10;
   position: absolute;
   left: 0;
-  bottom: 0;
   width: 100%;
   height: ${CAPTION_HEIGHT}px;
-`;
-
-const Gradient = styled(LinearGradient)`
-  width: 100%;
-  height: 100%;
+  bottom: ${-CAPTION_HEIGHT * 0}px;
 `;
 
 const TextContainer = styled.View`
@@ -64,16 +62,25 @@ const TextContainer = styled.View`
   bottom: 0;
   width: 100%;
   height: ${CAPTION_HEIGHT}px;
-  padding: 0 5px;
+  padding: 0 5px 3px 5px;
   justify-content: center;
   align-items: center;
 `;
+
+// Sub Components:
+
+const Placeholder = () => (
+  <PlaceholderContainer>
+    <ThemedText color="faded">Add Image</ThemedText>
+  </PlaceholderContainer>
+);
 
 // Main Component:
 
 export const GallerySlot = ({ width, caption: initialCaption, children }) => {
   const { isEditing, setIsEditing } = useApp();
   const image = childrenByType(children, CoverImage);
+  const placeholder = childrenByType(children, Placeholder);
   const [caption, setCaption] = useState(initialCaption);
 
   // Handlers:
@@ -87,43 +94,37 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
 
   return (
     <Container $width={width}>
-      <ImageContainer onPress={() => handleViewImage()}>{image}</ImageContainer>
-      <SlideContainer>
-        <ToggleBox
-          isVisible={isEditing}
-          min={CAPTION_HEIGHT}
-          max={CAPTION_HEIGHT * 2}
-        />
+      <ImageContainer onPress={() => handleViewImage()}>
+        {image}
+        {placeholder}
+        {!placeholder && (
+          <GradientContainer
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            colors={[Colors.transparent, Colors.black]}
+          />
+        )}
+      </ImageContainer>
+      <Spacer isVisible={isEditing} height={CAPTION_HEIGHT} />
+      {!placeholder && (
         <TextContainer>
           <ThemedText
             isInput
             isEditable={isEditing}
             multiline={true}
             type="caption"
-            placeholder={isEditing ? "In this image..." : undefined}
+            placeholder="In this image..."
             onChangeText={setCaption}
             color={isEditing ? "text" : "white"}
           >
             {caption}
           </ThemedText>
         </TextContainer>
-        <GradientContainer>
-          <ToggleBox
-            isVisible={!isEditing && !!caption}
-            min={0}
-            max={CAPTION_HEIGHT}
-          >
-            <Gradient
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              colors={[Colors.transparent, Colors.black]}
-            />
-          </ToggleBox>
-        </GradientContainer>
-        <TrayContainer />
-      </SlideContainer>
+      )}
+      <TrayContainer />
     </Container>
   );
 };
 
 GallerySlot.Image = CoverImage;
+GallerySlot.Placeholder = Placeholder;
