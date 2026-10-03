@@ -91,11 +91,9 @@ export function migrateLegacyContent(legacy) {
       cover: migrateImage(oldItem.coverImage, counters, images),
       thumbnail: migrateImage(oldItem.cardThumbnail, counters, images),
     },
-    entries: [],
     order: index,
     draft: {},
   }));
-  const itemsById = new Map(items.map((item) => [item.id, item]));
 
   const collections = (legacy.collections ?? []).map(
     (oldCollection, index) => ({
@@ -123,7 +121,7 @@ export function migrateLegacyContent(legacy) {
       );
       if (!legacyItem || !legacyEntry) return;
 
-      const entryId = migrateEntry(
+      migrateEntry(
         legacyEntry,
         postId,
         ref.itemId,
@@ -132,7 +130,6 @@ export function migrateLegacyContent(legacy) {
         images,
         entries,
       );
-      itemsById.get(ref.itemId)?.entries.push(entryId);
       migratedEntryKeys.add(`${ref.itemId}:${ref.entryId}`);
     });
 
@@ -152,7 +149,7 @@ export function migrateLegacyContent(legacy) {
     (legacyItem.entries ?? []).forEach((legacyEntry) => {
       const key = `${itemId}:${legacyEntry.entryId}`;
       if (migratedEntryKeys.has(key)) return;
-      const entryId = migrateEntry(
+      migrateEntry(
         legacyEntry,
         null,
         itemId,
@@ -161,7 +158,6 @@ export function migrateLegacyContent(legacy) {
         images,
         entries,
       );
-      itemsById.get(itemId)?.entries.push(entryId);
     });
   });
 

@@ -1,5 +1,9 @@
 import { Colors } from "@/constants/theme";
-import { buildIndexById, buildReverseIndex } from "@/utils/lookup";
+import {
+  buildGroupIndex,
+  buildIndexById,
+  buildReverseIndex,
+} from "@/utils/lookup";
 import { STORAGE_KEY, loadContent, saveContent } from "@/utils/storage";
 import {
   createContext,
@@ -61,7 +65,22 @@ export function AppProvider({ children }) {
     [appState.collections],
   );
 
+  const entriesByPostId = useMemo(
+    () => buildGroupIndex(appState.entries, (entry) => entry.parents?.post),
+    [appState.entries],
+  );
+
+  const entriesByItemId = useMemo(
+    () => buildGroupIndex(appState.entries, (entry) => entry.parents?.item),
+    [appState.entries],
+  );
+
   const getById = useCallback((list, id) => indexes[list]?.[id], [indexes]);
+
+  const getCollectionByItemId = useCallback(
+    (itemId) => getById("collections", collectionIdByItemId[itemId]),
+    [getById, collectionIdByItemId],
+  );
 
   // Handlers:
 
@@ -99,13 +118,23 @@ export function AppProvider({ children }) {
       settings: settingsState,
       isEditing,
       getById,
+      getCollectionByItemId,
       setIsEditing,
       updateEntity,
       updateSettings,
       replaceContent,
-      collectionIdByItemId,
+      entriesByPostId,
+      entriesByItemId,
     }),
-    [getById, appState, settingsState, isEditing, collectionIdByItemId],
+    [
+      getById,
+      getCollectionByItemId,
+      appState,
+      settingsState,
+      isEditing,
+      entriesByPostId,
+      entriesByItemId,
+    ],
   );
 
   return (
@@ -131,7 +160,6 @@ export function useApp() {
 //   text: "",
 //   date: new Date(),
 //   tags: [], // [tag.id]
-//   draft: {},
 // };
 
 // const collection = {
@@ -139,7 +167,6 @@ export function useApp() {
 //   title: "",
 //   items: [], // [item.id]
 //   order: null,
-//   draft: {},
 // };
 
 // const item = {
@@ -150,9 +177,7 @@ export function useApp() {
 //     cover: null, // image.id
 //     thumbnail: null, // image.id
 //   },
-//   entries: [], // [entry.id]
 //   order: null,
-//   draft: {},
 // }
 
 // const entry = {
@@ -164,7 +189,6 @@ export function useApp() {
 //     post: null, // post.id
 //     item: null, // item.id
 //   },
-//   draft: {},
 // };
 
 // const gallery = {
@@ -176,7 +200,6 @@ export function useApp() {
 //       order: null,
 //     }
 //   ],
-//   draft: {},
 // }
 
 // const image = {
@@ -188,12 +211,10 @@ export function useApp() {
 //   height: null,
 //   contentPosition: null,
 //   aspectRatio: null,
-//   draft: {},
 // }
 
 // const tag = {
 //   id: null,
 //   title: "",
 //   color: "",
-//   draft: {},
 // }

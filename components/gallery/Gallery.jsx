@@ -121,9 +121,11 @@ export const Gallery = ({ galleryId, isVisible = false, gap = 0 }) => {
             </GallerySlot>
           ),
         )}
-        <GallerySlot key={`slot-placeholder`} width={slotWidth}>
-          <GallerySlot.Placeholder />
-        </GallerySlot>
+        {isEditing && (
+          <GallerySlot key={`slot-placeholder`} width={slotWidth}>
+            <GallerySlot.Placeholder />
+          </GallerySlot>
+        )}
       </ScrollContainer>
       {isEditing && activeSlot < sortedSlides.length && (
         <ControlsContainer>

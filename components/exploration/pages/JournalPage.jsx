@@ -31,11 +31,9 @@ const Header = ({ title, date }) => {
 // Main Component:
 
 export const JournalPage = ({ postId = 1 }) => {
-  const { getById, entries, isEditing, setIsEditing } = useApp();
+  const { getById, entriesByPostId, isEditing, setIsEditing } = useApp();
   const { title, date, text, tags } = getById("posts", postId) ?? {};
-  const currentEntries = entries.filter(
-    (entry) => entry.parents.post === postId,
-  );
+  const currentEntries = entriesByPostId[postId] ?? [];
 
   return (
     <Page>
