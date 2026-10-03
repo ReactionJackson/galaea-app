@@ -39,38 +39,56 @@ const Content = styled.View`
   background-color: ${Colors.background};
 `;
 
+// Sub Components:
+
+const EntryHero = ({ itemId }) => {
+  const { getById } = useApp();
+  const { images: { card, cover } = {} } = getById("items", itemId) ?? {};
+
+  return (
+    <ItemHero
+      cardId={card}
+      coverId={cover}
+      height={HERO_HEIGHT}
+      shadowRadius={CARD_SHADOW_RADIUS}
+      shadowOpacity={CARD_SHADOW_OPACITY}
+    />
+  );
+};
+
+const EntryHeading = ({ itemId }) => {
+  const { getById, getCollectionByItemId } = useApp();
+  const { title: itemTitle } = getById("items", itemId) ?? {};
+  const { title: collectionTitle } = getCollectionByItemId(itemId) ?? {};
+
+  return (
+    <HeaderText>
+      <HeaderText.Title>{itemTitle}</HeaderText.Title>
+      <HeaderText.Subtitle>{collectionTitle}</HeaderText.Subtitle>
+      <HeaderText.SubtitleFaded>Entry X</HeaderText.SubtitleFaded>
+    </HeaderText>
+  );
+};
+
+// Main Component:
+
 export const ItemEntryBubble = ({
   text,
   tags,
   gallery,
   parents,
-  draft,
   isVisible = true,
   gap = 20,
 }) => {
-  const { getById, collectionIdByItemId, isEditing } = useApp();
-  const { title: itemTitle, images: { card, cover } = {} } =
-    getById("items", parents.item) ?? {};
-  const { title: collectionTitle } =
-    getById("collections", collectionIdByItemId[parents.item]) ?? {};
+  const { isEditing } = useApp();
 
   return (
     <ToggleBox isVisible={isVisible} gap={gap}>
       <Shadow>
         <Container>
-          <ItemHero
-            cardId={card}
-            coverId={cover}
-            height={HERO_HEIGHT}
-            shadowRadius={CARD_SHADOW_RADIUS}
-            shadowOpacity={CARD_SHADOW_OPACITY}
-          />
+          <EntryHero itemId={parents.item} />
           <Content>
-            <HeaderText>
-              <HeaderText.Title>{itemTitle}</HeaderText.Title>
-              <HeaderText.Subtitle>{collectionTitle}</HeaderText.Subtitle>
-              <HeaderText.SubtitleFaded>Entry X</HeaderText.SubtitleFaded>
-            </HeaderText>
+            <EntryHeading itemId={parents.item} />
             <MultilineText isVisible={!!text} gap={10}>
               {text}
             </MultilineText>
@@ -81,7 +99,7 @@ export const ItemEntryBubble = ({
               gap={15}
             />
             <Spacer
-              isVisible={isEditing | (!!gallery && !!tags.length)}
+              isVisible={isEditing || (!!gallery && !!tags.length)}
               height={15}
             />
             <Tags tagIds={tags} />
