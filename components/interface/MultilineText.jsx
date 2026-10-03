@@ -1,5 +1,5 @@
 import { useApp } from "@/context/AppContext";
-import { AnimateHeight } from "./AnimateHeight";
+import { ToggleBox } from "./ToggleBox";
 import { ThemedText } from "./ThemedText";
 
 export const MultilineText = ({
@@ -10,7 +10,7 @@ export const MultilineText = ({
 }) => {
   const { isEditing } = useApp();
   return (
-    <AnimateHeight isVisible={isVisible} gap={gap}>
+    <ToggleBox isVisible={isVisible} gap={gap}>
       <ThemedText
         isInput
         multiline={true}
@@ -19,6 +19,6 @@ export const MultilineText = ({
       >
         {children}
       </ThemedText>
-    </AnimateHeight>
+    </ToggleBox>
   );
 };

@@ -38,10 +38,9 @@ export function DayCircle({
       <Container style={fadeStyle}>
         <ThemedText
           type="date-number"
-          colorSwitch={{
-            colors: [Colors.black, Colors.white],
-            active: highlighted,
-            duration: isInternalScroll
+          color={highlighted ? "white" : "black"}
+          style={{
+            transitionDuration: isInternalScroll
               ? DAY_CIRCLE_HIGHLIGHT_DURATION
               : COLOR_TRANSITION_DURATION,
           }}

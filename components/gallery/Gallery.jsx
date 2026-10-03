@@ -1,27 +1,25 @@
-import { CoverImage } from "@/components/image/CoverImage";
-import { AnimateHeight } from "@/components/interface/AnimateHeight";
+import { GallerySlot } from "@/components/gallery/GallerySlot";
+import { ToggleBox } from "@/components/interface/ToggleBox";
 import { InteractionControls } from "@/components/interface/InteractionControls";
-import { ThemedText } from "@/components/interface/ThemedText";
 import { useApp } from "@/context/AppContext";
-import { useEffect, useState } from "react";
-import { Pressable, ScrollView, useWindowDimensions } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { ScrollView, useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
 
-// RefactorTasks:
+// Refactor Tasks:
 /*
-  - Captions UI
-  - Viewer Lightbox
-  - Edit Lightbox
-  - Sticky controls and handlers
-  - Add image and cancel handling
+  - [x] Captions UI
+  - [ ] Move drafts responsibiility to the component level, remove from context shape
+  - [ ] Viewer Lightbox
+  - [ ] Edit Lightbox
+  - [ ] Sticky controls and handlers
+  - [ ] Add image and cancel handling
 */
 
 // Constants:
 
 const GALLERY_GUTTERS = 20;
 const GALLERY_TRACK_GAP = GALLERY_GUTTERS / 2;
-const GALLERY_ITEM_RADIUS = 15;
-const GALLERY_ASPECT_RATIO = 3 / 2;
 
 // Styled Components:
 
@@ -30,21 +28,10 @@ const ScrollContainer = styled(ScrollView)`
   margin: 0 ${-GALLERY_GUTTERS}px;
 `;
 
-const Slot = styled.View`
-  width: ${({ $width }) => $width}px;
-  aspect-ratio: ${GALLERY_ASPECT_RATIO};
-  justify-content: center;
-  align-items: center;
-`;
-
-const ImageContainer = styled(Pressable)`
-  background-color: gold;
-`;
-
 const ControlsContainer = styled.View`
   position: absolute;
   top: 10px;
-  left: 20px;
+  right: 10px;
 `;
 
 // Helpers:
@@ -58,20 +45,23 @@ const getScrollDimensions = (screenWidth) => {
 
 // Main Component:
 
-export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
+export const Gallery = ({ galleryId, isVisible = false, gap = 0 }) => {
   const { getById, isEditing } = useApp();
   const { width: windowWidth } = useWindowDimensions();
+  const [gallery, setGallery] = useState(getById("galleries", galleryId));
   const { galleryWidth, slotWidth, scrollInterval } =
     getScrollDimensions(windowWidth);
   const [activeSlot, setActiveSlot] = useState(0);
-  const slides = getById("galleries", gallery)?.slides ?? [];
-  const sortedSlides = [...slides]
+  const inputRef = useRef(null);
+  const sortedSlides = [...(gallery?.slides ?? [])]
     .map(({ caption, image, order }) => ({
       image: getById("images", image) ?? {},
       caption,
       order,
     }))
     .sort((a, b) => a.order - b.order);
+
+  const [toggle, setToggle] = useState(true);
 
   // Handlers:
 
@@ -89,7 +79,16 @@ export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
   };
 
   const handleViewImage = () => {
-    // ...
+    setToggle((prev) => !prev);
+  };
+
+  const handleChangeCaption = (index, text) => {
+    setGallery((prev) => ({
+      ...prev,
+      slides: prev.slides.map((slide, i) =>
+        i === index ? { ...slide, caption: text } : slide,
+      ),
+    }));
   };
 
   // Effects:
@@ -101,7 +100,7 @@ export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
   // Render:
 
   return (
-    <AnimateHeight isVisible={isVisible} gap={gap}>
+    <ToggleBox isVisible={isVisible} gap={gap}>
       <ScrollContainer
         $width={galleryWidth}
         horizontal
@@ -118,23 +117,15 @@ export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
         }}
       >
         {sortedSlides.map(
-          ({ image: { uri, contentPosition }, caption, order }) => (
-            <Slot key={`slot-${order}`} $width={slotWidth}>
-              <ImageContainer onPress={() => handleViewImage()}>
-                <CoverImage
-                  uri={uri}
-                  radius={GALLERY_ITEM_RADIUS}
-                  contentPosition={contentPosition}
-                />
-              </ImageContainer>
-              {/* <ThemedText>{caption}</ThemedText> */}
-            </Slot>
+          ({ image: { uri, contentPosition }, caption, order }, i) => (
+            <GallerySlot
+              key={`slot-${order}`}
+              width={slotWidth}
+              caption={caption}
+            >
+              <GallerySlot.Image uri={uri} contentPosition={contentPosition} />
+            </GallerySlot>
           ),
-        )}
-        {isEditing && (
-          <Slot $width={slotWidth}>
-            <ThemedText>Add Image</ThemedText>
-          </Slot>
         )}
       </ScrollContainer>
       {isEditing && (
@@ -142,6 +133,6 @@ export const Gallery = ({ gallery, isVisible = false, gap = 0 }) => {
           <InteractionControls onEdit={() => {}} onDelete={() => {}} />
         </ControlsContainer>
       )}
-    </AnimateHeight>
+    </ToggleBox>
   );
 };

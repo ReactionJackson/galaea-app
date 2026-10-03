@@ -1,10 +1,10 @@
 import { View } from "react-native";
-import { AnimateHeight } from "./AnimateHeight";
+import { ToggleBox } from "./ToggleBox";
 
 export const Spacer = ({ isVisible, height = 15 }) => {
   return (
-    <AnimateHeight isVisible={isVisible}>
+    <ToggleBox isVisible={isVisible}>
       <View style={{ height }} />
-    </AnimateHeight>
+    </ToggleBox>
   );
 };

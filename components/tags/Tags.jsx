@@ -1,17 +1,11 @@
-import { AnimateHeight } from "@/components/interface/AnimateHeight";
 import { FadeTrack } from "@/components/interface/FadeTrack";
+import { HiddenInput } from "@/components/interface/HiddenInput";
 import { InteractionControls } from "@/components/interface/InteractionControls";
+import { ToggleBox } from "@/components/interface/ToggleBox";
 import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
-import { TextInput } from "react-native";
+import { useRef, useState } from "react";
 import styled from "styled-components/native";
 
 // Styled Components:
@@ -20,13 +14,6 @@ const Container = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
   gap: 10px;
-`;
-
-const HiddenInput = styled(TextInput)`
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
 `;
 
 // Helpers:
@@ -38,10 +25,7 @@ const emptyTag = () => ({
 
 // Main Component:
 
-export const Tags = forwardRef(function Tags(
-  { tagIds = [], isVisible = true, gap = 0 },
-  ref,
-) {
+export const Tags = ({ tagIds = [], gap = 0 }) => {
   const { tags: initialTags, isEditing } = useApp();
   const [tags, setTags] = useState([...initialTags]);
   const [isCreatingTag, setIsCreatingTag] = useState(false);
@@ -53,6 +37,12 @@ export const Tags = forwardRef(function Tags(
   const colors = Object.keys(Colors.tags).filter(
     (color) => color !== "disabled",
   );
+
+  // Updates:
+
+  if (!isEditing && isCreatingTag) {
+    setIsCreatingTag(false);
+  }
 
   // Handlers:
 
@@ -84,22 +74,11 @@ export const Tags = forwardRef(function Tags(
     setDraftTag((prev) => ({ ...prev, color }));
   };
 
-  // Hooks:
-
-  useImperativeHandle(ref, () => ({
-    focus: () => inputRef.current?.focus(),
-    blur: () => inputRef.current?.blur(),
-  }));
-
-  useEffect(() => {
-    if (!isEditing) setIsCreatingTag(false);
-  }, [isEditing]);
-
   //Render:
 
   return (
-    <AnimateHeight isVisible={isVisible} gap={gap}>
-      <AnimateHeight isVisible={!!isEditing} gap={10}>
+    <>
+      <ToggleBox isVisible={!!isEditing} gap={gap}>
         <Container>
           <InteractionControls onAdd={() => setIsCreatingTag(true)} />
           <FadeTrack>
@@ -117,8 +96,8 @@ export const Tags = forwardRef(function Tags(
             })}
           </FadeTrack>
         </Container>
-      </AnimateHeight>
-      <AnimateHeight isVisible={!!isCreatingTag && isEditing} gap={10}>
+      </ToggleBox>
+      <ToggleBox isVisible={!!isCreatingTag && isEditing} gap={10}>
         <Container>
           <Tag
             $color={draftTag.color}
@@ -141,8 +120,8 @@ export const Tags = forwardRef(function Tags(
             onCancel={() => handleDiscardTag()}
           />
         </Container>
-      </AnimateHeight>
-      <AnimateHeight isVisible={!!activeTags.length} gap={10}>
+      </ToggleBox>
+      <ToggleBox isVisible={!!activeTags.length} gap={10}>
         <Container>
           {activeTags.map(({ id, title, color }) => (
             <Tag
@@ -154,14 +133,13 @@ export const Tags = forwardRef(function Tags(
             </Tag>
           ))}
         </Container>
-      </AnimateHeight>
+      </ToggleBox>
       <HiddenInput
         ref={inputRef}
         value={draftTag.title}
         onChangeText={(title) => setDraftTag((prev) => ({ ...prev, title }))}
-        returnKeyType="done"
-        onSubmitEditing={() => handleAddTag()}
+        onSubmit={() => handleAddTag()}
       />
-    </AnimateHeight>
+    </>
   );
-});
+};

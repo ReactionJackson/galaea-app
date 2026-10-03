@@ -1,6 +1,5 @@
 import { Colors, Fonts } from "@/constants/theme";
 import { COLOR_TRANSITION_DURATION } from "@/constants/values";
-import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { forwardRef } from "react";
 import { Platform, StyleSheet, TextInput } from "react-native";
 import Animated from "react-native-reanimated";
@@ -28,64 +27,41 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 export const ThemedText = forwardRef(function ThemedText(
   {
-    style,
     type = "text",
     color,
-    colorSwitch,
     isInput = false,
-    multiline = false,
-    value = "???",
-    isEditable: editable,
+    isEditable,
+    onChangeText = () => {},
+    style,
     children,
     ...rest
   },
   ref,
 ) {
-  const defaultColor =
-    type === "tag"
-      ? (Colors.tags[color ?? "default"]?.primary ?? Colors.black)
-      : color
-        ? resolveColor(color)
-        : (styles[TYPE_STYLES[type]]?.color ?? Colors.black);
-
-  const fromColor = resolveColor(colorSwitch?.colors[0] ?? defaultColor);
-  const toColor = resolveColor(colorSwitch?.colors[1] ?? defaultColor);
-  const animatedColorStyle = useAnimatedTransition(
-    colorSwitch?.active ?? false,
-    { color: [fromColor, toColor] },
-    { duration: colorSwitch?.duration ?? COLOR_TRANSITION_DURATION },
-  );
-
-  const baseStyle = [
-    styles[TYPE_STYLES[type]],
-    isInput ? styles.inputReset : null,
-    isInput && !multiline ? { height: undefined } : null,
-    isInput && multiline
-      ? { minHeight: styles[TYPE_STYLES[type]]?.lineHeight ?? 24 }
-      : null,
-    isInput ? { alignSelf: "stretch" } : null,
-    animatedColorStyle,
+  const typeStyle = styles[TYPE_STYLES[type]];
+  const textStyle = [
+    typeStyle,
+    styles.colorTransition,
+    color && { color: resolveColor(color) },
     style,
   ];
-
-  // Render:
 
   return isInput ? (
     <AnimatedTextInput
       ref={ref}
-      style={baseStyle}
-      multiline={multiline}
-      scrollEnabled={false}
-      value={children ?? value}
-      editable={editable}
-      pointerEvents={editable ? "auto" : "none"}
+      style={[textStyle, styles.input, { minHeight: typeStyle.lineHeight }]}
+      value={children}
+      editable={isEditable}
+      onChangeText={onChangeText}
+      pointerEvents={isEditable ? "auto" : "none"}
       placeholderTextColor={Colors.placeholder}
+      scrollEnabled={false}
       spellCheck={false}
       autoCorrect={true}
       {...rest}
     />
   ) : (
-    <Animated.Text ref={ref} style={baseStyle} {...rest}>
+    <Animated.Text ref={ref} style={textStyle} {...rest}>
       {children}
     </Animated.Text>
   );
@@ -107,7 +83,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 22,
     lineHeight: 28,
-    height: 28,
     ...webTextStyles,
   },
   titleSmall: {
@@ -139,6 +114,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 14,
     lineHeight: 18,
+    textAlign: "center",
     ...webTextStyles,
   },
   dateNumber: {
@@ -150,12 +126,18 @@ const styles = StyleSheet.create({
     ...webTextStyles,
   },
   tag: {
+    color: Colors.tags.default.primary,
     fontFamily: Fonts.bold,
     fontSize: 12,
     ...webTextStyles,
   },
-  inputReset: {
+  input: {
     padding: 0,
     textAlignVertical: "top",
+    alignSelf: "stretch",
+  },
+  colorTransition: {
+    transitionProperty: "color",
+    transitionDuration: COLOR_TRANSITION_DURATION,
   },
 });

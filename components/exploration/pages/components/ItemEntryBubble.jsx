@@ -1,7 +1,7 @@
 import { Gallery } from "@/components/gallery/Gallery";
-import { AnimateHeight } from "@/components/interface/AnimateHeight";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { MultilineText } from "@/components/interface/MultilineText";
+import { ToggleBox } from "@/components/interface/ToggleBox";
 import { Tags } from "@/components/tags/Tags";
 import { Colors } from "@/constants/theme";
 import {
@@ -54,7 +54,7 @@ export const ItemEntryBubble = ({
     getById("collections", collectionIdByItemId[parents.item]) ?? {};
 
   return (
-    <AnimateHeight isVisible={isVisible} gap={gap}>
+    <ToggleBox isVisible={isVisible} gap={gap}>
       <Shadow>
         <Container>
           <ItemHero
@@ -73,11 +73,11 @@ export const ItemEntryBubble = ({
             <MultilineText isVisible={!!text} gap={10}>
               {text}
             </MultilineText>
-            <Gallery gallery={gallery} isVisible={!!gallery} gap={15} />
-            <Tags tagIds={tags} isVisible={!!tags.length} gap={5} />
+            <Gallery galleryId={gallery} isVisible={!!gallery} gap={15} />
+            <Tags tagIds={tags} isVisible={!!tags.length} gap={15} />
           </Content>
         </Container>
       </Shadow>
-    </AnimateHeight>
+    </ToggleBox>
   );
 };
