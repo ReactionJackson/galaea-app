@@ -1,37 +1,68 @@
-import { AnimatedBox } from "@/components/interface/AnimatedBox";
-import { useState } from "react";
-import styled from "styled-components/native";
+import { SLIDE_TRANSITION_DURATION } from "@/constants/values";
+import { useEffect, useRef, useState } from "react";
+import { View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
-// Styled Components:
+const MAX_HEIGHT = 9999;
 
-const Content = styled.View`
-  ${({ $isMeasured }) => ($isMeasured ? "position: absolute; width: 100%;" : "")}
-`;
+const TRANSITION_SETTINGS = {
+  duration: SLIDE_TRANSITION_DURATION,
+  easing: Easing.inOut(Easing.quad),
+};
 
-// Main Component:
-
-export const ToggleBox = ({ gap = 0, min = 0, max, isVisible, children }) => {
-  const [naturalHeight, setNaturalHeight] = useState(0);
-  const expandedHeight = max || naturalHeight;
+export const ToggleBox = ({ gap = 0, style = {}, isVisible, children }) => {
+  const naturalHeight = useRef(0);
+  const isFirstRender = useRef(true);
+  const [isMeasured, setIsMeasured] = useState(isVisible);
+  const heightValue = useSharedValue(isVisible ? MAX_HEIGHT : 0);
+  const spacingValue = useSharedValue(isVisible ? gap : 0);
+  const animatedStyle = useAnimatedStyle(() => ({
+    maxHeight: heightValue.get(),
+    overflow: heightValue.get() >= MAX_HEIGHT ? "visible" : "hidden",
+    display: heightValue.get() > 0 ? "flex" : "none",
+    marginTop: spacingValue.get(),
+  }));
+  const measuringStyle = { position: "absolute", width: "100%", opacity: 0 };
 
   // Handlers:
 
-  const handleLayout = (e) => setNaturalHeight(e.nativeEvent.layout.height);
+  const onLayout = (e) => {
+    const height = e.nativeEvent.layout.height;
+    if (!height) return;
+    naturalHeight.current = height;
+    if (!isMeasured) setIsMeasured(true);
+  };
 
-  // Render:
+  // Effects:
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (isVisible) {
+      heightValue.set(
+        withTiming(naturalHeight.current, TRANSITION_SETTINGS, (finished) => {
+          if (finished) heightValue.set(MAX_HEIGHT);
+        }),
+      );
+      spacingValue.set(withTiming(gap, TRANSITION_SETTINGS));
+    } else {
+      heightValue.set(naturalHeight.current);
+      heightValue.set(withTiming(0, TRANSITION_SETTINGS));
+      spacingValue.set(withTiming(0, TRANSITION_SETTINGS));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible]);
 
   return (
-    <AnimatedBox
-      trigger={isVisible}
-      style={{
-        height: isVisible ? expandedHeight : min,
-        marginTop: isVisible ? gap : 0,
-        overflow: "hidden",
-      }}
-    >
-      <Content $isMeasured={!max} onLayout={max ? undefined : handleLayout}>
-        {children}
-      </Content>
-    </AnimatedBox>
+    <Animated.View style={[isMeasured ? animatedStyle : measuringStyle, style]}>
+      <View onLayout={onLayout}>{children}</View>
+    </Animated.View>
   );
 };

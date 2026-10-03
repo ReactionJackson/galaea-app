@@ -3,11 +3,16 @@ import {
   CONDENSED_BUTTON_HEIGHT,
   FADE_TRANSITION_DURATION,
 } from "@/constants/values";
-import { AnimatedBox } from "@/components/interface/AnimatedBox";
 import { triggerHaptics } from "@/utils/haptics";
-import { Children, cloneElement, isValidElement } from "react";
+import { Children, cloneElement, isValidElement, useEffect } from "react";
 import { Pressable } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import styled from "styled-components/native";
 
 export const InteractCircle = styled.View`
@@ -33,6 +38,14 @@ export function InteractButton({
   children,
 }) {
   const { fill, border, icon } = Colors.interactButton[variant];
+  const opacity = useSharedValue(disabled ? 0.35 : 1);
+  const dimmedStyle = useAnimatedStyle(() => ({ opacity: opacity.get() }));
+
+  useEffect(() => {
+    opacity.set(
+      withTiming(disabled ? 0.35 : 1, { duration: FADE_TRANSITION_DURATION }),
+    );
+  }, [disabled, opacity]);
 
   const coloredChildren = Children.map(children, (child) =>
     isValidElement(child)
@@ -56,16 +69,13 @@ export function InteractButton({
       }
       style={style}
     >
-      <AnimatedBox
-        transition={{ duration: FADE_TRANSITION_DURATION }}
-        style={{ opacity: disabled ? 0.35 : 1 }}
-      >
+      <Animated.View style={dimmedStyle}>
         <Pressable onPress={handlePress} disabled={disabled}>
           <InteractCircle backgroundColor={fill} borderColor={border}>
             {coloredChildren}
           </InteractCircle>
         </Pressable>
-      </AnimatedBox>
+      </Animated.View>
     </Animated.View>
   );
 }
