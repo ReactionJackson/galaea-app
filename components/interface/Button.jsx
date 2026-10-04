@@ -1,6 +1,6 @@
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
-import { BUTTON_HEIGHT } from "@/constants/values";
+import { BUTTON_HEIGHT, DISABLED_OPACITY } from "@/constants/values";
 import { triggerHaptics } from "@/utils/haptics";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
@@ -14,11 +14,14 @@ const StyledButton = styled(Pressable)`
   border-width: 2px;
   border-color: ${({ $borderColor }) => $borderColor};
   background-color: ${({ $backgroundColor }) => $backgroundColor};
+  opacity: ${({ disabled }) => (disabled ? DISABLED_OPACITY : 1)};
+  pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
 `;
 
 export function Button({
   variant = "secondary",
   haptics = "Light",
+  disabled = false,
   onPress,
   children,
   ...props
@@ -34,6 +37,7 @@ export function Button({
     <StyledButton
       $backgroundColor={fill}
       $borderColor={border}
+      disabled={disabled}
       onPress={handlePress}
       {...props}
     >

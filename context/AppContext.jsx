@@ -1,13 +1,7 @@
 import { Colors } from "@/constants/theme";
-import {
-  buildGroupIndex,
-  buildIndexById,
-  buildReverseIndex,
-} from "@/utils/lookup";
 import { STORAGE_KEY, loadContent, saveContent } from "@/utils/storage";
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -44,64 +38,6 @@ export function AppProvider({ children }) {
     ]).then(() => setIsReady(true));
   }, []);
 
-  // Lookups:
-
-  const indexes = useMemo(
-    () => ({
-      posts: buildIndexById(appState.posts),
-      collections: buildIndexById(appState.collections),
-      items: buildIndexById(appState.items),
-      entries: buildIndexById(appState.entries),
-      galleries: buildIndexById(appState.galleries),
-      images: buildIndexById(appState.images),
-      tags: buildIndexById(appState.tags),
-    }),
-    [appState],
-  );
-
-  const collectionIdByItemId = useMemo(
-    () =>
-      buildReverseIndex(appState.collections, (collection) => collection.items),
-    [appState.collections],
-  );
-
-  const entriesByPostId = useMemo(
-    () => buildGroupIndex(appState.entries, (entry) => entry.parents?.post),
-    [appState.entries],
-  );
-
-  const entriesByItemId = useMemo(() => {
-    const groups = buildGroupIndex(
-      appState.entries,
-      (entry) => entry.parents?.item,
-    );
-    Object.values(groups).forEach((list) =>
-      list.sort(
-        (a, b) =>
-          new Date(indexes.posts[b.parents.post]?.date) -
-          new Date(indexes.posts[a.parents.post]?.date),
-      ),
-    );
-    return groups;
-  }, [appState.entries, indexes.posts]);
-
-  const entryNumberById = useMemo(() => {
-    const map = {};
-    Object.values(entriesByItemId).forEach((list) =>
-      list.forEach((entry, i) => {
-        map[entry.id] = list.length - i;
-      }),
-    );
-    return map;
-  }, [entriesByItemId]);
-
-  const getById = useCallback((list, id) => indexes[list]?.[id], [indexes]);
-
-  const getCollectionByItemId = useCallback(
-    (itemId) => getById("collections", collectionIdByItemId[itemId]),
-    [getById, collectionIdByItemId],
-  );
-
   // Handlers:
 
   const updateEntity = (key, id, patch) => {
@@ -137,26 +73,12 @@ export function AppProvider({ children }) {
       ...appState,
       settings: settingsState,
       isEditing,
-      getById,
-      getCollectionByItemId,
       setIsEditing,
       updateEntity,
       updateSettings,
       replaceContent,
-      entriesByPostId,
-      entriesByItemId,
-      entryNumberById,
     }),
-    [
-      getById,
-      getCollectionByItemId,
-      appState,
-      settingsState,
-      isEditing,
-      entriesByPostId,
-      entriesByItemId,
-      entryNumberById,
-    ],
+    [appState, settingsState, isEditing],
   );
 
   return (

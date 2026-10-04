@@ -2,13 +2,14 @@ import { TEXT_LINE_HEIGHT } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { PageScrollContext } from "@/context/PageScrollContext";
 import { useDynamicHeight } from "@/hooks/useDynamicHeight";
-import { useRef, useContext } from "react";
+import { useContext, useRef } from "react";
 import { View } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ToggleBox } from "./ToggleBox";
 
 export const MultilineText = ({
-  placeholder = "Today I thought...",
+  placeholder = "Something that happened today...",
+  onChangeText = () => {},
   children,
 }) => {
   const { isEditing } = useApp();
@@ -24,6 +25,7 @@ export const MultilineText = ({
           multiline={true}
           placeholder={placeholder}
           isEditable={isEditing}
+          onChangeText={onChangeText}
           onFocus={() => scrollToElement(ref)}
         >
           {children}

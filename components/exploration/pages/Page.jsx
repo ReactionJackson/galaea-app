@@ -1,7 +1,7 @@
 import { BlurView } from "@/components/interface/BlurView";
 import { Spacer } from "@/components/interface/Spacer";
 import { Colors } from "@/constants/theme";
-import { PageScrollContext } from "@/context/PageScrollContext";
+import { PageScrollProvider } from "@/context/PageScrollContext";
 import { usePageScroll } from "@/hooks/usePageScroll";
 import { childrenByType } from "@/utils/childrenByType";
 import { useRef } from "react";
@@ -67,7 +67,7 @@ export const Page = ({ children }) => {
   const stickyHeaderIndices = !!header ? (!!hero ? [1] : [0]) : undefined;
 
   return (
-    <PageScrollContext.Provider value={{ scrollToElement }}>
+    <PageScrollProvider scrollToElement={scrollToElement}>
       <ScrollContainer
         ref={scrollRef}
         stickyHeaderIndices={stickyHeaderIndices}
@@ -78,7 +78,7 @@ export const Page = ({ children }) => {
         {content}
         <Spacer isVisible={hasKeyboard} height={keyboardHeight} />
       </ScrollContainer>
-    </PageScrollContext.Provider>
+    </PageScrollProvider>
   );
 };
 

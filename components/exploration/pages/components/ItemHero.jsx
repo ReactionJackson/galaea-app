@@ -2,7 +2,7 @@ import { CoverImage } from "@/components/image/CoverImage";
 import { Image } from "@/components/image/Image";
 import { Colors } from "@/constants/theme";
 import { ITEM_HEIGHT } from "@/constants/values";
-import { useApp } from "@/context/AppContext";
+import { usePage } from "@/context/PageContext";
 import styled from "styled-components/native";
 
 // const DEFAULT_ASPECT_RATIO = 2 / 3;
@@ -82,7 +82,7 @@ export function ItemHero({
   onEditCover = () => {},
   onRemoveCover = () => {},
 }) {
-  const { getById } = useApp();
+  const { getById } = usePage();
   const cardImage = getById("images", cardId) ?? {};
   const coverImage = getById("images", coverId) ?? {};
 

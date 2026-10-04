@@ -4,6 +4,7 @@ import { MultilineText } from "@/components/interface/MultilineText";
 import { Spacer } from "@/components/interface/Spacer";
 import { Tags } from "@/components/tags/Tags";
 import { useApp } from "@/context/AppContext";
+import { usePage } from "@/context/PageContext";
 import { formatDate } from "@/utils/formatDate";
 import { View } from "react-native";
 import { Page } from "./Page";
@@ -12,14 +13,18 @@ import { NumberBadge } from "./components/NumberBadge";
 
 // Sub Components:
 
-const Header = ({ title, date }) => {
+const Header = ({ title, date, onChangeText }) => {
+  const { isEditing } = useApp();
   return (
     <HeaderBar>
       <HeaderBar.Badge>
         <NumberBadge variant="primary">{formatDate(date, "day")}</NumberBadge>
       </HeaderBar.Badge>
-      <HeaderBar.Title placeholder={formatDate(date, "weekday")}>
-        {title || formatDate(date, "weekday")}
+      <HeaderBar.Title
+        onChangeText={onChangeText}
+        placeholder={formatDate(date, "weekday")}
+      >
+        {isEditing ? title : title || formatDate(date, "weekday")}
       </HeaderBar.Title>
       <HeaderBar.Subtitle>{formatDate(date, "month")}</HeaderBar.Subtitle>
       <HeaderBar.SubtitleFaded>
@@ -32,34 +37,73 @@ const Header = ({ title, date }) => {
 // Main Component:
 
 export const JournalPage = ({ postId = 1 }) => {
-  const { getById, entriesByPostId, isEditing, setIsEditing } = useApp();
+  const { isEditing, setIsEditing } = useApp();
+  const {
+    getById,
+    entriesByPostId,
+    draft,
+    updateDraft,
+    discardDraft,
+    commitDraft,
+  } = usePage();
   const { title, date, text, tags } = getById("posts", postId) ?? {};
   const currentEntries = entriesByPostId[postId] ?? [];
+
+  // Temp Edit Mode Controls:
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    discardDraft();
+  };
+
+  const handleSave = () => {
+    setIsEditing(false);
+    commitDraft();
+  };
+
+  // Handlers:
+
+  const handleChangeTitle = (title) => {
+    updateDraft("posts", postId, { title });
+  };
+
+  const handleChangeText = (text) => {
+    updateDraft("posts", postId, { text });
+  };
 
   return (
     <Page>
       <Page.Header>
-        <Header title={title} date={date} />
+        <Header title={title} date={date} onChangeText={handleChangeTitle} />
       </Page.Header>
       <Page.Content>
         <View
           style={{
             flexDirection: "row",
             justifyContent: "center",
+            marginBottom: 20,
             gap: 10,
           }}
         >
-          <Button variant="primary" onPress={() => setIsEditing(true)}>
+          <Button disabled={isEditing} variant="primary" onPress={handleEdit}>
             Edit
           </Button>
-          <Button variant="secondary" onPress={() => setIsEditing(false)}>
+          <Button
+            disabled={!isEditing}
+            variant="secondary"
+            onPress={handleCancel}
+          >
             Cancel
           </Button>
-          <Button variant="primary" onPress={() => setIsEditing(false)}>
+          <Button disabled={!isEditing} variant="primary" onPress={handleSave}>
             Save
           </Button>
         </View>
-        <MultilineText isVisible={!!text || isEditing}>{text}</MultilineText>
+        <MultilineText onChangeText={handleChangeText}>{text}</MultilineText>
         <Spacer
           isVisible={isEditing || (!!text && !!tags.length)}
           height={15}

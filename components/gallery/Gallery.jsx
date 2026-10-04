@@ -9,6 +9,7 @@ import {
   SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
+import { usePage } from "@/context/PageContext";
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
@@ -48,7 +49,8 @@ const getScrollDimensions = (screenWidth) => {
 // Main Component:
 
 export const Gallery = ({ galleryId }) => {
-  const { getById, isEditing } = useApp();
+  const { isEditing } = useApp();
+  const { getById } = usePage();
   const { width: windowWidth } = useWindowDimensions();
   const [gallery, setGallery] = useState(getById("galleries", galleryId));
   const [activeSlot, setActiveSlot] = useState(0);

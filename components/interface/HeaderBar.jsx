@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/interface/ThemedText";
+import { useApp } from "@/context/AppContext";
 import { childrenByType } from "@/utils/childrenByType";
 import styled from "styled-components/native";
 
@@ -62,19 +63,22 @@ const Badge = ({ children }) => <BadgeContainer>{children}</BadgeContainer>;
 //   </BadgeCircle>
 // );
 
-const Title = ({ children, placeholder = "", onChangeText }) => (
-  <TitleContainer>
-    <ThemedText
-      type="title"
-      isInput={!!onChangeText}
-      placeholder={placeholder}
-      onChangeText={onChangeText}
-      isEditable={!!onChangeText}
-    >
-      {children}
-    </ThemedText>
-  </TitleContainer>
-);
+const Title = ({ children, placeholder = "", onChangeText }) => {
+  const { isEditing } = useApp();
+  return (
+    <TitleContainer>
+      <ThemedText
+        type="title"
+        isInput
+        isEditable={isEditing}
+        placeholder={placeholder}
+        onChangeText={onChangeText}
+      >
+        {children}
+      </ThemedText>
+    </TitleContainer>
+  );
+};
 
 const Subtitle = ({ children }) => (
   <ThemedText type="subtitle">{children}</ThemedText>

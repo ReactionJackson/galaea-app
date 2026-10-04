@@ -10,6 +10,7 @@ import {
   HERO_HEIGHT,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
+import { usePage } from "@/context/PageContext";
 import styled from "styled-components/native";
 import { ItemHero } from "./ItemHero";
 
@@ -41,7 +42,7 @@ const Content = styled.View`
 // Sub Components:
 
 const EntryHero = ({ itemId }) => {
-  const { getById } = useApp();
+  const { getById } = usePage();
   const { images: { card, cover } = {} } = getById("items", itemId) ?? {};
 
   return (
@@ -56,7 +57,7 @@ const EntryHero = ({ itemId }) => {
 };
 
 const EntryHeading = ({ itemId, entryId }) => {
-  const { getById, getCollectionByItemId, entryNumberById } = useApp();
+  const { getById, getCollectionByItemId, entryNumberById } = usePage();
   const { title: itemTitle } = getById("items", itemId) ?? {};
   const { title: collectionTitle } = getCollectionByItemId(itemId) ?? {};
 
