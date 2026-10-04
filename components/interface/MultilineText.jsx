@@ -7,14 +7,13 @@ import { ToggleBox } from "./ToggleBox";
 
 export const MultilineText = ({
   placeholder = "Today I thought...",
-  isVisible = true,
   children,
 }) => {
   const { isEditing } = useApp();
   const { dynamicHeight, onLayout } = useDynamicHeight(TEXT_LINE_HEIGHT);
 
   return (
-    <ToggleBox isVisible={isVisible} height={dynamicHeight}>
+    <ToggleBox isVisible={isEditing || !!children} height={dynamicHeight}>
       <View onLayout={onLayout}>
         <ThemedText
           isInput

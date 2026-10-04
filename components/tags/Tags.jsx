@@ -82,7 +82,7 @@ export const Tags = ({ tagIds = [] }) => {
 
   return (
     <>
-      <ToggleBox isVisible={!!isEditing} height={TAG_HEIGHT}>
+      <ToggleBox isVisible={isEditing} height={TAG_HEIGHT}>
         <Container>
           <InteractionControls onAdd={() => setIsCreatingTag(true)} />
           <FadeTrack>
@@ -101,8 +101,8 @@ export const Tags = ({ tagIds = [] }) => {
           </FadeTrack>
         </Container>
       </ToggleBox>
-      <Spacer isVisible={isEditing && !!activeTags.length} height={10} />
-      <ToggleBox isVisible={!!isCreatingTag && isEditing} height={TAG_HEIGHT}>
+      <Spacer isVisible={isEditing && isCreatingTag} height={10} />
+      <ToggleBox isVisible={isEditing && isCreatingTag} height={TAG_HEIGHT}>
         <Container>
           <Tag
             $color={draftTag.color}
@@ -126,7 +126,7 @@ export const Tags = ({ tagIds = [] }) => {
           />
         </Container>
       </ToggleBox>
-      <Spacer isVisible={isEditing && isCreatingTag} height={10} />
+      <Spacer isVisible={isEditing && !!activeTags.length} height={10} />
       <ToggleBox isVisible={!!activeTags.length} height={dynamicHeight}>
         <Container onLayout={onLayout}>
           {activeTags.map(({ id, title, color }) => (

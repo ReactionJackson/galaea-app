@@ -117,7 +117,6 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
   // Handlers:
 
   const handleViewImage = () => {
-    console.log("view image");
     setIsEditing((prev) => !prev);
   };
 

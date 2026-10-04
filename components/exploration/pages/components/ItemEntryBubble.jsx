@@ -75,23 +75,28 @@ export const ItemEntryBubble = ({ text, tags, gallery, parents }) => {
   const { isEditing } = useApp();
 
   return (
-    <Shadow>
-      <Container>
-        <EntryHero itemId={parents.item} />
-        <Content>
-          <EntryHeading itemId={parents.item} />
-          <MultilineText isVisible={!!text}>
-            {text}
-          </MultilineText>
-          <Spacer isVisible={!gallery && !!tags.length} height={15} />
-          <Gallery galleryId={gallery} />
-          <Spacer
-            isVisible={isEditing || (!!gallery && !!tags.length)}
-            height={15}
-          />
-          <Tags tagIds={tags} />
-        </Content>
-      </Container>
-    </Shadow>
+    <>
+      <Shadow>
+        <Container>
+          <EntryHero itemId={parents.item} />
+          <Content>
+            <EntryHeading itemId={parents.item} />
+            <Spacer isVisible height={10} />
+            <MultilineText>{text}</MultilineText>
+            <Spacer
+              isVisible={isEditing || (!!text && !!gallery)}
+              height={15}
+            />
+            <Gallery galleryId={gallery} />
+            <Spacer
+              isVisible={isEditing || (!!gallery && !!tags.length)}
+              height={15}
+            />
+            <Tags tagIds={tags} />
+          </Content>
+        </Container>
+      </Shadow>
+      <Spacer isVisible height={20} />
+    </>
   );
 };

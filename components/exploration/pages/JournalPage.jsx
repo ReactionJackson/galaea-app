@@ -1,6 +1,7 @@
 import { Button } from "@/components/interface/Button";
 import { HeaderBar } from "@/components/interface/HeaderBar";
 import { MultilineText } from "@/components/interface/MultilineText";
+import { Spacer } from "@/components/interface/Spacer";
 import { Tags } from "@/components/tags/Tags";
 import { useApp } from "@/context/AppContext";
 import { formatDate } from "@/utils/formatDate";
@@ -58,13 +59,20 @@ export const JournalPage = ({ postId = 1 }) => {
             Save
           </Button>
         </View>
-        <MultilineText isVisible={!!text || isEditing}>
-          {text}
-        </MultilineText>
+        <MultilineText isVisible={!!text || isEditing}>{text}</MultilineText>
+        <Spacer
+          isVisible={isEditing || (!!text && !!tags.length)}
+          height={15}
+        />
         <Tags tagIds={tags} />
+        <Spacer
+          isVisible={isEditing || (!!tags.length && !!currentEntries.length)}
+          height={20}
+        />
         {currentEntries.map((entry) => (
           <ItemEntryBubble key={`entry-${entry.id}`} {...entry} />
         ))}
+        <View style={{ height: 200, backgroundColor: "mediumseagreen" }} />
       </Page.Content>
     </Page>
   );
