@@ -16,11 +16,6 @@ const TYPE_STYLES = {
   tag: "tag",
 };
 
-// Helpers:
-
-const resolveColor = (color) =>
-  Colors.tags[color]?.primary ?? Colors[color] ?? color;
-
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 // Main Component:
@@ -42,7 +37,7 @@ export const ThemedText = forwardRef(function ThemedText(
   const textStyle = [
     typeStyle,
     styles.colorTransition,
-    color && { color: resolveColor(color) },
+    color && { color: Colors[color] },
     style,
   ];
 
@@ -126,7 +121,7 @@ const styles = StyleSheet.create({
     ...webTextStyles,
   },
   tag: {
-    color: Colors.tags.default.primary,
+    color: Colors.tags.default.border,
     fontFamily: Fonts.bold,
     fontSize: 12,
     ...webTextStyles,

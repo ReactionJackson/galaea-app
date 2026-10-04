@@ -29,7 +29,7 @@ export function GalleryPagination({
         <ArrowIcon rotation={180} />
       </InteractButton>
       <Tag>
-        <ThemedText type="tag" color="default">
+        <ThemedText type="tag">
           Order: {index + 1} / {total}
         </ThemedText>
       </Tag>

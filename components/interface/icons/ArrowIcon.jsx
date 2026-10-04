@@ -7,7 +7,7 @@ import Svg, { Path } from "react-native-svg";
 // like the ←/→ glyphs rather than a bare "<"/">" chevron.
 export function ArrowIcon({
   size = 14,
-  color = Colors.tags.default.primary,
+  color = Colors.tags.default.border,
   strokeWidth = 2,
   rotation = 0,
 }) {

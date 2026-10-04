@@ -19,6 +19,10 @@ export const GALLERY_GUTTERS = 20;
 export const GALLERY_TRACK_GAP = GALLERY_GUTTERS / 2;
 export const CAPTION_HEIGHT = 60;
 
+// Opacities:
+
+export const DISABLED_OPACITY = 0.2;
+
 // Ratios:
 
 export const GALLERY_ASPECT_RATIO = 3 / 2;

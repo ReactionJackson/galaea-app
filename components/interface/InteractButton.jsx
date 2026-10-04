@@ -1,6 +1,7 @@
 import { Colors } from "@/constants/theme";
 import {
   CONDENSED_BUTTON_HEIGHT,
+  DISABLED_OPACITY,
   FADE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { triggerHaptics } from "@/utils/haptics";
@@ -20,7 +21,7 @@ export const InteractCircle = styled.View`
   border-radius: 13px;
   border-width: 2px;
   border-color: ${({ borderColor }) =>
-    borderColor ?? Colors.tags.default.primary};
+    borderColor ?? Colors.tags.default.border};
   justify-content: center;
   align-items: center;
   background-color: ${({ backgroundColor }) =>
@@ -38,12 +39,12 @@ export function InteractButton({
   children,
 }) {
   const { fill, border, icon } = Colors.interactButton[variant];
-  const opacity = useSharedValue(disabled ? 0.35 : 1);
+  const opacity = useSharedValue(disabled ? DISABLED_OPACITY : 1);
   const dimmedStyle = useAnimatedStyle(() => ({ opacity: opacity.get() }));
 
   useEffect(() => {
     opacity.set(
-      withTiming(disabled ? 0.35 : 1, { duration: FADE_TRANSITION_DURATION }),
+      withTiming(disabled ? DISABLED_OPACITY : 1, { duration: FADE_TRANSITION_DURATION }),
     );
   }, [disabled, opacity]);
 

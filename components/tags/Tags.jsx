@@ -39,9 +39,7 @@ export const Tags = ({ tagIds = [] }) => {
     tags.filter((tag) => tagIds.includes(tag.id)),
   );
   const [shownTags, setShownTags] = useState(activeTags);
-  const colors = Object.keys(Colors.tags).filter(
-    (color) => color !== "disabled",
-  );
+  const colors = Object.keys(Colors.tags);
 
   // Updates:
 
@@ -96,7 +94,8 @@ export const Tags = ({ tagIds = [] }) => {
               return (
                 <Tag
                   key={`tag-${id}`}
-                  $color={isActive ? "disabled" : color}
+                  $color={color}
+                  disabled={!!isActive}
                   onPress={() => handleToggleTag(id)}
                 >
                   {title}

@@ -22,7 +22,6 @@ export const Colors = {
   thumbnailOverlay: "rgba(0, 0, 0, 0.075)",
   editButtonBackground: "rgba(255, 255, 255, 0.8)",
   selectedBorder: "rgba(255, 255, 255, 0.85)",
-  accent: "#f96156",
   accents: {
     red: "#f96156",
     green: "mediumseagreen",
@@ -34,111 +33,78 @@ export const Colors = {
   },
   tags: {
     default: {
-      primary: "#777",
-      secondary: "#eee",
-    },
-    disabled: {
-      primary: "rgba(0, 0, 0, 0.1)",
-      secondary: "rgba(0, 0, 0, 0.025)",
+      border: "#777",
+      fill: "#eee",
     },
     green: {
-      primary: "#56ba40",
-      secondary: "#ddf1d9",
+      border: "#56ba40",
+      fill: "#ddf1d9",
     },
     blue: {
-      primary: "#3f88e6",
-      secondary: "#d9e8fd",
+      border: "#3f88e6",
+      fill: "#d9e8fd",
     },
     yellow: {
-      primary: "#c7a000",
-      secondary: "#fde9b9",
+      border: "#c7a000",
+      fill: "#fde9b9",
     },
     purple: {
-      primary: "#9b59b6",
-      secondary: "#e8d5f0",
+      border: "#9b59b6",
+      fill: "#e8d5f0",
     },
     red: {
-      primary: "#e74c3c",
-      secondary: "#f5d7d5",
+      border: "#e74c3c",
+      fill: "#f5d7d5",
     },
     orange: {
-      primary: "#e8833a",
-      secondary: "#fde8d5",
+      border: "#e8833a",
+      fill: "#fde8d5",
     },
     pink: {
-      primary: "#d4427a",
-      secondary: "#f7d5e7",
+      border: "#d4427a",
+      fill: "#f7d5e7",
     },
     teal: {
-      primary: "#2a9d8f",
-      secondary: "#d5f0ee",
+      border: "#2a9d8f",
+      fill: "#d5f0ee",
     },
     lime: {
-      primary: "#7cb518",
-      secondary: "#e6f4c2",
+      border: "#7cb518",
+      fill: "#e6f4c2",
     },
   },
 };
 
-export function deriveAccentColors(accent) {
-  return {
-    badgeColors: {
-      primary: {
-        fill: accent,
-        border: Colors.transparent,
-      },
-      secondary: {
-        fill: Colors.transparent,
-        border: Colors.buttonBorder,
-      },
-    },
-    buttonColors: {
-      primary: {
-        text: Colors.white,
-        fill: accent,
-        border: Colors.buttonBorder,
-      },
-      secondary: {
-        text: Colors.black,
-        fill: Colors.transparent,
-        border: Colors.buttonBorder,
-      },
-      "secondary-dark": {
-        text: Colors.white,
-        fill: Colors.transparent,
-        border: Colors.overlayBorder,
-      },
-    },
-    interactButtonColors: {
-      primary: {
-        fill: accent,
-        border: Colors.buttonBorder,
-        icon: Colors.white,
-      },
-      secondary: {
-        fill: Colors.editButtonBackground,
-        border: Colors.tags.default.primary,
-        icon: Colors.tags.default.primary,
-      },
-    },
-  };
-}
+Colors.button = {
+  primary: {
+    text: "white",
+    fill: Colors.accents.red,
+    border: Colors.buttonBorder,
+  },
+  secondary: {
+    text: "black",
+    fill: Colors.transparent,
+    border: Colors.buttonBorder,
+  },
+  "secondary-dark": {
+    text: "white",
+    fill: Colors.transparent,
+    border: Colors.overlayBorder,
+  },
+};
 
-const defaultAccentColors = deriveAccentColors(Colors.accent);
-Colors.badge = defaultAccentColors.badgeColors;
-Colors.button = defaultAccentColors.buttonColors;
-Colors.interactButton = defaultAccentColors.interactButtonColors;
-
-export const ACCENT_SWATCHES = [
-  Colors.accent,
-  Colors.tags.green.primary,
-  Colors.tags.blue.primary,
-  "gold",
-  Colors.tags.orange.primary,
-  Colors.tags.pink.primary,
-  Colors.tags.purple.primary,
-  "#333",
-];
+Colors.interactButton = {
+  primary: {
+    fill: Colors.accents.red,
+    border: Colors.buttonBorder,
+    icon: Colors.white,
+  },
+  secondary: {
+    fill: Colors.editButtonBackground,
+    border: Colors.tags.default.border,
+    icon: Colors.tags.default.border,
+  },
+};
 
 export const Fonts = {
   regular: "Outfit400",

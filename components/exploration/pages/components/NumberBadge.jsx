@@ -25,7 +25,7 @@ export const NumberBadge = ({ variant = "primary", children }) => {
   const fill = variant === "primary" ? accentColor : Colors.transparent;
   const border =
     variant === "primary" ? Colors.transparent : Colors.buttonBorder;
-  const color = variant === "primary" ? Colors.white : Colors.black;
+  const color = variant === "primary" ? "white" : "black";
   return (
     <Container $fill={fill} $border={border}>
       <ThemedText type="date-number" color={color}>
