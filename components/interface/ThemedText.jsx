@@ -1,6 +1,7 @@
 import { Colors, Fonts } from "@/constants/theme";
 import {
   COLOR_TRANSITION_DURATION,
+  PLACEHOLDER_OPACITY,
   TEXT_LINE_HEIGHT,
 } from "@/constants/values";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
@@ -57,12 +58,17 @@ export const ThemedText = forwardRef(function ThemedText(
     >
       <AnimatedTextInput
         ref={inputRef}
-        style={[textStyle, styles.input, { minHeight: typeStyle.lineHeight }]}
+        style={[
+          textStyle,
+          styles.input,
+          { minHeight: typeStyle.lineHeight },
+          !children && { opacity: PLACEHOLDER_OPACITY },
+        ]}
         value={children}
         editable={isEditable}
         onChangeText={onChangeText}
         pointerEvents={isEditable && isFocused ? "auto" : "none"}
-        placeholderTextColor={Colors.placeholder}
+        placeholderTextColor={StyleSheet.flatten(textStyle).color}
         scrollEnabled={false}
         spellCheck={false}
         autoCorrect={true}

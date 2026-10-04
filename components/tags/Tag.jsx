@@ -4,8 +4,8 @@ import {
   CONDENSED_BUTTON_HEIGHT,
   DISABLED_OPACITY,
   FADE_TRANSITION_DURATION,
-  PLACEHOLDER_OPACITY,
 } from "@/constants/values";
+import { forwardRef } from "react";
 import { Pressable } from "react-native";
 import Animated from "react-native-reanimated";
 import styled from "styled-components/native";
@@ -30,13 +30,20 @@ export const Container = styled(Animated.createAnimatedComponent(Pressable))`
 
 // Main Component:
 
-export const Tag = ({
-  onPress = () => {},
-  $color = "default",
-  disabled = false,
-  placeholder,
-  children,
-}) => {
+export const Tag = forwardRef(function Tag(
+  {
+    onPress = () => {},
+    $color = "default",
+    disabled = false,
+    isInput = false,
+    placeholder,
+    onChangeText,
+    onSubmit,
+    onFocus,
+    children,
+  },
+  ref,
+) {
   const { border, fill } = Colors.tags[$color];
 
   return (
@@ -52,11 +59,19 @@ export const Tag = ({
       ]}
     >
       <ThemedText
+        ref={ref}
         type="tag"
-        style={{ color: border, opacity: children ? 1 : PLACEHOLDER_OPACITY }}
+        style={{ color: border }}
+        isInput={isInput}
+        isEditable={isInput}
+        placeholder={placeholder}
+        onChangeText={onChangeText}
+        onSubmitEditing={onSubmit}
+        onFocus={onFocus}
+        returnKeyType="done"
       >
-        {children || placeholder}
+        {children}
       </ThemedText>
     </Container>
   );
-};
+});

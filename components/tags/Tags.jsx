@@ -1,5 +1,4 @@
 import { FadeTrack } from "@/components/interface/FadeTrack";
-import { HiddenInput } from "@/components/interface/HiddenInput";
 import { InteractionControls } from "@/components/interface/InteractionControls";
 import { Spacer } from "@/components/interface/Spacer";
 import { ToggleBox } from "@/components/interface/ToggleBox";
@@ -67,12 +66,7 @@ export const Tags = ({ tagIds = [] }) => {
   const handleStartCreating = () => {
     setDraftTag(emptyTag());
     setIsCreatingTag(true);
-    handleFocusDraft();
-  };
-
-  const handleFocusDraft = () => {
     inputRef.current?.focus();
-    scrollToElement(createRowRef, 40);
   };
 
   const handleChangeDraft = (title) => {
@@ -121,16 +115,15 @@ export const Tags = ({ tagIds = [] }) => {
       <Spacer isVisible={isEditing && isCreatingTag} height={10} />
       <ToggleBox isVisible={isEditing && isCreatingTag} height={TAG_HEIGHT}>
         <Container ref={createRowRef}>
-          <HiddenInput
-            ref={inputRef}
-            value={draftTag.title}
-            onChangeText={(text) => handleChangeDraft(text)}
-            onSubmit={() => handleAddTag()}
-          />
           <Tag
+            ref={inputRef}
+            isInput
             $color={draftTag.color}
             placeholder="New Tag"
-            onPress={() => handleFocusDraft()}
+            onPress={() => inputRef.current?.focus()}
+            onChangeText={(text) => handleChangeDraft(text)}
+            onSubmit={() => handleAddTag()}
+            onFocus={() => scrollToElement(createRowRef, 40)}
           >
             {draftTag.title}
           </Tag>

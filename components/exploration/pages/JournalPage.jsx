@@ -72,7 +72,6 @@ export const JournalPage = ({ postId = 1 }) => {
         {currentEntries.map((entry) => (
           <ItemEntryBubble key={`entry-${entry.id}`} {...entry} />
         ))}
-        <View style={{ height: 120, backgroundColor: "mediumseagreen" }} />
       </Page.Content>
     </Page>
   );
