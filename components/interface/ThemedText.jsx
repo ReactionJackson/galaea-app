@@ -1,5 +1,5 @@
 import { Colors, Fonts } from "@/constants/theme";
-import { COLOR_TRANSITION_DURATION } from "@/constants/values";
+import { COLOR_TRANSITION_DURATION, TEXT_LINE_HEIGHT } from "@/constants/values";
 import { forwardRef } from "react";
 import { Platform, StyleSheet, TextInput } from "react-native";
 import Animated from "react-native-reanimated";
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontFamily: Fonts.regular,
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: TEXT_LINE_HEIGHT,
     ...webTextStyles,
   },
   caption: {

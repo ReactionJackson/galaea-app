@@ -2,18 +2,27 @@ import { CoverImage } from "@/components/image/CoverImage";
 import { Spacer } from "@/components/interface/Spacer";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
-import { GALLERY_ASPECT_RATIO, GALLERY_ITEM_RADIUS } from "@/constants/values";
+import {
+  CAPTION_HEIGHT,
+  GALLERY_ASPECT_RATIO,
+  GALLERY_ITEM_RADIUS,
+  SLIDE_TRANSITION_DURATION,
+} from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { childrenByType } from "@/utils/childrenByType";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
-const CAPTION_HEIGHT = 60;
-
 const Container = styled.View`
   width: ${({ $width }) => $width}px;
+`;
+
+const Collapsible = styled.View`
+  width: ${({ $width, $collapsed }) => ($collapsed ? 0 : $width)}px;
+  position: ${({ $collapsed }) => ($collapsed ? "absolute" : "relative")};
+  overflow: hidden;
 `;
 
 const ImageContainer = styled(Pressable)`
@@ -69,18 +78,40 @@ const TextContainer = styled.View`
 
 // Sub Components:
 
-const Placeholder = () => (
-  <PlaceholderContainer>
-    <ThemedText color="faded">Add Image</ThemedText>
-  </PlaceholderContainer>
-);
+const Placeholder = ({ width }) => {
+  const { isEditing } = useApp();
+  const [isCollapsed, setIsCollapsed] = useState(!isEditing);
+
+  if (isEditing && isCollapsed) {
+    setIsCollapsed(false);
+  }
+
+  useEffect(() => {
+    if (isEditing) return;
+    const timeout = setTimeout(
+      () => setIsCollapsed(true),
+      SLIDE_TRANSITION_DURATION,
+    );
+    return () => clearTimeout(timeout);
+  }, [isEditing]);
+
+  return (
+    <Collapsible $width={width} $collapsed={isCollapsed}>
+      <GallerySlot width={width}>
+        <PlaceholderContainer>
+          <ThemedText color="faded">Add Image</ThemedText>
+        </PlaceholderContainer>
+      </GallerySlot>
+    </Collapsible>
+  );
+};
 
 // Main Component:
 
 export const GallerySlot = ({ width, caption: initialCaption, children }) => {
   const { isEditing, setIsEditing } = useApp();
   const image = childrenByType(children, CoverImage);
-  const placeholder = childrenByType(children, Placeholder);
+  const placeholder = childrenByType(children, PlaceholderContainer);
   const [caption, setCaption] = useState(initialCaption);
 
   // Handlers:

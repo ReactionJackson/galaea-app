@@ -1,6 +1,5 @@
 import { SLIDE_TRANSITION_DURATION } from "@/constants/values";
-import { useEffect, useRef, useState } from "react";
-import { View } from "react-native";
+import { useEffect, useRef } from "react";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -15,30 +14,13 @@ const TRANSITION_SETTINGS = {
   easing: Easing.inOut(Easing.quad),
 };
 
-export const ToggleBox = ({ gap = 0, style = {}, isVisible, children }) => {
-  const naturalHeight = useRef(0);
+export const ToggleBox = ({ isVisible, height, children }) => {
   const isFirstRender = useRef(true);
-  const [isMeasured, setIsMeasured] = useState(isVisible);
   const heightValue = useSharedValue(isVisible ? MAX_HEIGHT : 0);
-  const spacingValue = useSharedValue(isVisible ? gap : 0);
   const animatedStyle = useAnimatedStyle(() => ({
     maxHeight: heightValue.get(),
     overflow: heightValue.get() >= MAX_HEIGHT ? "visible" : "hidden",
-    display: heightValue.get() > 0 ? "flex" : "none",
-    marginTop: spacingValue.get(),
   }));
-  const measuringStyle = { position: "absolute", width: "100%", opacity: 0 };
-
-  // Handlers:
-
-  const onLayout = (e) => {
-    const height = e.nativeEvent.layout.height;
-    if (!height) return;
-    naturalHeight.current = height;
-    if (!isMeasured) setIsMeasured(true);
-  };
-
-  // Effects:
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -47,22 +29,16 @@ export const ToggleBox = ({ gap = 0, style = {}, isVisible, children }) => {
     }
     if (isVisible) {
       heightValue.set(
-        withTiming(naturalHeight.current, TRANSITION_SETTINGS, (finished) => {
+        withTiming(height, TRANSITION_SETTINGS, (finished) => {
           if (finished) heightValue.set(MAX_HEIGHT);
         }),
       );
-      spacingValue.set(withTiming(gap, TRANSITION_SETTINGS));
     } else {
-      heightValue.set(naturalHeight.current);
+      heightValue.set(height);
       heightValue.set(withTiming(0, TRANSITION_SETTINGS));
-      spacingValue.set(withTiming(0, TRANSITION_SETTINGS));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible]);
 
-  return (
-    <Animated.View style={[isMeasured ? animatedStyle : measuringStyle, style]}>
-      <View onLayout={onLayout}>{children}</View>
-    </Animated.View>
-  );
+  return <Animated.View style={animatedStyle}>{children}</Animated.View>;
 };

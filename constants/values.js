@@ -11,9 +11,13 @@ export const LIGHTBOX_PADDING = 20;
 export const DAY_CIRCLE_HEIGHT = 40;
 export const BUTTON_HEIGHT = 36;
 export const TAG_HEIGHT = 26;
+export const TEXT_LINE_HEIGHT = 24;
 export const CONDENSED_BUTTON_HEIGHT = TAG_HEIGHT;
 export const TRACK_GAP = 10;
 export const GALLERY_ITEM_RADIUS = 15;
+export const GALLERY_GUTTERS = 20;
+export const GALLERY_TRACK_GAP = GALLERY_GUTTERS / 2;
+export const CAPTION_HEIGHT = 60;
 
 // Ratios:
 

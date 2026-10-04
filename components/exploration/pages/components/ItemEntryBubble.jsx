@@ -80,15 +80,11 @@ export const ItemEntryBubble = ({ text, tags, gallery, parents }) => {
         <EntryHero itemId={parents.item} />
         <Content>
           <EntryHeading itemId={parents.item} />
-          <MultilineText isVisible={!!text} gap={10}>
+          <MultilineText isVisible={!!text}>
             {text}
           </MultilineText>
           <Spacer isVisible={!gallery && !!tags.length} height={15} />
-          <Gallery
-            galleryId={gallery}
-            isVisible={isEditing || !!gallery}
-            gap={15}
-          />
+          <Gallery galleryId={gallery} />
           <Spacer
             isVisible={isEditing || (!!gallery && !!tags.length)}
             height={15}

@@ -5,7 +5,9 @@ import { Spacer } from "@/components/interface/Spacer";
 import { ToggleBox } from "@/components/interface/ToggleBox";
 import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
+import { TAG_HEIGHT } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
+import { useDynamicHeight } from "@/hooks/useDynamicHeight";
 import { useRef, useState } from "react";
 import styled from "styled-components/native";
 
@@ -32,6 +34,8 @@ export const Tags = ({ tagIds = [] }) => {
   const [isCreatingTag, setIsCreatingTag] = useState(false);
   const [draftTag, setDraftTag] = useState(emptyTag());
   const inputRef = useRef(null);
+  const { height: activeHeight, onLayout: onActiveLayout } =
+    useDynamicHeight(TAG_HEIGHT);
   const [activeTags, setActiveTags] = useState(
     tags.filter((tag) => tagIds.includes(tag.id)),
   );
@@ -79,7 +83,7 @@ export const Tags = ({ tagIds = [] }) => {
 
   return (
     <>
-      <ToggleBox isVisible={!!isEditing}>
+      <ToggleBox isVisible={!!isEditing} height={TAG_HEIGHT}>
         <Container>
           <InteractionControls onAdd={() => setIsCreatingTag(true)} />
           <FadeTrack>
@@ -99,7 +103,7 @@ export const Tags = ({ tagIds = [] }) => {
         </Container>
       </ToggleBox>
       <Spacer isVisible={isEditing && !!activeTags.length} height={10} />
-      <ToggleBox isVisible={!!isCreatingTag && isEditing}>
+      <ToggleBox isVisible={!!isCreatingTag && isEditing} height={TAG_HEIGHT}>
         <Container>
           <Tag
             $color={draftTag.color}
@@ -124,8 +128,8 @@ export const Tags = ({ tagIds = [] }) => {
         </Container>
       </ToggleBox>
       <Spacer isVisible={isEditing && isCreatingTag} height={10} />
-      <ToggleBox isVisible={!!activeTags.length}>
-        <Container>
+      <ToggleBox isVisible={!!activeTags.length} height={activeHeight}>
+        <Container onLayout={onActiveLayout}>
           {activeTags.map(({ id, title, color }) => (
             <Tag
               key={`tag-${id}`}
