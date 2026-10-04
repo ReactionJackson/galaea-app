@@ -1,12 +1,12 @@
 import { useState } from "react";
 
 export const useDynamicHeight = (stubHeight) => {
-  const [height, setHeight] = useState(stubHeight);
+  const [dynamicHeight, setDynamicHeight] = useState(stubHeight);
 
   const onLayout = (e) => {
     const next = e.nativeEvent.layout.height;
-    if (next > 0 && next !== height) setHeight(next);
+    if (next > 0 && next !== dynamicHeight) setDynamicHeight(next);
   };
 
-  return { height, onLayout };
+  return { dynamicHeight, onLayout };
 };

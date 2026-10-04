@@ -11,10 +11,10 @@ export const MultilineText = ({
   children,
 }) => {
   const { isEditing } = useApp();
-  const { height, onLayout } = useDynamicHeight(TEXT_LINE_HEIGHT);
+  const { dynamicHeight, onLayout } = useDynamicHeight(TEXT_LINE_HEIGHT);
 
   return (
-    <ToggleBox isVisible={isVisible} height={height}>
+    <ToggleBox isVisible={isVisible} height={dynamicHeight}>
       <View onLayout={onLayout}>
         <ThemedText
           isInput

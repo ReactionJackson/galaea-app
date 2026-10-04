@@ -34,8 +34,7 @@ export const Tags = ({ tagIds = [] }) => {
   const [isCreatingTag, setIsCreatingTag] = useState(false);
   const [draftTag, setDraftTag] = useState(emptyTag());
   const inputRef = useRef(null);
-  const { height: activeHeight, onLayout: onActiveLayout } =
-    useDynamicHeight(TAG_HEIGHT);
+  const { dynamicHeight, onLayout } = useDynamicHeight(TAG_HEIGHT);
   const [activeTags, setActiveTags] = useState(
     tags.filter((tag) => tagIds.includes(tag.id)),
   );
@@ -128,8 +127,8 @@ export const Tags = ({ tagIds = [] }) => {
         </Container>
       </ToggleBox>
       <Spacer isVisible={isEditing && isCreatingTag} height={10} />
-      <ToggleBox isVisible={!!activeTags.length} height={activeHeight}>
-        <Container onLayout={onActiveLayout}>
+      <ToggleBox isVisible={!!activeTags.length} height={dynamicHeight}>
+        <Container onLayout={onLayout}>
           {activeTags.map(({ id, title, color }) => (
             <Tag
               key={`tag-${id}`}
