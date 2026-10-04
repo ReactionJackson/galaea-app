@@ -70,10 +70,30 @@ export function AppProvider({ children }) {
     [appState.entries],
   );
 
-  const entriesByItemId = useMemo(
-    () => buildGroupIndex(appState.entries, (entry) => entry.parents?.item),
-    [appState.entries],
-  );
+  const entriesByItemId = useMemo(() => {
+    const groups = buildGroupIndex(
+      appState.entries,
+      (entry) => entry.parents?.item,
+    );
+    Object.values(groups).forEach((list) =>
+      list.sort(
+        (a, b) =>
+          new Date(indexes.posts[b.parents.post]?.date) -
+          new Date(indexes.posts[a.parents.post]?.date),
+      ),
+    );
+    return groups;
+  }, [appState.entries, indexes.posts]);
+
+  const entryNumberById = useMemo(() => {
+    const map = {};
+    Object.values(entriesByItemId).forEach((list) =>
+      list.forEach((entry, i) => {
+        map[entry.id] = list.length - i;
+      }),
+    );
+    return map;
+  }, [entriesByItemId]);
 
   const getById = useCallback((list, id) => indexes[list]?.[id], [indexes]);
 
@@ -125,6 +145,7 @@ export function AppProvider({ children }) {
       replaceContent,
       entriesByPostId,
       entriesByItemId,
+      entryNumberById,
     }),
     [
       getById,
@@ -134,6 +155,7 @@ export function AppProvider({ children }) {
       isEditing,
       entriesByPostId,
       entriesByItemId,
+      entryNumberById,
     ],
   );
 

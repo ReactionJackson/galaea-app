@@ -55,8 +55,8 @@ const EntryHero = ({ itemId }) => {
   );
 };
 
-const EntryHeading = ({ itemId }) => {
-  const { getById, getCollectionByItemId } = useApp();
+const EntryHeading = ({ itemId, entryId }) => {
+  const { getById, getCollectionByItemId, entryNumberById } = useApp();
   const { title: itemTitle } = getById("items", itemId) ?? {};
   const { title: collectionTitle } = getCollectionByItemId(itemId) ?? {};
 
@@ -64,14 +64,16 @@ const EntryHeading = ({ itemId }) => {
     <HeaderText>
       <HeaderText.Title>{itemTitle}</HeaderText.Title>
       <HeaderText.Subtitle>{collectionTitle}</HeaderText.Subtitle>
-      <HeaderText.SubtitleFaded>Entry X</HeaderText.SubtitleFaded>
+      <HeaderText.SubtitleFaded>
+        Entry {String(entryNumberById[entryId]).padStart(2, "0")}
+      </HeaderText.SubtitleFaded>
     </HeaderText>
   );
 };
 
 // Main Component:
 
-export const ItemEntryBubble = ({ text, tags, gallery, parents }) => {
+export const ItemEntryBubble = ({ id, text, tags, gallery, parents }) => {
   const { isEditing } = useApp();
 
   return (
@@ -80,11 +82,13 @@ export const ItemEntryBubble = ({ text, tags, gallery, parents }) => {
         <Container>
           <EntryHero itemId={parents.item} />
           <Content>
-            <EntryHeading itemId={parents.item} />
+            <EntryHeading itemId={parents.item} entryId={id} />
             <Spacer isVisible height={10} />
             <MultilineText>{text}</MultilineText>
             <Spacer
-              isVisible={isEditing || (!!text && !!gallery)}
+              isVisible={
+                isEditing || (!!text && !!gallery) || (!!text && !!tags.length)
+              }
               height={15}
             />
             <Gallery galleryId={gallery} />
