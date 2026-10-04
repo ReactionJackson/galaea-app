@@ -53,10 +53,6 @@ export const Tags = ({ tagIds = [] }) => {
 
   // Handlers:
 
-  const resetDraftTag = () => {
-    setDraftTag(emptyTag());
-  };
-
   const handleToggleTag = (id) => {
     if (activeTags.find((tag) => tag.id === id)) {
       setActiveTags((prev) => prev.filter((tag) => tag.id !== id));
@@ -66,12 +62,12 @@ export const Tags = ({ tagIds = [] }) => {
   };
 
   const handleStartCreating = () => {
+    setDraftTag(emptyTag());
     setIsCreatingTag(true);
     inputRef.current?.focus();
   };
 
   const handleEndCreating = () => {
-    resetDraftTag();
     setIsCreatingTag(false);
     inputRef.current?.blur();
   };
