@@ -2,7 +2,6 @@ import { Gallery } from "@/components/gallery/Gallery";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { MultilineText } from "@/components/interface/MultilineText";
 import { Spacer } from "@/components/interface/Spacer";
-import { ToggleBox } from "@/components/interface/ToggleBox";
 import { Tags } from "@/components/tags/Tags";
 import { Colors } from "@/constants/theme";
 import {
@@ -72,40 +71,31 @@ const EntryHeading = ({ itemId }) => {
 
 // Main Component:
 
-export const ItemEntryBubble = ({
-  text,
-  tags,
-  gallery,
-  parents,
-  isVisible = true,
-  gap = 20,
-}) => {
+export const ItemEntryBubble = ({ text, tags, gallery, parents }) => {
   const { isEditing } = useApp();
 
   return (
-    <ToggleBox isVisible={isVisible} gap={gap}>
-      <Shadow>
-        <Container>
-          <EntryHero itemId={parents.item} />
-          <Content>
-            <EntryHeading itemId={parents.item} />
-            <MultilineText isVisible={!!text} gap={10}>
-              {text}
-            </MultilineText>
-            <Spacer isVisible={!gallery && !!tags.length} height={15} />
-            <Gallery
-              galleryId={gallery}
-              isVisible={isEditing || !!gallery}
-              gap={15}
-            />
-            <Spacer
-              isVisible={isEditing || (!!gallery && !!tags.length)}
-              height={15}
-            />
-            <Tags tagIds={tags} />
-          </Content>
-        </Container>
-      </Shadow>
-    </ToggleBox>
+    <Shadow>
+      <Container>
+        <EntryHero itemId={parents.item} />
+        <Content>
+          <EntryHeading itemId={parents.item} />
+          <MultilineText isVisible={!!text} gap={10}>
+            {text}
+          </MultilineText>
+          <Spacer isVisible={!gallery && !!tags.length} height={15} />
+          <Gallery
+            galleryId={gallery}
+            isVisible={isEditing || !!gallery}
+            gap={15}
+          />
+          <Spacer
+            isVisible={isEditing || (!!gallery && !!tags.length)}
+            height={15}
+          />
+          <Tags tagIds={tags} />
+        </Content>
+      </Container>
+    </Shadow>
   );
 };
