@@ -38,6 +38,7 @@ export const Tags = ({ tagIds = [] }) => {
   const [activeTags, setActiveTags] = useState(
     tags.filter((tag) => tagIds.includes(tag.id)),
   );
+  const [shownTags, setShownTags] = useState(activeTags);
   const colors = Object.keys(Colors.tags).filter(
     (color) => color !== "disabled",
   );
@@ -46,6 +47,10 @@ export const Tags = ({ tagIds = [] }) => {
 
   if (!isEditing && isCreatingTag) {
     setIsCreatingTag(false);
+  }
+
+  if (activeTags.length && activeTags !== shownTags) {
+    setShownTags(activeTags);
   }
 
   // Handlers:
@@ -129,7 +134,7 @@ export const Tags = ({ tagIds = [] }) => {
       <Spacer isVisible={isEditing && !!activeTags.length} height={10} />
       <ToggleBox isVisible={!!activeTags.length} height={dynamicHeight}>
         <Container onLayout={onLayout}>
-          {activeTags.map(({ id, title, color }) => (
+          {shownTags.map(({ id, title, color }) => (
             <Tag
               key={`tag-${id}`}
               $color={color}
