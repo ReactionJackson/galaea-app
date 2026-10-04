@@ -4,6 +4,7 @@ import {
   CONDENSED_BUTTON_HEIGHT,
   DISABLED_OPACITY,
   FADE_TRANSITION_DURATION,
+  PLACEHOLDER_OPACITY,
 } from "@/constants/values";
 import { Pressable } from "react-native";
 import Animated from "react-native-reanimated";
@@ -33,6 +34,7 @@ export const Tag = ({
   onPress = () => {},
   $color = "default",
   disabled = false,
+  placeholder,
   children,
 }) => {
   const { border, fill } = Colors.tags[$color];
@@ -49,8 +51,11 @@ export const Tag = ({
         FADE_TRANSITION,
       ]}
     >
-      <ThemedText type="tag" style={{ color: border }}>
-        {children}
+      <ThemedText
+        type="tag"
+        style={{ color: border, opacity: children ? 1 : PLACEHOLDER_OPACITY }}
+      >
+        {children || placeholder}
       </ThemedText>
     </Container>
   );

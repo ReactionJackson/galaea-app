@@ -2,7 +2,6 @@ import { FadeTrack } from "@/components/interface/FadeTrack";
 import { HiddenInput } from "@/components/interface/HiddenInput";
 import { InteractionControls } from "@/components/interface/InteractionControls";
 import { Spacer } from "@/components/interface/Spacer";
-import { ThemedText } from "@/components/interface/ThemedText";
 import { ToggleBox } from "@/components/interface/ToggleBox";
 import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
@@ -116,13 +115,10 @@ export const Tags = ({ tagIds = [] }) => {
         <Container>
           <Tag
             $color={draftTag.color}
+            placeholder="New Tag"
             onPress={() => inputRef.current?.focus()}
           >
-            {draftTag.title || (
-              <ThemedText type="tag" color="placeholder">
-                New Tag
-              </ThemedText>
-            )}
+            {draftTag.title}
           </Tag>
           <FadeTrack>
             {colors.map((color) => (

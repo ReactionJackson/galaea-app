@@ -22,6 +22,7 @@ export const CAPTION_HEIGHT = 60;
 // Opacities:
 
 export const DISABLED_OPACITY = 0.2;
+export const PLACEHOLDER_OPACITY = 0.5;
 
 // Ratios:
 
