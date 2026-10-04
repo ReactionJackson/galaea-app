@@ -1,7 +1,10 @@
 import { Colors, Fonts } from "@/constants/theme";
-import { COLOR_TRANSITION_DURATION, TEXT_LINE_HEIGHT } from "@/constants/values";
-import { forwardRef } from "react";
-import { Platform, StyleSheet, TextInput } from "react-native";
+import {
+  COLOR_TRANSITION_DURATION,
+  TEXT_LINE_HEIGHT,
+} from "@/constants/values";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { Platform, Pressable, StyleSheet, TextInput } from "react-native";
 import Animated from "react-native-reanimated";
 
 // Constants:
@@ -28,11 +31,15 @@ export const ThemedText = forwardRef(function ThemedText(
     isEditable,
     onChangeText = () => {},
     style,
+    onFocus,
+    onBlur,
     children,
     ...rest
   },
   ref,
 ) {
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef(null);
   const typeStyle = styles[TYPE_STYLES[type]];
   const textStyle = [
     typeStyle,
@@ -41,20 +48,35 @@ export const ThemedText = forwardRef(function ThemedText(
     style,
   ];
 
+  useImperativeHandle(ref, () => inputRef.current);
+
   return isInput ? (
-    <AnimatedTextInput
-      ref={ref}
-      style={[textStyle, styles.input, { minHeight: typeStyle.lineHeight }]}
-      value={children}
-      editable={isEditable}
-      onChangeText={onChangeText}
-      pointerEvents={isEditable ? "auto" : "none"}
-      placeholderTextColor={Colors.placeholder}
-      scrollEnabled={false}
-      spellCheck={false}
-      autoCorrect={true}
-      {...rest}
-    />
+    <Pressable
+      disabled={!isEditable || isFocused}
+      onPress={() => inputRef.current?.focus()}
+    >
+      <AnimatedTextInput
+        ref={inputRef}
+        style={[textStyle, styles.input, { minHeight: typeStyle.lineHeight }]}
+        value={children}
+        editable={isEditable}
+        onChangeText={onChangeText}
+        pointerEvents={isEditable && isFocused ? "auto" : "none"}
+        placeholderTextColor={Colors.placeholder}
+        scrollEnabled={false}
+        spellCheck={false}
+        autoCorrect={true}
+        onFocus={(e) => {
+          setIsFocused(true);
+          onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setIsFocused(false);
+          onBlur?.(e);
+        }}
+        {...rest}
+      />
+    </Pressable>
   ) : (
     <Animated.Text ref={ref} style={textStyle} {...rest}>
       {children}

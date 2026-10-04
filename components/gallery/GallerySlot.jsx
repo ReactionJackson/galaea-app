@@ -9,9 +9,10 @@ import {
   SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
+import { PageScrollContext } from "@/context/PageScrollContext";
 import { childrenByType } from "@/utils/childrenByType";
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
@@ -113,6 +114,8 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
   const image = childrenByType(children, CoverImage);
   const placeholder = childrenByType(children, PlaceholderContainer);
   const [caption, setCaption] = useState(initialCaption);
+  const captionRef = useRef(null);
+  const { scrollToElement } = useContext(PageScrollContext);
 
   // Handlers:
 
@@ -137,7 +140,7 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
       </ImageContainer>
       <Spacer isVisible={isEditing} height={CAPTION_HEIGHT} />
       {!placeholder && (
-        <TextContainer>
+        <TextContainer ref={captionRef}>
           <ThemedText
             isInput
             isEditable={isEditing}
@@ -145,6 +148,7 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
             type="caption"
             placeholder="In this image..."
             onChangeText={setCaption}
+            onFocus={() => scrollToElement(captionRef)}
             color={isEditing ? "text" : "white"}
           >
             {caption}

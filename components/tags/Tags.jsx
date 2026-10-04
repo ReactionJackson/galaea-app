@@ -7,8 +7,9 @@ import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
 import { TAG_HEIGHT } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
+import { PageScrollContext } from "@/context/PageScrollContext";
 import { useDynamicHeight } from "@/hooks/useDynamicHeight";
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import styled from "styled-components/native";
 
 // Styled Components:
@@ -30,16 +31,18 @@ const emptyTag = () => ({
 
 export const Tags = ({ tagIds = [] }) => {
   const { tags: initialTags, isEditing } = useApp();
+  const { dynamicHeight, onLayout } = useDynamicHeight(TAG_HEIGHT);
   const [tags, setTags] = useState([...initialTags]);
   const [isCreatingTag, setIsCreatingTag] = useState(false);
   const [draftTag, setDraftTag] = useState(emptyTag());
-  const inputRef = useRef(null);
-  const { dynamicHeight, onLayout } = useDynamicHeight(TAG_HEIGHT);
   const [activeTags, setActiveTags] = useState(
     tags.filter((tag) => tagIds.includes(tag.id)),
   );
   const [shownTags, setShownTags] = useState(activeTags);
+  const inputRef = useRef(null);
+  const createRowRef = useRef(null);
   const colors = Object.keys(Colors.tags);
+  const { scrollToElement } = useContext(PageScrollContext);
 
   // Updates:
 
@@ -64,7 +67,16 @@ export const Tags = ({ tagIds = [] }) => {
   const handleStartCreating = () => {
     setDraftTag(emptyTag());
     setIsCreatingTag(true);
+    handleFocusDraft();
+  };
+
+  const handleFocusDraft = () => {
     inputRef.current?.focus();
+    scrollToElement(createRowRef, 40);
+  };
+
+  const handleChangeDraft = (title) => {
+    setDraftTag((prev) => ({ ...prev, title }));
   };
 
   const handleEndCreating = () => {
@@ -108,11 +120,17 @@ export const Tags = ({ tagIds = [] }) => {
       </ToggleBox>
       <Spacer isVisible={isEditing && isCreatingTag} height={10} />
       <ToggleBox isVisible={isEditing && isCreatingTag} height={TAG_HEIGHT}>
-        <Container>
+        <Container ref={createRowRef}>
+          <HiddenInput
+            ref={inputRef}
+            value={draftTag.title}
+            onChangeText={(text) => handleChangeDraft(text)}
+            onSubmit={() => handleAddTag()}
+          />
           <Tag
             $color={draftTag.color}
             placeholder="New Tag"
-            onPress={() => inputRef.current?.focus()}
+            onPress={() => handleFocusDraft()}
           >
             {draftTag.title}
           </Tag>
@@ -147,12 +165,6 @@ export const Tags = ({ tagIds = [] }) => {
           ))}
         </Container>
       </ToggleBox>
-      <HiddenInput
-        ref={inputRef}
-        value={draftTag.title}
-        onChangeText={(title) => setDraftTag((prev) => ({ ...prev, title }))}
-        onSubmit={() => handleAddTag()}
-      />
     </>
   );
 };
