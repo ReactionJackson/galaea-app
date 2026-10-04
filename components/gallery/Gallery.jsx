@@ -6,6 +6,7 @@ import {
   GALLERY_ASPECT_RATIO,
   GALLERY_GUTTERS,
   GALLERY_TRACK_GAP,
+  SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { useEffect, useRef, useState } from "react";
@@ -51,9 +52,9 @@ export const Gallery = ({ galleryId }) => {
   const { width: windowWidth } = useWindowDimensions();
   const [gallery, setGallery] = useState(getById("galleries", galleryId));
   const [activeSlot, setActiveSlot] = useState(0);
+  const [isPlaceholderHidden, setIsPlaceholderHidden] = useState(!isEditing);
   const { galleryWidth, slotWidth, scrollInterval } =
     getScrollDimensions(windowWidth);
-
   const scrollRef = useRef(null);
   const sortedSlides = [...(gallery?.slides ?? [])]
     .map(({ caption, image, order }) => ({
@@ -64,10 +65,29 @@ export const Gallery = ({ galleryId }) => {
     .sort((a, b) => a.order - b.order);
   const boxHeight = slotWidth / GALLERY_ASPECT_RATIO + CAPTION_HEIGHT;
 
+  // Updates:
+
+  if (isEditing && isPlaceholderHidden) {
+    setIsPlaceholderHidden(false);
+  }
+
   // Effects:
 
   useEffect(() => {
-    if (!isEditing) scrollRef.current?.scrollTo({ x: 0, animated: true });
+    if (isEditing) return;
+    if (sortedSlides.length > 0 && activeSlot === sortedSlides.length) {
+      scrollRef.current?.scrollTo({
+        x: (activeSlot - 1) * scrollInterval,
+        animated: true,
+      });
+      return;
+    }
+    const timeout = setTimeout(
+      () => setIsPlaceholderHidden(true),
+      SLIDE_TRANSITION_DURATION,
+    );
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditing]);
 
   // Handlers:
@@ -83,6 +103,10 @@ export const Gallery = ({ galleryId }) => {
     setActiveSlot((prev) =>
       prev === activeSlotIndex ? prev : activeSlotIndex,
     );
+  };
+
+  const handleScrollEnd = () => {
+    if (!isEditing) setIsPlaceholderHidden(true);
   };
 
   const handleViewImage = () => {
@@ -114,6 +138,7 @@ export const Gallery = ({ galleryId }) => {
         showsHorizontalScrollIndicator={false}
         scrollEnabled={true}
         onScroll={handleScroll}
+        onMomentumScrollEnd={handleScrollEnd}
         scrollEventThrottle={16}
         contentContainerStyle={{
           gap: GALLERY_TRACK_GAP,
@@ -132,7 +157,11 @@ export const Gallery = ({ galleryId }) => {
             </GallerySlot>
           ),
         )}
-        <GallerySlot.Placeholder key={`slot-placeholder`} width={slotWidth} />
+        <GallerySlot.Placeholder
+          key={`slot-placeholder`}
+          width={slotWidth}
+          isPlaceholderHidden={isPlaceholderHidden}
+        />
       </ScrollContainer>
       {isEditing && activeSlot < sortedSlides.length && (
         <ControlsContainer>

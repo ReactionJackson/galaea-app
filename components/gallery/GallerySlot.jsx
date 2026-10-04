@@ -1,4 +1,5 @@
 import { CoverImage } from "@/components/image/CoverImage";
+import { MotionBox } from "@/components/interface/MotionBox";
 import { Spacer } from "@/components/interface/Spacer";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
@@ -6,13 +7,12 @@ import {
   CAPTION_HEIGHT,
   GALLERY_ASPECT_RATIO,
   GALLERY_ITEM_RADIUS,
-  SLIDE_TRANSITION_DURATION,
 } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
 import { PageScrollContext } from "@/context/PageScrollContext";
 import { childrenByType } from "@/utils/childrenByType";
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useRef, useState, useContext } from "react";
+import { useContext, useRef, useState } from "react";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
@@ -56,13 +56,21 @@ const TrayContainer = styled.View`
   background-color: ${Colors.surfaceTint};
 `;
 
-const GradientContainer = styled(LinearGradient)`
+const GradientContainer = styled(MotionBox)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+`;
+
+const Gradient = styled(LinearGradient)`
   z-index: 10;
   position: absolute;
   left: 0;
   width: 100%;
   height: ${CAPTION_HEIGHT}px;
-  bottom: ${-CAPTION_HEIGHT * 0}px;
+  bottom: 0;
 `;
 
 const TextContainer = styled.View`
@@ -79,23 +87,7 @@ const TextContainer = styled.View`
 
 // Sub Components:
 
-const Placeholder = ({ width }) => {
-  const { isEditing } = useApp();
-  const [isCollapsed, setIsCollapsed] = useState(!isEditing);
-
-  if (isEditing && isCollapsed) {
-    setIsCollapsed(false);
-  }
-
-  useEffect(() => {
-    if (isEditing) return;
-    const timeout = setTimeout(
-      () => setIsCollapsed(true),
-      SLIDE_TRANSITION_DURATION,
-    );
-    return () => clearTimeout(timeout);
-  }, [isEditing]);
-
+const Placeholder = ({ width, isCollapsed }) => {
   return (
     <Collapsible $width={width} $collapsed={isCollapsed}>
       <GallerySlot width={width}>
@@ -120,7 +112,7 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
   // Handlers:
 
   const handleViewImage = () => {
-    setIsEditing((prev) => !prev);
+    setIsEditing((prev) => !prev); // placeholder
   };
 
   // Render:
@@ -132,10 +124,18 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
         {placeholder}
         {!placeholder && (
           <GradientContainer
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            colors={[Colors.transparent, Colors.black]}
-          />
+            style={{
+              transform: [
+                { translateY: isEditing || !caption ? CAPTION_HEIGHT : 0 },
+              ],
+            }}
+          >
+            <Gradient
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              colors={[Colors.transparent, Colors.black]}
+            />
+          </GradientContainer>
         )}
       </ImageContainer>
       <Spacer isVisible={isEditing} height={CAPTION_HEIGHT} />
@@ -149,7 +149,7 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
             placeholder="In this image..."
             onChangeText={setCaption}
             onFocus={() => scrollToElement(captionRef)}
-            color={isEditing ? "text" : "white"}
+            color={isEditing ? "text" : caption ? "white" : "transparent"}
           >
             {caption}
           </ThemedText>
