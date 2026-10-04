@@ -6,6 +6,11 @@ const LEGACY_STORAGE_KEY = "galaea/state/v3";
 // Matches the compress quality every image kind uses in images.js.
 const MIGRATED_IMAGE_QUALITY = 0.4;
 
+function toISODate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
 function nextId(counters, key) {
   counters[key] = (counters[key] ?? 0) + 1;
   return counters[key];
@@ -27,7 +32,6 @@ function migrateImage(oldImage, counters, images) {
     height: oldImage.rawHeight ?? null,
     aspectRatio: oldImage.aspectRatio ?? null,
     contentPosition: oldImage.focus ?? null,
-    draft: {},
   });
   return id;
 }
@@ -40,7 +44,7 @@ function migrateGallery(oldGallery, counters, galleries, images) {
     caption: oldImage.caption ?? "",
     order: index,
   }));
-  galleries.push({ id, slides, draft: {} });
+  galleries.push({ id, slides });
   return id;
 }
 
@@ -60,7 +64,6 @@ function migrateEntry(
     tags: legacyEntry.tags ?? [],
     gallery: migrateGallery(legacyEntry.gallery, counters, galleries, images),
     parents: { post: postId, item: itemId },
-    draft: {},
   });
   return id;
 }
@@ -76,7 +79,6 @@ export function migrateLegacyContent(legacy) {
     id: oldTag.tagId,
     title: oldTag.name,
     color: oldTag.color,
-    draft: {},
   }));
 
   const legacyItemsById = new Map(
@@ -92,7 +94,6 @@ export function migrateLegacyContent(legacy) {
       thumbnail: migrateImage(oldItem.cardThumbnail, counters, images),
     },
     order: index,
-    draft: {},
   }));
 
   const collections = (legacy.collections ?? []).map(
@@ -107,7 +108,6 @@ export function migrateLegacyContent(legacy) {
         )
         .map((item) => item.id),
       order: index,
-      draft: {},
     }),
   );
 
@@ -137,9 +137,8 @@ export function migrateLegacyContent(legacy) {
       id: postId,
       title: oldDay.title ?? "",
       text: oldDay.text ?? "",
-      date: oldDay.date,
+      date: toISODate(oldDay.date),
       tags: oldDay.tags ?? [],
-      draft: {},
     };
   });
 

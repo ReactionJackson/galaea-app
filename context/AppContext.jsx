@@ -102,7 +102,7 @@ export function useApp() {
 //   id: null,
 //   title: "",
 //   text: "",
-//   date: new Date(),
+//   date: "", // ISO string
 //   tags: [], // [tag.id]
 // };
 
