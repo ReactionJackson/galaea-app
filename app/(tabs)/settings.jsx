@@ -2,10 +2,10 @@ import { Button } from "@/components/interface/Button";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { TickIcon } from "@/components/interface/icons/TickIcon";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { ACCENT_SWATCHES, Colors } from "@/constants/theme";
+import { Colors } from "@/constants/theme";
 import { useApp } from "@/context/AppContext";
-import { runLegacyMigration } from "@/utils/migrateLegacyContent";
 import { triggerHaptics } from "@/utils/haptics";
+import { runLegacyMigration } from "@/utils/migrateLegacyContent";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
@@ -45,10 +45,14 @@ export default function SettingsScreen() {
     replaceContent,
   } = useApp();
 
+  // Handlers:
+
   const handleMigrate = async () => {
     const content = await runLegacyMigration();
     if (content) replaceContent(content);
   };
+
+  // Render:
 
   return (
     <Container>
@@ -59,7 +63,7 @@ export default function SettingsScreen() {
       <Section>
         <ThemedText type="subtitle">Accent Colour</ThemedText>
         <SwatchRow>
-          {ACCENT_SWATCHES.map((color) => (
+          {Object.values(Colors.accents).map((color) => (
             <Pressable
               key={color}
               onPress={() => {

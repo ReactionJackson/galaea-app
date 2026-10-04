@@ -38,14 +38,8 @@ const Header = ({ title, date, onChangeText }) => {
 
 export const JournalPage = ({ postId = 1 }) => {
   const { isEditing, setIsEditing } = useApp();
-  const {
-    getById,
-    entriesByPostId,
-    draft,
-    updateDraft,
-    discardDraft,
-    commitDraft,
-  } = usePage();
+  const { getById, entriesByPostId, updateDraft, discardDraft, commitDraft } =
+    usePage();
   const { title, date, text, tags } = getById("posts", postId) ?? {};
   const currentEntries = entriesByPostId[postId] ?? [];
 
