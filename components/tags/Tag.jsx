@@ -20,6 +20,7 @@ export const Container = styled(Animated.createAnimatedComponent(Pressable))`
   align-items: center;
   justify-content: center;
   height: ${CONDENSED_BUTTON_HEIGHT}px;
+  min-width: ${CONDENSED_BUTTON_HEIGHT}px;
   border-radius: 13px;
   padding: 0 10px;
   border-width: 2px;

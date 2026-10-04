@@ -2,6 +2,7 @@ import { FadeTrack } from "@/components/interface/FadeTrack";
 import { HiddenInput } from "@/components/interface/HiddenInput";
 import { InteractionControls } from "@/components/interface/InteractionControls";
 import { Spacer } from "@/components/interface/Spacer";
+import { ThemedText } from "@/components/interface/ThemedText";
 import { ToggleBox } from "@/components/interface/ToggleBox";
 import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
@@ -65,16 +66,21 @@ export const Tags = ({ tagIds = [] }) => {
     }
   };
 
+  const handleStartCreating = () => {
+    setIsCreatingTag(true);
+    inputRef.current?.focus();
+  };
+
+  const handleEndCreating = () => {
+    resetDraftTag();
+    setIsCreatingTag(false);
+    inputRef.current?.blur();
+  };
+
   const handleAddTag = () => {
     const newTag = { ...draftTag, id: tags.length + 1 };
     setTags((prev) => [newTag, ...prev]);
-    resetDraftTag();
-    setIsCreatingTag(false);
-  };
-
-  const handleDiscardTag = () => {
-    resetDraftTag();
-    setIsCreatingTag(false);
+    handleEndCreating();
   };
 
   const handleSelectColor = (color) => {
@@ -87,7 +93,7 @@ export const Tags = ({ tagIds = [] }) => {
     <>
       <ToggleBox isVisible={isEditing} height={TAG_HEIGHT}>
         <Container>
-          <InteractionControls onAdd={() => setIsCreatingTag(true)} />
+          <InteractionControls onAdd={handleStartCreating} />
           <FadeTrack>
             {tags.map(({ id, title, color }) => {
               const isActive = activeTags.find((tag) => tag.id === id);
@@ -112,13 +118,18 @@ export const Tags = ({ tagIds = [] }) => {
             $color={draftTag.color}
             onPress={() => inputRef.current?.focus()}
           >
-            {draftTag.title || "New Tag"}
+            {draftTag.title || (
+              <ThemedText type="tag" color="placeholder">
+                New Tag
+              </ThemedText>
+            )}
           </Tag>
           <FadeTrack>
             {colors.map((color) => (
               <Tag
                 key={`tag-${color}`}
                 $color={color}
+                disabled={color === draftTag.color}
                 onPress={() => handleSelectColor(color)}
               />
             ))}
@@ -126,7 +137,7 @@ export const Tags = ({ tagIds = [] }) => {
           <InteractionControls
             direction="row-reverse"
             onConfirm={() => handleAddTag()}
-            onCancel={() => handleDiscardTag()}
+            onCancel={() => handleEndCreating()}
           />
         </Container>
       </ToggleBox>
