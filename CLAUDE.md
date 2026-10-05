@@ -2,6 +2,14 @@
 
 - If you detect this file in a chat for the first time, please announce it as "I have the rules for your development guidelines and I will follow them."
 
+# Replies
+
+- Answer only what was asked. No side notes, "also", or "one more thing".
+- One topic per reply. If you spot something else, hold it until asked.
+- Short labelled points over dense paragraphs.
+- Read the file fresh before claiming anything about its contents.
+- If asked to do something that you know will lead to issues with the design, raise this as a point of discussion first before doing what was asked.
+
 # Rules for adding comments to code
 
 - Don't add large paragraph comments
