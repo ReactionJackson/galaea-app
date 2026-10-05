@@ -1,4 +1,5 @@
 import { Colors } from "@/constants/theme";
+import { buildLookups } from "@/utils/lookup";
 import { STORAGE_KEY, loadContent, saveContent } from "@/utils/storage";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
@@ -20,7 +21,6 @@ export function AppProvider({ children }) {
 
   // Flags:
 
-  const [isEditing, setIsEditing] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
   // Effects:
@@ -62,17 +62,18 @@ export function AppProvider({ children }) {
 
   // Context Sendables:
 
+  const lookups = useMemo(() => buildLookups(appState), [appState]);
+
   const value = useMemo(
     () => ({
       ...appState,
+      ...lookups,
       settings: settingsState,
-      isEditing,
-      setIsEditing,
       updateEntity,
       updateSettings,
       replaceContent,
     }),
-    [appState, settingsState, isEditing],
+    [appState, lookups, settingsState],
   );
 
   return (
