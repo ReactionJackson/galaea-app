@@ -28,7 +28,7 @@ export const Tags = ({ parent, tagIds = [] }) => {
   const inputRef = useRef(null);
   const createRowRef = useRef(null);
   const colors = Object.keys(Colors.tags);
-  const tags = getAllEntities("tags").reverse(); // newest first
+  const tags = isEditing ? getAllEntities("tags").reverse() : []; // newest first
   const [newTagId, setNewTagId] = useState(null);
   const newTag = getById("tags", newTagId) ?? {};
 
