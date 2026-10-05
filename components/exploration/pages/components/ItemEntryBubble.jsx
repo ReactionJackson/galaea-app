@@ -76,7 +76,8 @@ const EntryHeading = ({ itemId, entryId }) => {
 
 export const ItemEntryBubble = ({ entryId }) => {
   const { isEditing, getById } = usePage();
-  const { text, tagIds, galleryId, parents } = getById("entries", entryId) ?? {};
+  const { text, tagIds, galleryId, parents } =
+    getById("entries", entryId) ?? {};
 
   return (
     <>
@@ -89,7 +90,9 @@ export const ItemEntryBubble = ({ entryId }) => {
             <MultilineText>{text}</MultilineText>
             <Spacer
               isVisible={
-                isEditing || (!!text && !!galleryId) || (!!text && !!tagIds.length)
+                isEditing ||
+                (!!text && !!galleryId) ||
+                (!!text && !!tagIds.length)
               }
               height={15}
             />

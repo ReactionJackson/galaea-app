@@ -41,8 +41,6 @@ export const JournalPage = ({ postId = 1 }) => {
   const { title, date, text, tagIds } = getById("posts", postId) ?? {};
   const entryIds = entryIdsByPostId[postId] ?? [];
 
-  console.log("entryIds", entryIds);
-
   // Temp Edit Mode Controls:
 
   const handleEdit = () => {
