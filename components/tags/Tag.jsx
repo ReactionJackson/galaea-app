@@ -66,7 +66,6 @@ export const Tag = forwardRef(function Tag(
         isEditable={isInput}
         placeholder={placeholder}
         onChangeText={onChangeText}
-        onSubmitEditing={onSubmit}
         onFocus={onFocus}
         returnKeyType="done"
       >

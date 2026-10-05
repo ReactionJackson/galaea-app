@@ -68,34 +68,64 @@ export function PageProvider({ children }) {
     return stored || patch ? { ...stored, ...patch } : undefined;
   };
 
+  const getAllEntities = (key) =>
+    Object.keys({ ...indexes[key], ...draft[key] }).map((id) =>
+      getById(key, id),
+    );
+
   const getCollectionByItemId = (itemId) =>
     getById("collections", collectionIdByItemId[itemId]);
 
   // Draft:
 
-  const updateDraft = (key, id, patch) => {
+  const getNextId = (key) =>
+    Math.max(
+      0,
+      ...Object.keys({ ...indexes[key], ...draft[key] }).map(Number),
+    ) + 1;
+
+  const add = (key, data) => {
+    const id = getNextId(key);
     setDraft((prev) => ({
       ...prev,
-      [key]: { ...prev[key], [id]: { ...prev[key]?.[id], ...patch } },
+      [key]: { ...prev[key], [id]: { ...data, id } },
+    }));
+    return id;
+  };
+
+  const update = (key, id, data) => {
+    if (!getById(key, id)) {
+      throw new Error(
+        `draft.update: no ${key} with id ${id}. Use draft.add to create a new ${key}.`,
+      );
+    }
+    setDraft((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], [id]: { ...prev[key]?.[id], ...data } },
     }));
   };
 
-  const discardDraft = () => setDraft({});
+  const remove = (key, id) => {
+    setDraft((prev) => {
+      const { [id]: removed, ...rest } = prev[key] ?? {};
+      return { ...prev, [key]: rest };
+    });
+  };
 
-  const commitDraft = () => {
+  const commit = () => {
     console.log("commitDraft", draft);
   };
 
+  const discard = () => setDraft({});
+
   const value = {
     getById,
+    getAllEntities,
     getCollectionByItemId,
+    draft: { add, update, remove, discard, commit },
     entriesByPostId,
     entriesByItemId,
     entryNumberById,
-    draft,
-    updateDraft,
-    discardDraft,
-    commitDraft,
   };
 
   return <PageContext.Provider value={value}>{children}</PageContext.Provider>;

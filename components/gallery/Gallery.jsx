@@ -16,8 +16,6 @@ import styled from "styled-components/native";
 
 // Refactor Tasks:
 /*
-  - [x] Captions UI
-  - [ ] Move drafts responsibiility to the component level, remove from context shape
   - [ ] Viewer Lightbox
   - [ ] Edit Lightbox
   - [ ] Sticky controls and handlers

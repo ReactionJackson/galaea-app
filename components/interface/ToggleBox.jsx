@@ -1,5 +1,5 @@
 import { SLIDE_TRANSITION_DURATION } from "@/constants/values";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -16,11 +16,20 @@ const TRANSITION_SETTINGS = {
 
 export const ToggleBox = ({ isVisible, height, children }) => {
   const isFirstRender = useRef(true);
+  const [shownChildren, setShownChildren] = useState(children);
   const heightValue = useSharedValue(isVisible ? MAX_HEIGHT : 0);
   const animatedStyle = useAnimatedStyle(() => ({
     maxHeight: heightValue.get(),
     overflow: heightValue.get() >= MAX_HEIGHT ? "visible" : "hidden",
   }));
+
+  // Updates:
+
+  if (isVisible && children !== shownChildren) {
+    setShownChildren(children);
+  }
+
+  // Effects:
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -40,5 +49,7 @@ export const ToggleBox = ({ isVisible, height, children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible]);
 
-  return <Animated.View style={animatedStyle}>{children}</Animated.View>;
+  // Render:
+
+  return <Animated.View style={animatedStyle}>{shownChildren}</Animated.View>;
 };

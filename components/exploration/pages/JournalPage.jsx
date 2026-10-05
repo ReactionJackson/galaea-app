@@ -38,8 +38,7 @@ const Header = ({ title, date, onChangeText }) => {
 
 export const JournalPage = ({ postId = 1 }) => {
   const { isEditing, setIsEditing } = useApp();
-  const { getById, entriesByPostId, updateDraft, discardDraft, commitDraft } =
-    usePage();
+  const { draft, getById, entriesByPostId } = usePage();
   const { title, date, text, tags } = getById("posts", postId) ?? {};
   const currentEntries = entriesByPostId[postId] ?? [];
 
@@ -50,23 +49,23 @@ export const JournalPage = ({ postId = 1 }) => {
   };
 
   const handleCancel = () => {
+    draft.discard();
     setIsEditing(false);
-    discardDraft();
   };
 
   const handleSave = () => {
+    draft.commit();
     setIsEditing(false);
-    commitDraft();
   };
 
   // Handlers:
 
   const handleChangeTitle = (title) => {
-    updateDraft("posts", postId, { title });
+    draft.update("posts", postId, { title });
   };
 
   const handleChangeText = (text) => {
-    updateDraft("posts", postId, { text });
+    draft.update("posts", postId, { text });
   };
 
   return (
@@ -102,7 +101,7 @@ export const JournalPage = ({ postId = 1 }) => {
           isVisible={isEditing || (!!text && !!tags.length)}
           height={15}
         />
-        <Tags tagIds={tags} />
+        <Tags parent={{ key: "posts", id: postId }} tagIds={tags} />
         <Spacer
           isVisible={isEditing || (!!tags.length && !!currentEntries.length)}
           height={20}

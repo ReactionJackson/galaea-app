@@ -6,6 +6,7 @@ import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
 import { TAG_HEIGHT } from "@/constants/values";
 import { useApp } from "@/context/AppContext";
+import { usePage } from "@/context/PageContext";
 import { PageScrollContext } from "@/context/PageScrollContext";
 import { useDynamicHeight } from "@/hooks/useDynamicHeight";
 import { useContext, useRef, useState } from "react";
@@ -19,73 +20,66 @@ const Container = styled.View`
   gap: 10px;
 `;
 
-// Helpers:
-
-const emptyTag = () => ({
-  title: "",
-  color: "default",
-});
-
 // Main Component:
 
-export const Tags = ({ tagIds = [] }) => {
-  const { tags: initialTags, isEditing } = useApp();
+export const Tags = ({ parent, tagIds = [] }) => {
+  const { draft, getById, getAllEntities } = usePage();
+  const { isEditing } = useApp();
   const { dynamicHeight, onLayout } = useDynamicHeight(TAG_HEIGHT);
-  const [tags, setTags] = useState([...initialTags]);
-  const [isCreatingTag, setIsCreatingTag] = useState(false);
-  const [draftTag, setDraftTag] = useState(emptyTag());
-  const [activeTags, setActiveTags] = useState(
-    tags.filter((tag) => tagIds.includes(tag.id)),
-  );
-  const [shownTags, setShownTags] = useState(activeTags);
+  const { scrollToElement } = useContext(PageScrollContext);
   const inputRef = useRef(null);
   const createRowRef = useRef(null);
   const colors = Object.keys(Colors.tags);
-  const { scrollToElement } = useContext(PageScrollContext);
+  const tags = getAllEntities("tags").reverse(); // newest first
+  const [newTagId, setNewTagId] = useState(null);
+  const newTag = getById("tags", newTagId) ?? {};
 
   // Updates:
 
-  if (!isEditing && isCreatingTag) {
-    setIsCreatingTag(false);
-  }
-
-  if (activeTags.length && activeTags !== shownTags) {
-    setShownTags(activeTags);
+  if (!isEditing && !!newTagId) {
+    setNewTagId(null);
   }
 
   // Handlers:
 
-  const handleToggleTag = (id) => {
-    if (activeTags.find((tag) => tag.id === id)) {
-      setActiveTags((prev) => prev.filter((tag) => tag.id !== id));
-    } else {
-      setActiveTags((prev) => [...prev, tags.find((tag) => tag.id === id)]);
-    }
-  };
-
-  const handleStartCreating = () => {
-    setDraftTag(emptyTag());
-    setIsCreatingTag(true);
-    inputRef.current?.focus();
-  };
-
-  const handleChangeDraft = (title) => {
-    setDraftTag((prev) => ({ ...prev, title }));
-  };
-
-  const handleEndCreating = () => {
-    setIsCreatingTag(false);
+  const leaveAddTag = () => {
+    setNewTagId(null);
     inputRef.current?.blur();
   };
 
   const handleAddTag = () => {
-    const newTag = { ...draftTag, id: tags.length + 1 };
-    setTags((prev) => [newTag, ...prev]);
-    handleEndCreating();
+    const id = draft.add("tags", {
+      title: "",
+      color: "default",
+    });
+    setNewTagId(id);
+    inputRef.current?.focus();
+  };
+
+  const handleChangeText = (title) => {
+    draft.update("tags", newTagId, { title });
   };
 
   const handleSelectColor = (color) => {
-    setDraftTag((prev) => ({ ...prev, color }));
+    draft.update("tags", newTagId, { color });
+  };
+
+  const handleToggleTag = (id) => {
+    draft.update(parent.key, parent.id, {
+      tags: tagIds.includes(id)
+        ? tagIds.filter((tagId) => tagId !== id)
+        : [...tagIds, id],
+    });
+  };
+
+  const handleCancelTag = () => {
+    draft.remove("tags", newTagId);
+    leaveAddTag();
+  };
+
+  const handleConfirmTag = () => {
+    if (!newTag.title) return handleCancelTag();
+    leaveAddTag();
   };
 
   //Render:
@@ -94,16 +88,17 @@ export const Tags = ({ tagIds = [] }) => {
     <>
       <ToggleBox isVisible={isEditing} height={TAG_HEIGHT}>
         <Container>
-          <InteractionControls onAdd={handleStartCreating} />
+          <InteractionControls onAdd={handleAddTag} />
           <FadeTrack>
             {tags.map(({ id, title, color }) => {
-              const isActive = activeTags.find((tag) => tag.id === id);
+              if (id === newTagId) return null;
+              const isActive = tagIds.includes(id);
               return (
                 <Tag
                   key={`tag-${id}`}
                   $color={color}
                   disabled={!!isActive}
-                  onPress={() => handleToggleTag(id)}
+                  onPress={() => handleToggleTag(id, isActive)}
                 >
                   {title}
                 </Tag>
@@ -112,50 +107,52 @@ export const Tags = ({ tagIds = [] }) => {
           </FadeTrack>
         </Container>
       </ToggleBox>
-      <Spacer isVisible={isEditing && isCreatingTag} height={10} />
-      <ToggleBox isVisible={isEditing && isCreatingTag} height={TAG_HEIGHT}>
+      <Spacer isVisible={isEditing && !!newTagId} height={10} />
+      <ToggleBox isVisible={isEditing && !!newTagId} height={TAG_HEIGHT}>
         <Container ref={createRowRef}>
           <Tag
             ref={inputRef}
             isInput
-            $color={draftTag.color}
+            $color={newTag.color ?? "default"}
             placeholder="New Tag"
             onPress={() => inputRef.current?.focus()}
-            onChangeText={(text) => handleChangeDraft(text)}
-            onSubmit={() => handleAddTag()}
+            onChangeText={(text) => handleChangeText(text)}
             onFocus={() => scrollToElement(createRowRef, 40)}
           >
-            {draftTag.title}
+            {newTag.title}
           </Tag>
           <FadeTrack>
             {colors.map((color) => (
               <Tag
                 key={`tag-${color}`}
                 $color={color}
-                disabled={color === draftTag.color}
+                disabled={color === newTag.color}
                 onPress={() => handleSelectColor(color)}
               />
             ))}
           </FadeTrack>
           <InteractionControls
             direction="row-reverse"
-            onConfirm={() => handleAddTag()}
-            onCancel={() => handleEndCreating()}
+            onConfirm={() => handleConfirmTag()}
+            onCancel={() => handleCancelTag()}
           />
         </Container>
       </ToggleBox>
-      <Spacer isVisible={isEditing && !!activeTags.length} height={10} />
-      <ToggleBox isVisible={!!activeTags.length} height={dynamicHeight}>
+      <Spacer isVisible={isEditing && !!tagIds.length} height={10} />
+      <ToggleBox isVisible={!!tagIds.length} height={dynamicHeight}>
         <Container onLayout={onLayout}>
-          {shownTags.map(({ id, title, color }) => (
-            <Tag
-              key={`tag-${id}`}
-              $color={color}
-              onPress={() => handleToggleTag(id)}
-            >
-              {title}
-            </Tag>
-          ))}
+          {tagIds.map((id) => {
+            const { title, color } = getById("tags", id);
+            return (
+              <Tag
+                key={`tag-${id}`}
+                $color={color}
+                onPress={() => handleToggleTag(id)}
+              >
+                {title}
+              </Tag>
+            );
+          })}
         </Container>
       </ToggleBox>
     </>
