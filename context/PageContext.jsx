@@ -29,36 +29,42 @@ export function PageProvider({ children }) {
   );
 
   const collectionIdByItemId = useMemo(
-    () => buildReverseIndex(collections, (collection) => collection.items),
+    () => buildReverseIndex(collections, (collection) => collection.itemIds),
     [collections],
   );
 
-  const entriesByPostId = useMemo(
-    () => buildGroupIndex(entries, (entry) => entry.parents?.post),
+  const entryIdsByPostId = useMemo(
+    () =>
+      buildGroupIndex(
+        entries,
+        (entry) => entry.parents?.postId,
+        (entry) => entry.id,
+      ),
     [entries],
   );
 
-  const entriesByItemId = useMemo(() => {
-    const groups = buildGroupIndex(entries, (entry) => entry.parents?.item);
-    Object.values(groups).forEach((list) =>
-      list.sort(
-        (a, b) =>
-          new Date(indexes.posts[b.parents.post]?.date) -
-          new Date(indexes.posts[a.parents.post]?.date),
-      ),
+  const entryIdsByItemId = useMemo(() => {
+    const newestFirst = [...entries].sort(
+      (a, b) =>
+        new Date(indexes.posts[b.parents?.postId]?.date) -
+        new Date(indexes.posts[a.parents?.postId]?.date),
     );
-    return groups;
+    return buildGroupIndex(
+      newestFirst,
+      (entry) => entry.parents?.itemId,
+      (entry) => entry.id,
+    );
   }, [entries, indexes.posts]);
 
   const entryNumberById = useMemo(() => {
     const map = {};
-    Object.values(entriesByItemId).forEach((list) =>
-      list.forEach((entry, i) => {
-        map[entry.id] = list.length - i;
+    Object.values(entryIdsByItemId).forEach((ids) =>
+      ids.forEach((id, i) => {
+        map[id] = ids.length - i;
       }),
     );
     return map;
-  }, [entriesByItemId]);
+  }, [entryIdsByItemId]);
 
   // Fetching:
 
@@ -72,9 +78,6 @@ export function PageProvider({ children }) {
     Object.keys({ ...indexes[key], ...draft[key] }).map((id) =>
       getById(key, id),
     );
-
-  const getCollectionByItemId = (itemId) =>
-    getById("collections", collectionIdByItemId[itemId]);
 
   // Draft:
 
@@ -121,10 +124,10 @@ export function PageProvider({ children }) {
   const value = {
     getById,
     getAllEntities,
-    getCollectionByItemId,
     draft: { add, update, remove, discard, commit },
-    entriesByPostId,
-    entriesByItemId,
+    collectionIdByItemId,
+    entryIdsByPostId,
+    entryIdsByItemId,
     entryNumberById,
   };
 

@@ -6,12 +6,12 @@ export const buildIndexById = (list) => {
   return map;
 };
 
-export const buildGroupIndex = (list, getKey) => {
+export const buildGroupIndex = (list, getKey, getValue = (item) => item) => {
   const map = {};
   list.forEach((item) => {
     const key = getKey(item);
     if (key == null) return;
-    (map[key] ??= []).push(item);
+    (map[key] ??= []).push(getValue(item));
   });
   return map;
 };

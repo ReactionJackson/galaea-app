@@ -38,9 +38,11 @@ const Header = ({ title, date, onChangeText }) => {
 
 export const JournalPage = ({ postId = 1 }) => {
   const { isEditing, setIsEditing } = useApp();
-  const { draft, getById, entriesByPostId } = usePage();
-  const { title, date, text, tags } = getById("posts", postId) ?? {};
-  const currentEntries = entriesByPostId[postId] ?? [];
+  const { draft, getById, entryIdsByPostId } = usePage();
+  const { title, date, text, tagIds } = getById("posts", postId) ?? {};
+  const entryIds = entryIdsByPostId[postId] ?? [];
+
+  console.log("entryIds", entryIds);
 
   // Temp Edit Mode Controls:
 
@@ -98,16 +100,16 @@ export const JournalPage = ({ postId = 1 }) => {
         </View>
         <MultilineText onChangeText={handleChangeText}>{text}</MultilineText>
         <Spacer
-          isVisible={isEditing || (!!text && !!tags.length)}
+          isVisible={isEditing || (!!text && !!tagIds.length)}
           height={15}
         />
-        <Tags parent={{ key: "posts", id: postId }} tagIds={tags} />
+        <Tags parent={{ key: "posts", id: postId }} tagIds={tagIds} />
         <Spacer
-          isVisible={isEditing || (!!tags.length && !!currentEntries.length)}
+          isVisible={isEditing || (!!tagIds.length && !!entryIds.length)}
           height={20}
         />
-        {currentEntries.map((entry) => (
-          <ItemEntryBubble key={`entry-${entry.id}`} {...entry} />
+        {entryIds.map((id) => (
+          <ItemEntryBubble key={`entry-${id}`} entryId={id} />
         ))}
       </Page.Content>
     </Page>

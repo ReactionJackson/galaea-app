@@ -43,12 +43,12 @@ const Content = styled.View`
 
 const EntryHero = ({ itemId }) => {
   const { getById } = usePage();
-  const { images: { card, cover } = {} } = getById("items", itemId) ?? {};
+  const { images: { cardId, coverId } = {} } = getById("items", itemId) ?? {};
 
   return (
     <ItemHero
-      cardId={card}
-      coverId={cover}
+      cardId={cardId}
+      coverId={coverId}
       height={HERO_HEIGHT}
       shadowRadius={CARD_SHADOW_RADIUS}
       shadowOpacity={CARD_SHADOW_OPACITY}
@@ -57,9 +57,10 @@ const EntryHero = ({ itemId }) => {
 };
 
 const EntryHeading = ({ itemId, entryId }) => {
-  const { getById, getCollectionByItemId, entryNumberById } = usePage();
+  const { getById, collectionIdByItemId, entryNumberById } = usePage();
   const { title: itemTitle } = getById("items", itemId) ?? {};
-  const { title: collectionTitle } = getCollectionByItemId(itemId) ?? {};
+  const { title: collectionTitle } =
+    getById("collections", collectionIdByItemId[itemId]) ?? {};
 
   return (
     <HeaderText>
@@ -74,30 +75,32 @@ const EntryHeading = ({ itemId, entryId }) => {
 
 // Main Component:
 
-export const ItemEntryBubble = ({ id, text, tags, gallery, parents }) => {
+export const ItemEntryBubble = ({ entryId }) => {
   const { isEditing } = useApp();
+  const { getById } = usePage();
+  const { text, tagIds, galleryId, parents } = getById("entries", entryId) ?? {};
 
   return (
     <>
       <Shadow>
         <Container>
-          <EntryHero itemId={parents.item} />
+          <EntryHero itemId={parents.itemId} />
           <Content>
-            <EntryHeading itemId={parents.item} entryId={id} />
+            <EntryHeading itemId={parents.itemId} entryId={entryId} />
             <Spacer isVisible height={10} />
             <MultilineText>{text}</MultilineText>
             <Spacer
               isVisible={
-                isEditing || (!!text && !!gallery) || (!!text && !!tags.length)
+                isEditing || (!!text && !!galleryId) || (!!text && !!tagIds.length)
               }
               height={15}
             />
-            <Gallery galleryId={gallery} />
+            <Gallery galleryId={galleryId} />
             <Spacer
-              isVisible={isEditing || (!!gallery && !!tags.length)}
+              isVisible={isEditing || (!!galleryId && !!tagIds.length)}
               height={15}
             />
-            <Tags tagIds={tags} />
+            <Tags parent={{ key: "entries", id: entryId }} tagIds={tagIds} />
           </Content>
         </Container>
       </Shadow>

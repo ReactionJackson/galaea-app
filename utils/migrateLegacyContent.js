@@ -40,7 +40,7 @@ function migrateGallery(oldGallery, counters, galleries, images) {
   if (!oldGallery || oldGallery.length === 0) return null;
   const id = nextId(counters, "gallery");
   const slides = oldGallery.map((oldImage, index) => ({
-    image: migrateImage(oldImage, counters, images),
+    imageId: migrateImage(oldImage, counters, images),
     caption: oldImage.caption ?? "",
     order: index,
   }));
@@ -61,9 +61,9 @@ function migrateEntry(
   entries.push({
     id,
     text: legacyEntry.text ?? "",
-    tags: legacyEntry.tags ?? [],
-    gallery: migrateGallery(legacyEntry.gallery, counters, galleries, images),
-    parents: { post: postId, item: itemId },
+    tagIds: legacyEntry.tags ?? [],
+    galleryId: migrateGallery(legacyEntry.gallery, counters, galleries, images),
+    parents: { postId, itemId },
   });
   return id;
 }
@@ -89,9 +89,9 @@ export function migrateLegacyContent(legacy) {
     id: oldItem.itemId,
     title: oldItem.title ?? "",
     images: {
-      card: migrateImage(oldItem.cardImage, counters, images),
-      cover: migrateImage(oldItem.coverImage, counters, images),
-      thumbnail: migrateImage(oldItem.cardThumbnail, counters, images),
+      cardId: migrateImage(oldItem.cardImage, counters, images),
+      coverId: migrateImage(oldItem.coverImage, counters, images),
+      thumbnailId: migrateImage(oldItem.cardThumbnail, counters, images),
     },
     order: index,
   }));
@@ -100,7 +100,7 @@ export function migrateLegacyContent(legacy) {
     (oldCollection, index) => ({
       id: oldCollection.collectionId,
       title: oldCollection.name ?? "",
-      items: items
+      itemIds: items
         .filter(
           (item) =>
             legacyItemsById.get(item.id)?.collectionId ===
@@ -138,7 +138,7 @@ export function migrateLegacyContent(legacy) {
       title: oldDay.title ?? "",
       text: oldDay.text ?? "",
       date: toISODate(oldDay.date),
-      tags: oldDay.tags ?? [],
+      tagIds: oldDay.tags ?? [],
     };
   });
 

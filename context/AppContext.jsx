@@ -1,12 +1,6 @@
 import { Colors } from "@/constants/theme";
 import { STORAGE_KEY, loadContent, saveContent } from "@/utils/storage";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const AppContext = createContext(null);
 
@@ -103,13 +97,13 @@ export function useApp() {
 //   title: "",
 //   text: "",
 //   date: "", // ISO string
-//   tags: [], // [tag.id]
+//   tagsIds: [], // [tag.id]
 // };
 
 // const collection = {
 //   id: null,
 //   title: "",
-//   items: [], // [item.id]
+//   itemsIds: [], // [item.id]
 //   order: null,
 // };
 
@@ -117,9 +111,9 @@ export function useApp() {
 //   id: null,
 //   title: "",
 //   images: {
-//     card: null, // image.id
-//     cover: null, // image.id
-//     thumbnail: null, // image.id
+//     cardIds: null, // image.id
+//     coverIds: null, // image.id
+//     thumbnailIds: null, // image.id
 //   },
 //   order: null,
 // }
@@ -127,11 +121,11 @@ export function useApp() {
 // const entry = {
 //   id: null,
 //   text: "",
-//   tags: [], // [tag.id]
-//   gallery: null, // gallery.id
+//   tagsIds: [], // [tag.id]
+//   galleryId: null, // gallery.id
 //   parents: {
-//     post: null, // post.id
-//     item: null, // item.id
+//     postId: null, // post.id
+//     itemId: null, // item.id
 //   },
 // };
 
@@ -139,7 +133,7 @@ export function useApp() {
 //   id: null,
 //   slides: [
 //     {
-//       image: null, // image.id
+//       imageId: null, // image.id
 //       caption: "",
 //       order: null,
 //     }

@@ -66,7 +66,7 @@ export const Tags = ({ parent, tagIds = [] }) => {
 
   const handleToggleTag = (id) => {
     draft.update(parent.key, parent.id, {
-      tags: tagIds.includes(id)
+      tagIds: tagIds.includes(id)
         ? tagIds.filter((tagId) => tagId !== id)
         : [...tagIds, id],
     });

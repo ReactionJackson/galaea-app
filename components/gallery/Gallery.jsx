@@ -57,8 +57,8 @@ export const Gallery = ({ galleryId }) => {
     getScrollDimensions(windowWidth);
   const scrollRef = useRef(null);
   const sortedSlides = [...(gallery?.slides ?? [])]
-    .map(({ caption, image, order }) => ({
-      image: getById("images", image) ?? {},
+    .map(({ caption, imageId, order }) => ({
+      image: getById("images", imageId) ?? {},
       caption,
       order,
     }))
