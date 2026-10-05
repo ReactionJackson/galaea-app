@@ -1,5 +1,4 @@
 import { CoverImage } from "@/components/image/CoverImage";
-import { MotionBox } from "@/components/interface/MotionBox";
 import { Spacer } from "@/components/interface/Spacer";
 import { ThemedText } from "@/components/interface/ThemedText";
 import { Colors } from "@/constants/theme";
@@ -56,21 +55,14 @@ const TrayContainer = styled.View`
   background-color: ${Colors.surfaceTint};
 `;
 
-const GradientContainer = styled(MotionBox)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+const GradientOffset = styled.View`
+  height: ${({ $height }) => $height}px;
 `;
 
 const Gradient = styled(LinearGradient)`
   z-index: 10;
-  position: absolute;
-  left: 0;
   width: 100%;
   height: ${CAPTION_HEIGHT}px;
-  bottom: 0;
 `;
 
 const TextContainer = styled.View`
@@ -123,19 +115,17 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
         {image}
         {placeholder}
         {!placeholder && (
-          <GradientContainer
-            style={{
-              transform: [
-                { translateY: isEditing || !caption ? CAPTION_HEIGHT : 0 },
-              ],
-            }}
-          >
+          <>
+            <GradientOffset
+              $height={width / GALLERY_ASPECT_RATIO - CAPTION_HEIGHT}
+            />
+            <Spacer isVisible={isEditing || !caption} height={CAPTION_HEIGHT} />
             <Gradient
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               colors={[Colors.transparent, Colors.black]}
             />
-          </GradientContainer>
+          </>
         )}
       </ImageContainer>
       <Spacer isVisible={isEditing} height={CAPTION_HEIGHT} />
