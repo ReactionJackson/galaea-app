@@ -168,7 +168,6 @@ export function migrateLegacyContent(legacy) {
     galleries,
     images,
     tags,
-    isEditing: false,
   };
 }
 

@@ -8,7 +8,7 @@ import {
   GALLERY_ASPECT_RATIO,
   GALLERY_ITEM_RADIUS,
 } from "@/constants/values";
-import { useApp } from "@/context/AppContext";
+import { usePage } from "@/context/PageContext";
 import { PageScrollContext } from "@/context/PageScrollContext";
 import { childrenByType } from "@/utils/childrenByType";
 import { LinearGradient } from "expo-linear-gradient";
@@ -102,7 +102,7 @@ const Placeholder = ({ width, isCollapsed }) => {
 // Main Component:
 
 export const GallerySlot = ({ width, caption: initialCaption, children }) => {
-  const { isEditing, setIsEditing } = useApp();
+  const { isEditing, setIsEditing } = usePage();
   const image = childrenByType(children, CoverImage);
   const placeholder = childrenByType(children, PlaceholderContainer);
   const [caption, setCaption] = useState(initialCaption);

@@ -9,7 +9,6 @@ import {
   CARD_SHADOW_RADIUS,
   HERO_HEIGHT,
 } from "@/constants/values";
-import { useApp } from "@/context/AppContext";
 import { usePage } from "@/context/PageContext";
 import styled from "styled-components/native";
 import { ItemHero } from "./ItemHero";
@@ -76,8 +75,7 @@ const EntryHeading = ({ itemId, entryId }) => {
 // Main Component:
 
 export const ItemEntryBubble = ({ entryId }) => {
-  const { isEditing } = useApp();
-  const { getById } = usePage();
+  const { isEditing, getById } = usePage();
   const { text, tagIds, galleryId, parents } = getById("entries", entryId) ?? {};
 
   return (

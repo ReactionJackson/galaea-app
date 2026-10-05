@@ -3,7 +3,6 @@ import { HeaderBar } from "@/components/interface/HeaderBar";
 import { MultilineText } from "@/components/interface/MultilineText";
 import { Spacer } from "@/components/interface/Spacer";
 import { Tags } from "@/components/tags/Tags";
-import { useApp } from "@/context/AppContext";
 import { usePage } from "@/context/PageContext";
 import { formatDate } from "@/utils/formatDate";
 import { View } from "react-native";
@@ -14,7 +13,7 @@ import { NumberBadge } from "./components/NumberBadge";
 // Sub Components:
 
 const Header = ({ title, date, onChangeText }) => {
-  const { isEditing } = useApp();
+  const { isEditing } = usePage();
   return (
     <HeaderBar>
       <HeaderBar.Badge>
@@ -37,8 +36,8 @@ const Header = ({ title, date, onChangeText }) => {
 // Main Component:
 
 export const JournalPage = ({ postId = 1 }) => {
-  const { isEditing, setIsEditing } = useApp();
-  const { draft, getById, entryIdsByPostId } = usePage();
+  const { isEditing, setIsEditing, draft, getById, entryIdsByPostId } =
+    usePage();
   const { title, date, text, tagIds } = getById("posts", postId) ?? {};
   const entryIds = entryIdsByPostId[postId] ?? [];
 

@@ -5,7 +5,6 @@ import { ToggleBox } from "@/components/interface/ToggleBox";
 import { Tag } from "@/components/tags/Tag";
 import { Colors } from "@/constants/theme";
 import { TAG_HEIGHT } from "@/constants/values";
-import { useApp } from "@/context/AppContext";
 import { usePage } from "@/context/PageContext";
 import { PageScrollContext } from "@/context/PageScrollContext";
 import { useDynamicHeight } from "@/hooks/useDynamicHeight";
@@ -23,8 +22,7 @@ const Container = styled.View`
 // Main Component:
 
 export const Tags = ({ parent, tagIds = [] }) => {
-  const { draft, getById, getAllEntities } = usePage();
-  const { isEditing } = useApp();
+  const { draft, getById, getAllEntities, isEditing } = usePage();
   const { dynamicHeight, onLayout } = useDynamicHeight(TAG_HEIGHT);
   const { scrollToElement } = useContext(PageScrollContext);
   const inputRef = useRef(null);

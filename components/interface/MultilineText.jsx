@@ -1,5 +1,5 @@
 import { TEXT_LINE_HEIGHT } from "@/constants/values";
-import { useApp } from "@/context/AppContext";
+import { usePage } from "@/context/PageContext";
 import { PageScrollContext } from "@/context/PageScrollContext";
 import { useDynamicHeight } from "@/hooks/useDynamicHeight";
 import { useContext, useRef } from "react";
@@ -12,7 +12,7 @@ export const MultilineText = ({
   onChangeText = () => {},
   children,
 }) => {
-  const { isEditing } = useApp();
+  const { isEditing } = usePage();
   const { dynamicHeight, onLayout } = useDynamicHeight(TEXT_LINE_HEIGHT);
   const ref = useRef(null);
   const { scrollToElement } = useContext(PageScrollContext);

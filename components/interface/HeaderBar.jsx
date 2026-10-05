@@ -1,5 +1,5 @@
 import { ThemedText } from "@/components/interface/ThemedText";
-import { useApp } from "@/context/AppContext";
+import { usePage } from "@/context/PageContext";
 import { childrenByType } from "@/utils/childrenByType";
 import styled from "styled-components/native";
 
@@ -64,7 +64,7 @@ const Badge = ({ children }) => <BadgeContainer>{children}</BadgeContainer>;
 // );
 
 const Title = ({ children, placeholder = "", onChangeText }) => {
-  const { isEditing } = useApp();
+  const { isEditing } = usePage();
   return (
     <TitleContainer>
       <ThemedText
