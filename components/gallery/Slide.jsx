@@ -9,20 +9,15 @@ import {
 } from "@/constants/values";
 import { usePage } from "@/context/PageContext";
 import { PageScrollContext } from "@/context/PageScrollContext";
-import { childrenByType } from "@/utils/childrenByType";
 import { LinearGradient } from "expo-linear-gradient";
-import { useContext, useRef, useState } from "react";
+import { useContext, useRef } from "react";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
 const Container = styled.View`
-  width: ${({ $width }) => $width}px;
-`;
-
-const Collapsible = styled.View`
-  width: ${({ $width, $collapsed }) => ($collapsed ? 0 : $width)}px;
-  position: ${({ $collapsed }) => ($collapsed ? "absolute" : "relative")};
-  overflow: hidden;
+  width: ${({ $width, $isCollapsed }) => ($isCollapsed ? 0 : $width)}px;
+  position: ${({ $isCollapsed }) => ($isCollapsed ? "absolute" : "relative")};
+  overflow: ${({ $isCollapsed }) => ($isCollapsed ? "hidden" : "visible")};
 `;
 
 const ImageContainer = styled(Pressable)`
@@ -31,7 +26,7 @@ const ImageContainer = styled(Pressable)`
   overflow: hidden;
 `;
 
-const PlaceholderContainer = styled.View`
+const AddSlideContainer = styled.View`
   justify-content: center;
   align-items: center;
   aspect-ratio: ${GALLERY_ASPECT_RATIO};
@@ -77,29 +72,15 @@ const TextContainer = styled.View`
   align-items: center;
 `;
 
-// Sub Components:
-
-const Placeholder = ({ width, isCollapsed }) => {
-  return (
-    <Collapsible $width={width} $collapsed={isCollapsed}>
-      <GallerySlot width={width}>
-        <PlaceholderContainer>
-          <ThemedText color="faded">Add Image</ThemedText>
-        </PlaceholderContainer>
-      </GallerySlot>
-    </Collapsible>
-  );
-};
-
 // Main Component:
 
-export const GallerySlot = ({ width, caption: initialCaption, children }) => {
-  const { isEditing, setIsEditing } = usePage();
-  const image = childrenByType(children, CoverImage);
-  const placeholder = childrenByType(children, PlaceholderContainer);
-  const [caption, setCaption] = useState(initialCaption);
+export const Slide = ({ slideId, width, isCollapsed }) => {
+  const { draft, getById, isEditing, setIsEditing } = usePage();
+  const { imageId, caption } = getById("slides", slideId) ?? {};
+  const image = getById("images", imageId) ?? {};
   const captionRef = useRef(null);
   const { scrollToElement } = useContext(PageScrollContext);
+  const isAddSlide = !slideId;
 
   // Handlers:
 
@@ -107,14 +88,23 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
     setIsEditing((prev) => !prev); // placeholder
   };
 
+  const handleChangeCaption = (caption) => {
+    draft.update("slides", slideId, { caption });
+  };
+
   // Render:
 
   return (
-    <Container $width={width}>
-      <ImageContainer onPress={() => handleViewImage()}>
-        {image}
-        {placeholder}
-        {!placeholder && (
+    <Container $width={width} $isCollapsed={isCollapsed}>
+      <ImageContainer onPress={handleViewImage}>
+        {isAddSlide ? (
+          <AddSlideContainer>
+            <ThemedText color="faded">Add Image</ThemedText>
+          </AddSlideContainer>
+        ) : (
+          <CoverImage {...image} />
+        )}
+        {!isAddSlide && (
           <>
             <GradientOffset
               $height={width / GALLERY_ASPECT_RATIO - CAPTION_HEIGHT}
@@ -129,7 +119,7 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
         )}
       </ImageContainer>
       <Spacer isVisible={isEditing} height={CAPTION_HEIGHT} />
-      {!placeholder && (
+      {!isAddSlide && (
         <TextContainer ref={captionRef}>
           <ThemedText
             isInput
@@ -137,7 +127,7 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
             multiline={true}
             type="caption"
             placeholder="In this image..."
-            onChangeText={setCaption}
+            onChangeText={handleChangeCaption}
             onFocus={() => scrollToElement(captionRef)}
             color={isEditing ? "text" : caption ? "white" : "transparent"}
           >
@@ -149,6 +139,3 @@ export const GallerySlot = ({ width, caption: initialCaption, children }) => {
     </Container>
   );
 };
-
-GallerySlot.Image = CoverImage;
-GallerySlot.Placeholder = Placeholder;

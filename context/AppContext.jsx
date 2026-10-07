@@ -12,6 +12,7 @@ export function AppProvider({ children }) {
     items: [],
     entries: [],
     galleries: [],
+    slides: [],
     images: [],
     tags: [],
   });
@@ -105,18 +106,16 @@ export function useApp() {
 //   id: null,
 //   title: "",
 //   itemsIds: [], // [item.id]
-//   order: null,
 // };
 
 // const item = {
 //   id: null,
 //   title: "",
 //   images: {
-//     cardIds: null, // image.id
-//     coverIds: null, // image.id
-//     thumbnailIds: null, // image.id
+//     cardId: null, // [image.id]
+//     coverId: null, // [image.id]
+//     thumbnailId: null, // [image.id]
 //   },
-//   order: null,
 // }
 
 // const entry = {
@@ -125,20 +124,20 @@ export function useApp() {
 //   tagsIds: [], // [tag.id]
 //   galleryId: null, // gallery.id
 //   parents: {
-//     postId: null, // post.id
-//     itemId: null, // item.id
+//     postId: null, // [post.id]
+//     itemId: null, // [item.id]
 //   },
 // };
 
 // const gallery = {
 //   id: null,
-//   slides: [
-//     {
-//       imageId: null, // image.id
-//       caption: "",
-//       order: null,
-//     }
-//   ],
+//   slideIds: [], // [slide.id]
+// }
+
+// const slide = {
+//   id: null,
+//   imageId: null, // [image.id]
+//   caption: "",
 // }
 
 // const image = {

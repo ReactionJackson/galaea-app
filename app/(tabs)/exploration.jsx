@@ -18,7 +18,7 @@ function ExplorationScreen() {
   return (
     <Container>
       <PageProvider>
-        <JournalPage postId={7} />
+        <JournalPage postId={19} />
       </PageProvider>
     </Container>
   );

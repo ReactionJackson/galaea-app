@@ -32,6 +32,7 @@ export const buildLookups = ({
   items,
   entries,
   galleries,
+  slides = [],
   images,
   tags,
 }) => {
@@ -41,6 +42,7 @@ export const buildLookups = ({
     items: buildIndexById(items),
     entries: buildIndexById(entries),
     galleries: buildIndexById(galleries),
+    slides: buildIndexById(slides),
     images: buildIndexById(images),
     tags: buildIndexById(tags),
   };

@@ -36,15 +36,19 @@ function migrateImage(oldImage, counters, images) {
   return id;
 }
 
-function migrateGallery(oldGallery, counters, galleries, images) {
+function migrateGallery(oldGallery, counters, galleries, slides, images) {
   if (!oldGallery || oldGallery.length === 0) return null;
   const id = nextId(counters, "gallery");
-  const slides = oldGallery.map((oldImage, index) => ({
-    imageId: migrateImage(oldImage, counters, images),
-    caption: oldImage.caption ?? "",
-    order: index,
-  }));
-  galleries.push({ id, slides });
+  const slideIds = oldGallery.map((oldImage) => {
+    const slideId = nextId(counters, "slide");
+    slides.push({
+      id: slideId,
+      imageId: migrateImage(oldImage, counters, images),
+      caption: oldImage.caption ?? "",
+    });
+    return slideId;
+  });
+  galleries.push({ id, slideIds });
   return id;
 }
 
@@ -54,6 +58,7 @@ function migrateEntry(
   itemId,
   counters,
   galleries,
+  slides,
   images,
   entries,
 ) {
@@ -62,7 +67,13 @@ function migrateEntry(
     id,
     text: legacyEntry.text ?? "",
     tagIds: legacyEntry.tags ?? [],
-    galleryId: migrateGallery(legacyEntry.gallery, counters, galleries, images),
+    galleryId: migrateGallery(
+      legacyEntry.gallery,
+      counters,
+      galleries,
+      slides,
+      images,
+    ),
     parents: { postId, itemId },
   });
   return id;
@@ -72,6 +83,7 @@ export function migrateLegacyContent(legacy) {
   const counters = {};
   const images = [];
   const galleries = [];
+  const slides = [];
   const entries = [];
   const migratedEntryKeys = new Set();
 
@@ -85,7 +97,7 @@ export function migrateLegacyContent(legacy) {
     (legacy.items ?? []).map((oldItem) => [oldItem.itemId, oldItem]),
   );
 
-  const items = (legacy.items ?? []).map((oldItem, index) => ({
+  const items = (legacy.items ?? []).map((oldItem) => ({
     id: oldItem.itemId,
     title: oldItem.title ?? "",
     images: {
@@ -93,7 +105,6 @@ export function migrateLegacyContent(legacy) {
       coverId: migrateImage(oldItem.coverImage, counters, images),
       thumbnailId: migrateImage(oldItem.cardThumbnail, counters, images),
     },
-    order: index,
   }));
 
   const collections = (legacy.collections ?? []).map(
@@ -127,6 +138,7 @@ export function migrateLegacyContent(legacy) {
         ref.itemId,
         counters,
         galleries,
+        slides,
         images,
         entries,
       );
@@ -154,6 +166,7 @@ export function migrateLegacyContent(legacy) {
         itemId,
         counters,
         galleries,
+        slides,
         images,
         entries,
       );
@@ -166,6 +179,7 @@ export function migrateLegacyContent(legacy) {
     items,
     entries,
     galleries,
+    slides,
     images,
     tags,
   };

@@ -1,4 +1,4 @@
-import { GallerySlot } from "@/components/gallery/GallerySlot";
+import { Slide } from "@/components/gallery/Slide";
 import { InteractionControls } from "@/components/interface/InteractionControls";
 import { ToggleBox } from "@/components/interface/ToggleBox";
 import {
@@ -46,34 +46,27 @@ const getScrollDimensions = (screenWidth) => {
 // Main Component:
 
 export const Gallery = ({ galleryId }) => {
-  const { isEditing, getById } = usePage();
+  const { draft, isEditing, getById } = usePage();
   const { width: windowWidth } = useWindowDimensions();
-  const [gallery, setGallery] = useState(getById("galleries", galleryId));
+  const { slideIds = [] } = getById("galleries", galleryId) ?? {};
   const [activeSlot, setActiveSlot] = useState(0);
-  const [isPlaceholderHidden, setIsPlaceholderHidden] = useState(!isEditing);
+  const [showAddSlide, setShowAddSlide] = useState(isEditing);
   const { galleryWidth, slotWidth, scrollInterval } =
     getScrollDimensions(windowWidth);
   const scrollRef = useRef(null);
-  const sortedSlides = [...(gallery?.slides ?? [])]
-    .map(({ caption, imageId, order }) => ({
-      image: getById("images", imageId) ?? {},
-      caption,
-      order,
-    }))
-    .sort((a, b) => a.order - b.order);
   const boxHeight = slotWidth / GALLERY_ASPECT_RATIO + CAPTION_HEIGHT;
 
   // Updates:
 
-  if (isEditing && isPlaceholderHidden) {
-    setIsPlaceholderHidden(false);
+  if (isEditing && !showAddSlide) {
+    setShowAddSlide(true);
   }
 
   // Effects:
 
   useEffect(() => {
     if (isEditing) return;
-    if (sortedSlides.length > 0 && activeSlot === sortedSlides.length) {
+    if (slideIds.length > 0 && activeSlot === slideIds.length) {
       scrollRef.current?.scrollTo({
         x: (activeSlot - 1) * scrollInterval,
         animated: true,
@@ -81,7 +74,7 @@ export const Gallery = ({ galleryId }) => {
       return;
     }
     const timeout = setTimeout(
-      () => setIsPlaceholderHidden(true),
+      () => setShowAddSlide(false),
       SLIDE_TRANSITION_DURATION,
     );
     return () => clearTimeout(timeout);
@@ -95,7 +88,7 @@ export const Gallery = ({ galleryId }) => {
       0,
       Math.min(
         Math.round(e.nativeEvent.contentOffset.x / scrollInterval),
-        sortedSlides.length,
+        slideIds.length,
       ),
     );
     setActiveSlot((prev) =>
@@ -104,29 +97,17 @@ export const Gallery = ({ galleryId }) => {
   };
 
   const handleScrollEnd = () => {
-    if (!isEditing) setIsPlaceholderHidden(true);
+    if (!isEditing) setShowAddSlide(false);
   };
 
   const handleViewImage = () => {
     // ...
   };
 
-  const handleChangeCaption = (index, text) => {
-    setGallery((prev) => ({
-      ...prev,
-      slides: prev.slides.map((slide, i) =>
-        i === index ? { ...slide, caption: text } : slide,
-      ),
-    }));
-  };
-
   // Render:
 
   return (
-    <ToggleBox
-      isVisible={isEditing || sortedSlides.length > 0}
-      height={boxHeight}
-    >
+    <ToggleBox isVisible={isEditing || slideIds.length > 0} height={boxHeight}>
       <ScrollContainer
         ref={scrollRef}
         $width={galleryWidth}
@@ -144,24 +125,16 @@ export const Gallery = ({ galleryId }) => {
           paddingInlineEnd: GALLERY_GUTTERS,
         }}
       >
-        {sortedSlides.map(
-          ({ image: { uri, contentPosition }, caption, order }, i) => (
-            <GallerySlot
-              key={`slot-${order}`}
-              width={slotWidth}
-              caption={caption}
-            >
-              <GallerySlot.Image uri={uri} contentPosition={contentPosition} />
-            </GallerySlot>
-          ),
-        )}
-        <GallerySlot.Placeholder
-          key={`slot-placeholder`}
+        {slideIds.map((id) => (
+          <Slide key={`slide-${id}`} width={slotWidth} slideId={id} />
+        ))}
+        <Slide
+          key={`slide-add`}
           width={slotWidth}
-          isPlaceholderHidden={isPlaceholderHidden}
+          isCollapsed={!showAddSlide}
         />
       </ScrollContainer>
-      {isEditing && activeSlot < sortedSlides.length && (
+      {isEditing && activeSlot < slideIds.length && (
         <ControlsContainer>
           <InteractionControls onEdit={() => {}} onDelete={() => {}} />
         </ControlsContainer>

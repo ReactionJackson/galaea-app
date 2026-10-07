@@ -75,9 +75,17 @@ const EntryHeading = ({ itemId, entryId }) => {
 // Main Component:
 
 export const ItemEntryBubble = ({ entryId }) => {
-  const { isEditing, getById } = usePage();
+  const { draft, isEditing, getById } = usePage();
   const { text, tagIds, galleryId, parents } =
     getById("entries", entryId) ?? {};
+
+  // Handlers:
+
+  const handleOnChangeText = (text) => {
+    draft.update("entries", entryId, { text });
+  };
+
+  // Render:
 
   return (
     <>
@@ -87,7 +95,9 @@ export const ItemEntryBubble = ({ entryId }) => {
           <Content>
             <EntryHeading itemId={parents.itemId} entryId={entryId} />
             <Spacer isVisible height={10} />
-            <MultilineText>{text}</MultilineText>
+            <MultilineText onChangeText={handleOnChangeText}>
+              {text}
+            </MultilineText>
             <Spacer
               isVisible={
                 isEditing ||
