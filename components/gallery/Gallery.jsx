@@ -1,5 +1,6 @@
 import { Slide } from "@/components/gallery/Slide";
 import { InteractionControls } from "@/components/interface/InteractionControls";
+import { PaginationControls } from "@/components/interface/PaginationControls";
 import { ToggleBox } from "@/components/interface/ToggleBox";
 import {
   CAPTION_HEIGHT,
@@ -15,10 +16,9 @@ import styled from "styled-components/native";
 
 // Refactor Tasks:
 /*
-  - [ ] Viewer Lightbox
-  - [ ] Edit Lightbox
-  - [ ] Sticky controls and handlers
-  - [ ] Add image and cancel handling
+  - Viewer Lightbox
+  - Edit Lightbox
+  - Add image and cancel handling
 */
 
 // Styled Components:
@@ -32,6 +32,12 @@ const ControlsContainer = styled.View`
   position: absolute;
   top: 10px;
   right: 10px;
+`;
+
+const PaginationContainer = styled.View`
+  position: absolute;
+  top: ${({ $width }) => $width / GALLERY_ASPECT_RATIO - CAPTION_HEIGHT - 5}px;
+  width: 100%;
 `;
 
 // Helpers:
@@ -108,13 +114,12 @@ export const Gallery = ({ galleryId }) => {
     console.log("handleViewSlide", id);
   };
 
-  const handleReorderSlide = (id, direction) => {
-    console.log("handleReorderSlide", id, direction); // -1 or 1
-    const from = slideIds.indexOf(id);
-    const to = from + direction;
+  const handleReorderSlide = (direction) => {
+    const to = activeSlot + direction;
     if (to < 0 || to >= slideIds.length) return;
     const next = [...slideIds];
-    [next[from], next[to]] = [next[to], next[from]];
+    [next[activeSlot], next[to]] = [next[to], next[activeSlot]];
+    scrollRef.current?.scrollTo({ x: to * scrollInterval, animated: false });
     draft.update("galleries", galleryId, { slideIds: next });
   };
 
@@ -123,7 +128,6 @@ export const Gallery = ({ galleryId }) => {
   };
 
   const handlePressSlide = (id) => {
-    setIsEditing((prev) => !prev); // temporary toggle
     if (isEditing) {
       handleEditSlide(id);
     } else {
@@ -168,9 +172,18 @@ export const Gallery = ({ galleryId }) => {
         />
       </ScrollContainer>
       {isEditing && activeSlot < slideIds.length && (
-        <ControlsContainer>
-          <InteractionControls onEdit={() => {}} onDelete={() => {}} />
-        </ControlsContainer>
+        <>
+          <ControlsContainer>
+            <InteractionControls onEdit={() => {}} onDelete={() => {}} />
+          </ControlsContainer>
+          <PaginationContainer $width={galleryWidth}>
+            <PaginationControls
+              onPress={handleReorderSlide}
+              activeSlot={activeSlot}
+              totalSlots={slideIds.length}
+            />
+          </PaginationContainer>
+        </>
       )}
     </ToggleBox>
   );
