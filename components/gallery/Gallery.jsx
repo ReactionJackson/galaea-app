@@ -46,7 +46,7 @@ const getScrollDimensions = (screenWidth) => {
 // Main Component:
 
 export const Gallery = ({ galleryId }) => {
-  const { draft, isEditing, getById } = usePage();
+  const { draft, isEditing, setIsEditing, getById } = usePage();
   const { width: windowWidth } = useWindowDimensions();
   const { slideIds = [] } = getById("galleries", galleryId) ?? {};
   const [activeSlot, setActiveSlot] = useState(0);
@@ -100,8 +100,35 @@ export const Gallery = ({ galleryId }) => {
     if (!isEditing) setShowAddSlide(false);
   };
 
-  const handleViewImage = () => {
-    // ...
+  const handleEditSlide = (id) => {
+    console.log("handleEditSlide", id);
+  };
+
+  const handleViewSlide = (id) => {
+    console.log("handleViewSlide", id);
+  };
+
+  const handleReorderSlide = (id, direction) => {
+    console.log("handleReorderSlide", id, direction); // -1 or 1
+    const from = slideIds.indexOf(id);
+    const to = from + direction;
+    if (to < 0 || to >= slideIds.length) return;
+    const next = [...slideIds];
+    [next[from], next[to]] = [next[to], next[from]];
+    draft.update("galleries", galleryId, { slideIds: next });
+  };
+
+  const handleAddSlide = () => {
+    console.log("handleAddSlide");
+  };
+
+  const handlePressSlide = (id) => {
+    setIsEditing((prev) => !prev); // temporary toggle
+    if (isEditing) {
+      handleEditSlide(id);
+    } else {
+      handleViewSlide(id);
+    }
   };
 
   // Render:
@@ -126,12 +153,18 @@ export const Gallery = ({ galleryId }) => {
         }}
       >
         {slideIds.map((id) => (
-          <Slide key={`slide-${id}`} width={slotWidth} slideId={id} />
+          <Slide
+            key={`slide-${id}`}
+            width={slotWidth}
+            slideId={id}
+            onPress={() => handlePressSlide(id)}
+          />
         ))}
         <Slide
           key={`slide-add`}
           width={slotWidth}
           isCollapsed={!showAddSlide}
+          onPress={handleAddSlide}
         />
       </ScrollContainer>
       {isEditing && activeSlot < slideIds.length && (

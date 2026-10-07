@@ -74,8 +74,8 @@ const TextContainer = styled.View`
 
 // Main Component:
 
-export const Slide = ({ slideId, width, isCollapsed }) => {
-  const { draft, getById, isEditing, setIsEditing } = usePage();
+export const Slide = ({ slideId, width, isCollapsed, onPress = () => {} }) => {
+  const { draft, getById, isEditing } = usePage();
   const { imageId, caption } = getById("slides", slideId) ?? {};
   const image = getById("images", imageId) ?? {};
   const captionRef = useRef(null);
@@ -83,10 +83,6 @@ export const Slide = ({ slideId, width, isCollapsed }) => {
   const isAddSlide = !slideId;
 
   // Handlers:
-
-  const handleViewImage = () => {
-    setIsEditing((prev) => !prev); // placeholder
-  };
 
   const handleChangeCaption = (caption) => {
     draft.update("slides", slideId, { caption });
@@ -96,7 +92,7 @@ export const Slide = ({ slideId, width, isCollapsed }) => {
 
   return (
     <Container $width={width} $isCollapsed={isCollapsed}>
-      <ImageContainer onPress={handleViewImage}>
+      <ImageContainer onPress={onPress}>
         {isAddSlide ? (
           <AddSlideContainer>
             <ThemedText color="faded">Add Image</ThemedText>
