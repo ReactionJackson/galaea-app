@@ -1,8 +1,8 @@
 import { ThemedText } from "@/components/interface/ThemedText";
-import { Colors } from "@/constants/theme";
-import { useSettings } from "@/context/SettingsContext";
-import { Children } from "react";
+import { childrenByType } from "@/utils/childrenByType";
 import styled from "styled-components/native";
+
+// Styled Components:
 
 const Container = styled.View`
   width: 100%;
@@ -11,12 +11,33 @@ const Container = styled.View`
   gap: 10px;
 `;
 
+const BadgeContainer = styled.View`
+  width: 40px;
+  height: 40px;
+`;
+
+// const BadgeImage = styled.View`
+//   justify-content: center;
+//   align-items: center;
+//   width: ${({ $size }) => $size}px;
+//   height: ${({ $size }) => $size}px;
+//   border-radius: 12px;
+//   overflow: hidden;
+//   background-color: ${Colors.surfaceTint};
+// `;
+
 const TextContainer = styled.View`
   flex: 1;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  gap: ${({ $gap }) => $gap}px;
+  gap: 5px;
+`;
+
+const TitleContainer = styled.View`
+  width: 100%;
+  height: 28px;
+  margin: -3px 0 -2px -2px;
 `;
 
 const Meta = styled.View`
@@ -26,133 +47,65 @@ const Meta = styled.View`
   height: 8px;
 `;
 
-const TitleContainer = styled.View`
-  width: 100%;
-  height: 28px;
-  margin: -3px 0 -2px -2px;
-`;
+// Sub Components:
 
-const BadgeCircle = styled.View`
-  justify-content: center;
-  align-items: center;
-  width: ${({ $size }) => $size}px;
-  height: ${({ $size }) => $size}px;
-  border-radius: 50%;
-  border-width: 2px;
-  border-color: ${({ $borderColor }) => $borderColor};
-  background-color: ${({ $backgroundColor }) => $backgroundColor};
-`;
+const Badge = ({ children }) => <BadgeContainer>{children}</BadgeContainer>;
+// const { fill, border } = badgeColors[variant];
+// return (
+//   <BadgeCircle
+//     $backgroundColor={fill}
+//     $borderColor={border}
+//     $size={size}
+//     {...rest}
+//   >
+//     {children}
+//   </BadgeCircle>
+// );
 
-const BadgeImage = styled.View`
-  justify-content: center;
-  align-items: center;
-  width: ${({ $size }) => $size}px;
-  height: ${({ $size }) => $size}px;
-  border-radius: 12px;
-  overflow: hidden;
-  background-color: ${Colors.surfaceTint};
-`;
-
-function Title({
-  value,
-  placeholder,
-  onChangeText,
-  editable = false,
-  children,
-  ...rest
-}) {
-  if (onChangeText) {
-    return (
-      <TitleContainer>
-        <ThemedText
-          type="title"
-          isInput
-          value={value}
-          placeholder={placeholder}
-          onChangeText={onChangeText}
-          editable={editable}
-          {...rest}
-        />
-      </TitleContainer>
-    );
-  }
-  return (
-    <TitleContainer>
-      <ThemedText type="title" {...rest}>
-        {children ?? value}
-      </ThemedText>
-    </TitleContainer>
-  );
-}
-Title.displayName = "HeaderText.Title";
-
-function Subtitle({ children, ...rest }) {
-  return (
-    <ThemedText type="subtitle" {...rest}>
-      {children}
-    </ThemedText>
-  );
-}
-Subtitle.displayName = "HeaderText.Subtitle";
-
-function SubtitleFaded({ children, ...rest }) {
-  return (
-    <ThemedText type="subtitle" color="faded" {...rest}>
-      {children}
-    </ThemedText>
-  );
-}
-SubtitleFaded.displayName = "HeaderText.SubtitleFaded";
-
-function Badge({
-  variant = "primary",
-  shape = "circle",
-  size = 40,
-  children,
-  ...rest
-}) {
-  const { badgeColors } = useSettings();
-  if (shape === "image") {
-    return (
-      <BadgeImage $size={size} {...rest}>
-        {children}
-      </BadgeImage>
-    );
-  }
-  const { fill, border } = badgeColors[variant];
-  return (
-    <BadgeCircle
-      $backgroundColor={fill}
-      $borderColor={border}
-      $size={size}
-      {...rest}
+const Title = ({ children, placeholder = "", onChangeText }) => (
+  <TitleContainer>
+    <ThemedText
+      type="title"
+      isInput={!!onChangeText}
+      placeholder={placeholder}
+      onChangeText={onChangeText}
+      isEditable={!!onChangeText}
     >
       {children}
-    </BadgeCircle>
-  );
-}
-Badge.displayName = "HeaderText.Badge";
+    </ThemedText>
+  </TitleContainer>
+);
 
-export function HeaderText({ gap = 5, children }) {
-  const childArray = Children.toArray(children);
-  const isBadge = (child) => child.type?.displayName === Badge.displayName;
-  const isTitle = (child) => child.type?.displayName === Title.displayName;
-  const badge = childArray.find(isBadge);
-  const title = childArray.find(isTitle);
-  const subtitles = childArray.filter(
-    (child) => child !== badge && child !== title,
-  );
+const Subtitle = ({ children }) => (
+  <ThemedText type="subtitle">{children}</ThemedText>
+);
 
+const SubtitleFaded = ({ children }) => (
+  <ThemedText type="subtitle" color="faded">
+    {children}
+  </ThemedText>
+);
+
+// Main Component:
+
+export const HeaderText = ({ children }) => {
+  const badge = childrenByType(children, Badge);
+  const title = childrenByType(children, Title);
+  const subtitle = childrenByType(children, Subtitle);
+  const subtitleFaded = childrenByType(children, SubtitleFaded);
   return (
     <Container>
       {badge}
-      <TextContainer $gap={gap}>
+      <TextContainer>
         {title}
-        {subtitles.length > 0 && <Meta>{subtitles}</Meta>}
+        <Meta>
+          {subtitle}
+          {subtitleFaded}
+        </Meta>
       </TextContainer>
     </Container>
   );
-}
+};
 
 HeaderText.Title = Title;
 HeaderText.Subtitle = Subtitle;

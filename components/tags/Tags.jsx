@@ -1,177 +1,158 @@
-import {
-  AnimateHeight,
-  AnimatedSpacer,
-} from "@/components/interface/AnimateHeight";
 import { FadeTrack } from "@/components/interface/FadeTrack";
-import { CrossIcon } from "@/components/interface/icons/CrossIcon";
-import { InteractButton } from "@/components/interface/InteractButton";
-import { ThemedText } from "@/components/interface/ThemedText";
+import { InteractionControls } from "@/components/interface/InteractionControls";
+import { Spacer } from "@/components/interface/Spacer";
+import { ToggleBox } from "@/components/interface/ToggleBox";
 import { Tag } from "@/components/tags/Tag";
-import { TagEditRow } from "@/components/tags/TagEditRow";
-import { useApp } from "@/context/AppContext";
-import { useEffect, useRef, useState } from "react";
-import { Pressable, View } from "react-native";
+import { Colors } from "@/constants/theme";
+import { TAG_HEIGHT } from "@/constants/values";
+import { usePage } from "@/context/PageContext";
+import { PageScrollContext } from "@/context/PageScrollContext";
+import { useDynamicHeight } from "@/hooks/useDynamicHeight";
+import { useContext, useRef, useState } from "react";
 import styled from "styled-components/native";
 
-const Row = styled.View`
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-`;
+// Styled Components:
 
-const ActiveTags = styled.View`
+const Container = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
   gap: 10px;
 `;
 
-export function Tags({
-  tagIds = [],
-  editMode = false,
-  onToggleTag = () => {},
-}) {
-  const { state, dispatch } = useApp();
-  const tags = state.tags;
-  const onAddTag = (name, color) => dispatch({ type: "ADD_TAG", name, color });
-  const onUpdateTagColor = (tagId, color) =>
-    dispatch({ type: "UPDATE_TAG_COLOR", tagId, color });
-  const onReplaceTag = (tagId, name, color) =>
-    dispatch({ type: "REPLACE_TAG", tagId, name, color });
+// Main Component:
 
-  const [editRowOpen, setEditRowOpen] = useState(false);
-  const [editingTagId, setEditingTagId] = useState(null);
-  const [draftName, setDraftName] = useState("");
-  const [draftColor, setDraftColor] = useState("default");
-  const [prevEditMode, setPrevEditMode] = useState(editMode);
-  const editRowRef = useRef(null);
-  const tagPickerRef = useRef(null);
+export const Tags = ({ parent, tagIds = [] }) => {
+  const { draft, getById, getAllEntities, isEditing } = usePage();
+  const { dynamicHeight, onLayout } = useDynamicHeight(TAG_HEIGHT);
+  const { scrollToElement } = useContext(PageScrollContext);
+  const inputRef = useRef(null);
+  const createRowRef = useRef(null);
+  const colors = Object.keys(Colors.tags);
+  const tags = isEditing ? getAllEntities("tags").reverse() : []; // newest first
+  const [newTagId, setNewTagId] = useState(null);
+  const newTag = getById("tags", newTagId) ?? {};
 
-  const activeTags = tags.filter((t) => !t.archived);
+  // Updates:
 
-  if (editMode !== prevEditMode) {
-    setPrevEditMode(editMode);
-    if (!editMode) {
-      setEditRowOpen(false);
-      setEditingTagId(null);
-      setDraftName("");
-      setDraftColor("default");
-    }
+  if (!isEditing && !!newTagId) {
+    setNewTagId(null);
   }
 
-  useEffect(() => {
-    if (!editMode) editRowRef.current?.blur();
-  }, [editMode]);
+  // Handlers:
 
-  const openEditRow = (tagId = null) => {
-    if (tagId !== null) {
-      const tag = tags.find((t) => t.tagId === tagId);
-      setEditingTagId(tagId);
-      setDraftName(tag.name);
-      setDraftColor(tag.color);
-    } else {
-      setEditingTagId(null);
-      setDraftName("");
-      setDraftColor("default");
-    }
-    setEditRowOpen(true);
-    setTimeout(() => editRowRef.current?.focus(), 300);
+  const leaveAddTag = () => {
+    setNewTagId(null);
+    inputRef.current?.blur();
   };
 
-  const handleCancelEditRow = () => {
-    editRowRef.current?.blur();
-    setEditRowOpen(false);
-    setEditingTagId(null);
-    setDraftName("");
-    setDraftColor("default");
+  const handleAddTag = () => {
+    const id = draft.add("tags", {
+      title: "",
+      color: "default",
+    });
+    setNewTagId(id);
+    inputRef.current?.focus();
   };
 
-  const handleSave = () => {
-    const trimmedName = draftName.trim();
-    if (!trimmedName) return;
-
-    if (editingTagId === null) {
-      onAddTag(trimmedName, draftColor);
-      setTimeout(() => tagPickerRef.current?.scrollToStart(), 80);
-    } else {
-      const original = tags.find((t) => t.tagId === editingTagId);
-      if (original.name !== trimmedName) {
-        onReplaceTag(editingTagId, trimmedName, draftColor);
-      } else if (original.color !== draftColor) {
-        onUpdateTagColor(editingTagId, draftColor);
-      }
-    }
-
-    editRowRef.current?.blur();
-    setEditRowOpen(false);
-    setEditingTagId(null);
-    setDraftName("");
-    setDraftColor("default");
+  const handleChangeText = (title) => {
+    draft.update("tags", newTagId, { title });
   };
+
+  const handleSelectColor = (color) => {
+    draft.update("tags", newTagId, { color });
+  };
+
+  const handleToggleTag = (id) => {
+    draft.update(parent.key, parent.id, {
+      tagIds: tagIds.includes(id)
+        ? tagIds.filter((tagId) => tagId !== id)
+        : [...tagIds, id],
+    });
+  };
+
+  const handleCancelTag = () => {
+    draft.remove("tags", newTagId);
+    leaveAddTag();
+  };
+
+  const handleConfirmTag = () => {
+    if (!newTag.title) return handleCancelTag();
+    leaveAddTag();
+  };
+
+  //Render:
 
   return (
-    <View>
-      <AnimatedSpacer visible={editMode || !!tagIds.length} height={15} />
-      <AnimateHeight visible={editMode}>
-        <Row>
-          <InteractButton transition={false} onPress={() => openEditRow(null)}>
-            <CrossIcon />
-          </InteractButton>
-
-          <FadeTrack ref={tagPickerRef} contentContainerStyle={{ gap: 10 }}>
-            {activeTags.map(({ tagId, name, color }, i) => {
-              const active = tagIds.includes(tagId);
-              const tagColor = active ? "disabled" : color;
+    <>
+      <ToggleBox isVisible={isEditing} height={TAG_HEIGHT}>
+        <Container>
+          <InteractionControls onAdd={handleAddTag} />
+          <FadeTrack>
+            {tags.map(({ id, title, color }) => {
+              if (id === newTagId) return null;
+              const isActive = tagIds.includes(id);
               return (
-                <Pressable
-                  key={`collection-${tagId}-${i}`}
-                  onPress={() => onToggleTag(tagId)}
-                  onLongPress={() => openEditRow(tagId)}
-                  delayLongPress={400}
+                <Tag
+                  key={`tag-${id}`}
+                  $color={color}
+                  disabled={!!isActive}
+                  onPress={() => handleToggleTag(id, isActive)}
                 >
-                  <Tag color={tagColor}>
-                    <ThemedText type="tag" color={tagColor}>
-                      {name}
-                    </ThemedText>
-                  </Tag>
-                </Pressable>
+                  {title}
+                </Tag>
               );
             })}
           </FadeTrack>
-        </Row>
-      </AnimateHeight>
-
-      <AnimateHeight visible={editRowOpen && editMode}>
-        <TagEditRow
-          ref={editRowRef}
-          name={draftName}
-          color={draftColor}
-          onChangeName={setDraftName}
-          onChangeColor={setDraftColor}
-          onCancel={handleCancelEditRow}
-          onSave={handleSave}
-        />
-      </AnimateHeight>
-
-      <AnimatedSpacer visible={!!tagIds.length && editMode} height={10} />
-      <ActiveTags>
-        {tagIds.map((id, i) => {
-          const tag = tags.find((t) => t.tagId === id);
-          if (!tag) return null;
-          return (
-            <Pressable
-              key={`active-${id}-${i}`}
-              onPress={() => onToggleTag(id)}
-              disabled={!editMode}
-            >
-              <Tag color={tag.color}>
-                <ThemedText type="tag" color={tag.color}>
-                  {tag.name}
-                </ThemedText>
+        </Container>
+      </ToggleBox>
+      <Spacer isVisible={isEditing && !!newTagId} height={10} />
+      <ToggleBox isVisible={isEditing && !!newTagId} height={TAG_HEIGHT}>
+        <Container ref={createRowRef}>
+          <Tag
+            ref={inputRef}
+            isInput
+            $color={newTag.color ?? "default"}
+            placeholder="New Tag"
+            onPress={() => inputRef.current?.focus()}
+            onChangeText={(text) => handleChangeText(text)}
+            onFocus={() => scrollToElement(createRowRef, 40)}
+          >
+            {newTag.title}
+          </Tag>
+          <FadeTrack>
+            {colors.map((color) => (
+              <Tag
+                key={`tag-${color}`}
+                $color={color}
+                disabled={color === newTag.color}
+                onPress={() => handleSelectColor(color)}
+              />
+            ))}
+          </FadeTrack>
+          <InteractionControls
+            direction="row-reverse"
+            onConfirm={() => handleConfirmTag()}
+            onCancel={() => handleCancelTag()}
+          />
+        </Container>
+      </ToggleBox>
+      <Spacer isVisible={isEditing && !!tagIds.length} height={10} />
+      <ToggleBox isVisible={!!tagIds.length} height={dynamicHeight}>
+        <Container onLayout={onLayout}>
+          {tagIds.map((id) => {
+            const { title, color } = getById("tags", id);
+            return (
+              <Tag
+                key={`tag-${id}`}
+                $color={color}
+                onPress={() => handleToggleTag(id)}
+              >
+                {title}
               </Tag>
-            </Pressable>
-          );
-        })}
-      </ActiveTags>
-    </View>
+            );
+          })}
+        </Container>
+      </ToggleBox>
+    </>
   );
-}
+};

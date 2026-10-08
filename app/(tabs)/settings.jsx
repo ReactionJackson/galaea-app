@@ -1,11 +1,11 @@
+import { Button } from "@/components/interface/Button";
 import { HeaderText } from "@/components/interface/HeaderText";
 import { TickIcon } from "@/components/interface/icons/TickIcon";
 import { ThemedText } from "@/components/interface/ThemedText";
-import { PageScroll } from "@/components/exploration/pages/components/PageScroll";
-import { StickyHeader } from "@/components/exploration/pages/components/StickyHeader";
-import { ACCENT_SWATCHES, Colors } from "@/constants/theme";
-import { useSettings } from "@/context/SettingsContext";
+import { Colors } from "@/constants/theme";
+import { useApp } from "@/context/AppContext";
 import { triggerHaptics } from "@/utils/haptics";
+import { runLegacyMigration } from "@/utils/migrateLegacyContent";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
@@ -39,36 +39,50 @@ const Swatch = styled.View`
 `;
 
 export default function SettingsScreen() {
-  const { accent, setAccent } = useSettings();
+  const {
+    settings: { accentColor },
+    updateSettings,
+    replaceContent,
+  } = useApp();
+
+  // Handlers:
+
+  const handleMigrate = async () => {
+    const content = await runLegacyMigration();
+    if (content) replaceContent(content);
+  };
+
+  // Render:
 
   return (
     <Container>
-      <PageScroll>
-        <StickyHeader>
-          <HeaderText>
-            <HeaderText.Title>Settings</HeaderText.Title>
-          </HeaderText>
-        </StickyHeader>
+      <HeaderText>
+        <HeaderText.Title>Settings</HeaderText.Title>
+      </HeaderText>
 
-        <Section>
-          <ThemedText type="subtitle">Accent Colour</ThemedText>
-          <SwatchRow>
-            {ACCENT_SWATCHES.map((color) => (
-              <Pressable
-                key={color}
-                onPress={() => {
-                  triggerHaptics("Light");
-                  setAccent(color);
-                }}
-              >
-                <Swatch $color={color} $selected={color === accent}>
-                  {color === accent && <TickIcon color={Colors.white} />}
-                </Swatch>
-              </Pressable>
-            ))}
-          </SwatchRow>
-        </Section>
-      </PageScroll>
+      <Section>
+        <ThemedText type="subtitle">Accent Colour</ThemedText>
+        <SwatchRow>
+          {Object.values(Colors.accents).map((color) => (
+            <Pressable
+              key={color}
+              onPress={() => {
+                triggerHaptics("Light");
+                updateSettings({ accentColor: color });
+              }}
+            >
+              <Swatch $color={color} $selected={color === accentColor}>
+                {color === accentColor && <TickIcon color={Colors.white} />}
+              </Swatch>
+            </Pressable>
+          ))}
+        </SwatchRow>
+      </Section>
+
+      <Section>
+        <ThemedText type="subtitle">Legacy Content</ThemedText>
+        <Button onPress={handleMigrate}>Migrate Legacy Content</Button>
+      </Section>
     </Container>
   );
 }

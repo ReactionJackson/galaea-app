@@ -1,4 +1,4 @@
-import { EDGE_FADE_DURATION } from "@/constants/values";
+import { EDGE_FADE_DURATION, TAG_HEIGHT } from "@/constants/values";
 import { LinearGradient } from "expo-linear-gradient";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { ScrollView } from "react-native";
@@ -22,7 +22,7 @@ const TrackOuter = styled.View`
 
 const Scroller = styled(ScrollView)`
   width: 100%;
-  height: 26px;
+  height: ${TAG_HEIGHT}px;
 `;
 
 const EdgeFade = styled(Animated.View)`
@@ -39,7 +39,7 @@ const GradientFill = styled(LinearGradient)`
 `;
 
 export const FadeTrack = forwardRef(function FadeTrack(
-  { children, contentContainerStyle },
+  { children, contentContainerStyle = { gap: 10 } },
   ref,
 ) {
   const leftOpacity = useSharedValue(0);

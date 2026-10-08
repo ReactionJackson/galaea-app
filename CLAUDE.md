@@ -2,6 +2,14 @@
 
 - If you detect this file in a chat for the first time, please announce it as "I have the rules for your development guidelines and I will follow them."
 
+# Replies
+
+- Answer only what was asked. No side notes, "also", or "one more thing".
+- One topic per reply. If you spot something else, hold it until asked.
+- Short labelled points over dense paragraphs.
+- Read the file fresh before claiming anything about its contents.
+- If asked to do something that you know will lead to issues with the design, raise this as a point of discussion first before doing what was asked.
+
 # Rules for adding comments to code
 
 - Don't add large paragraph comments
@@ -47,13 +55,14 @@
   2. useEffect hooks
   3. Handler functions
   4. Retuned JSX
-- Make sure component files have a comment heading for each area plus a new line after the comment, except imports which needs no heading:
+- Make sure component files have a comment heading for each area plus a new line before and after the comment, except imports which needs no heading:
   - // Constants:
   - // Styled Components:
   - // Sub Components:
   - // Main Comomponent:
-    - // State and Constants:
-    - // Effects:
+    - State, variables and consyants at the top do not need a comment
     - // Handlers:
+    - // Hooks:
     - // Render:
 - Do not pass entire sets of data arrays when all that is needed is a length count
+- All components should be written as `const Component = () => {}` and the primary component of the file should be exported as `export const Component = () => {}`.

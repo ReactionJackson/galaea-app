@@ -29,36 +29,34 @@ const StyledImage = styled(ExpoImage).attrs({
 
 export function Image({
   uri,
+  width = null,
+  height = null,
   aspectRatio,
-  width,
-  height,
   radius,
   shadowRadius,
   shadowOpacity,
-  contentFit = "contain",
-  style,
-  ...rest
 }) {
   const exists = useMemo(() => fileExists(uri), [uri]);
+  const visualWidth = width ?? height * aspectRatio;
+  const visualHeight = height ?? width / aspectRatio;
 
   if (!uri) return null;
 
   return (
     <ShadowWrap
-      width={width}
-      height={height}
+      width={visualWidth}
+      height={visualHeight}
       aspectRatio={aspectRatio}
       radius={radius}
       shadowRadius={shadowRadius}
       shadowOpacity={shadowOpacity}
-      style={style}
     >
       {exists && (
         <StyledImage
           source={{ uri }}
           radius={radius}
-          contentFit={contentFit}
-          {...rest}
+          width={visualWidth}
+          height={visualHeight}
         />
       )}
     </ShadowWrap>

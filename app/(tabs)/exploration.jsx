@@ -1,5 +1,6 @@
+import { JournalPage } from "@/components/exploration/pages/JournalPage";
 import { Colors } from "@/constants/theme";
-import { ExplorationProvider } from "@/context/ExplorationContext";
+import { PageProvider } from "@/context/PageContext";
 import styled from "styled-components/native";
 
 // Styled Components:
@@ -14,11 +15,12 @@ const Container = styled.View`
 // Main Component:
 
 function ExplorationScreen() {
-  // Render:
   return (
-    <ExplorationProvider>
-      <Container />
-    </ExplorationProvider>
+    <Container>
+      <PageProvider>
+        <JournalPage postId={19} />
+      </PageProvider>
+    </Container>
   );
 }
 

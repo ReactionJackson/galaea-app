@@ -2,7 +2,6 @@
 
 export const ITEM_HEIGHT = 100;
 export const EMPTY_CARD_WIDTH = 70;
-export const ITEM_ASPECT_RATIO = 3 / 2;
 export const HERO_HEIGHT = 130;
 export const COLLECTION_HERO_HEIGHT = 250;
 export const COLLECTION_HERO_SPACING = 30;
@@ -11,13 +10,29 @@ export const CARD_THUMBNAIL_HEIGHT = 45;
 export const LIGHTBOX_PADDING = 20;
 export const DAY_CIRCLE_HEIGHT = 40;
 export const BUTTON_HEIGHT = 36;
-export const CONDENSED_BUTTON_HEIGHT = 26;
+export const TAG_HEIGHT = 26;
+export const TEXT_LINE_HEIGHT = 24;
+export const CONDENSED_BUTTON_HEIGHT = TAG_HEIGHT;
 export const TRACK_GAP = 10;
+export const GALLERY_ITEM_RADIUS = 15;
+export const GALLERY_GUTTERS = 20;
+export const GALLERY_TRACK_GAP = GALLERY_GUTTERS / 2;
+export const CAPTION_HEIGHT = 60;
+
+// Opacities:
+
+export const DISABLED_OPACITY = 0.2;
+export const PLACEHOLDER_OPACITY = 0.5;
+
+// Ratios:
+
+export const GALLERY_ASPECT_RATIO = 3 / 2;
+export const ITEM_ASPECT_RATIO = 3 / 2;
 
 // Durations:
 
 export const PAGE_FADE_DURATION = 450;
-export const COLOR_TRANSITION_DURATION = 200;
+export const COLOR_TRANSITION_DURATION = 250;
 export const FADE_TRANSITION_DURATION = 250;
 export const SLIDE_TRANSITION_DURATION = 250;
 export const EDGE_FADE_DURATION = 150;

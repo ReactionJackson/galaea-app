@@ -1,5 +1,5 @@
 import { AppHeader } from "@/components/AppHeader";
-import { SettingsProvider } from "@/context/SettingsContext";
+import { AppProvider } from "@/context/AppContext";
 import {
   Outfit_400Regular as Outfit400,
   Outfit_500Medium as Outfit500,
@@ -9,7 +9,6 @@ import {
 } from "@expo-google-fonts/outfit";
 import { DefaultTheme, SplashScreen, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-
 import { useEffect } from "react";
 import "react-native-reanimated";
 
@@ -35,13 +34,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={DefaultTheme}>
-      <SettingsProvider>
+      <AppProvider>
         <AppHeader />
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="dark" />
-      </SettingsProvider>
+      </AppProvider>
     </ThemeProvider>
   );
 }

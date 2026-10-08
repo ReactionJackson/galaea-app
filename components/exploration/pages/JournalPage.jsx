@@ -1,132 +1,114 @@
-import { ItemEntryBubble } from "@/components/exploration/pages/components/ItemEntryBubble";
-import { PageScroll } from "@/components/exploration/pages/components/PageScroll";
-import { StickyHeader } from "@/components/exploration/pages/components/StickyHeader";
-import {
-  AnimatedSpacer,
-  AnimateHeight,
-} from "@/components/interface/AnimateHeight";
-import { FadeInOnMount } from "@/components/interface/FadeInOnMount";
-import { HeaderText } from "@/components/interface/HeaderText";
-import { ThemedText } from "@/components/interface/ThemedText";
+import { Button } from "@/components/interface/Button";
+import { HeaderBar } from "@/components/interface/HeaderBar";
+import { MultilineText } from "@/components/interface/MultilineText";
+import { Spacer } from "@/components/interface/Spacer";
 import { Tags } from "@/components/tags/Tags";
-import { PickerNavigator } from "@/components/exploration/navigators/PickerNavigator";
-import { useApp } from "@/context/AppContext";
-import { Fragment } from "react";
+import { usePage } from "@/context/PageContext";
+import { formatDate } from "@/utils/formatDate";
 import { View } from "react-native";
+import { Page } from "./Page";
+import { ItemEntryBubble } from "./components/ItemEntryBubble";
+import { NumberBadge } from "./components/NumberBadge";
 
-function formatEntryDate(dateString, format) {
-  const date = new Date(dateString);
-  switch (format) {
-    case "day":
-      return date.getDate().toString();
-    case "month":
-      return date.toLocaleString("default", { month: "long" });
-    case "weekday":
-      return date.toLocaleString("default", { weekday: "long" });
-    case "year":
-      return date.getFullYear().toString();
-  }
-}
+// Sub Components:
 
-export function JournalPage({ entry }) {
-  const { state, activeEntry, dispatch } = useApp();
-  const { editMode } = state;
-  const isActive = entry.dayId === activeEntry.dayId;
-  const data = isActive ? activeEntry : entry;
-  const pageEditMode = isActive && editMode;
-  const textVisible = !!(data.text || pageEditMode);
-  const tagsVisible = !!(data.tags.length || pageEditMode);
+const Header = ({ title, date, onChangeText }) => {
+  const { isEditing } = usePage();
+  return (
+    <HeaderBar>
+      <HeaderBar.Badge>
+        <NumberBadge variant="primary">{formatDate(date, "day")}</NumberBadge>
+      </HeaderBar.Badge>
+      <HeaderBar.Title
+        onChangeText={onChangeText}
+        placeholder={formatDate(date, "weekday")}
+      >
+        {isEditing ? title : title || formatDate(date, "weekday")}
+      </HeaderBar.Title>
+      <HeaderBar.Subtitle>{formatDate(date, "month")}</HeaderBar.Subtitle>
+      <HeaderBar.SubtitleFaded>
+        {formatDate(date, "year")}
+      </HeaderBar.SubtitleFaded>
+    </HeaderBar>
+  );
+};
 
-  const formatDate = (format) => formatEntryDate(data.date, format);
+// Main Component:
 
-  const handleToggleTag = (tagId) => dispatch({ type: "TOGGLE_TAG", tagId });
-  const handleChangeTitle = (title) =>
-    dispatch({ type: "UPDATE_TITLE", title });
-  const handleChangeText = (text) => dispatch({ type: "UPDATE_TEXT", text });
-  const handleSelectItem = (itemId) => dispatch({ type: "ADD_ITEM", itemId });
+export const JournalPage = ({ postId = 1 }) => {
+  const { isEditing, setIsEditing, draft, getById, entryIdsByPostId } =
+    usePage();
+  const { title, date, text, tagIds } = getById("posts", postId) ?? {};
+  const entryIds = entryIdsByPostId[postId] ?? [];
+
+  // Temp Edit Mode Controls:
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    draft.discard();
+    setIsEditing(false);
+  };
+
+  const handleSave = () => {
+    draft.commit();
+    setIsEditing(false);
+  };
+
+  // Handlers:
+
+  const handleChangeTitle = (title) => {
+    draft.update("posts", postId, { title });
+  };
+
+  const handleChangeText = (text) => {
+    draft.update("posts", postId, { text });
+  };
 
   return (
-    <PageScroll resetKey={entry.dayId}>
-      <StickyHeader>
-        <HeaderText>
-          <HeaderText.Badge>
-            <ThemedText type="date-number">{formatDate("day")}</ThemedText>
-          </HeaderText.Badge>
-          <HeaderText.Title
-            key={pageEditMode ? "editing" : "display"}
-            value={
-              !pageEditMode && !data.title ? formatDate("weekday") : data.title
-            }
-            placeholder={formatDate("weekday")}
-            onChangeText={handleChangeTitle}
-            editable={pageEditMode}
-          />
-          <HeaderText.Subtitle>{formatDate("month")}</HeaderText.Subtitle>
-          <HeaderText.SubtitleFaded>
-            {formatDate("year")}
-          </HeaderText.SubtitleFaded>
-        </HeaderText>
-      </StickyHeader>
-
-      <FadeInOnMount>
-        <Fragment key={entry.dayId}>
-          <AnimateHeight visible={textVisible}>
-            <ThemedText
-              key={pageEditMode ? "editing" : "display"}
-              isInput
-              multiline={true}
-              value={data.text}
-              placeholder="Write something about today..."
-              onChangeText={handleChangeText}
-              editable={pageEditMode}
-            />
-          </AnimateHeight>
-
-          <Tags
-            tagIds={data.tags}
-            editMode={pageEditMode}
-            onToggleTag={handleToggleTag}
-          />
-          <AnimatedSpacer visible={textVisible || tagsVisible} height={25} />
-
-          {data.items.map(
-            ({ itemId, entryId, isNew, text, tags, gallery }, i) => (
-              <View key={`${itemId}-${String(entryId)}-${i}`}>
-                <AnimateHeight visible>
-                  <ItemEntryBubble
-                    itemId={itemId}
-                    entryId={entryId}
-                    index={i}
-                    isNew={isNew}
-                    editable={pageEditMode}
-                    text={text}
-                    tagIds={tags}
-                    gallery={gallery}
-                  />
-                </AnimateHeight>
-                {i !== data.items.length - 1 && <AnimatedSpacer visible />}
-              </View>
-            ),
-          )}
-          <AnimatedSpacer visible={data.items.length > 0} />
-
-          {pageEditMode && (
-            <>
-              <AnimateHeight
-                visible={editMode}
-                animateOnMount
-                style={{ marginHorizontal: -20 }}
-              >
-                <PickerNavigator
-                  attachedItemIds={activeEntry.items.map((it) => it.itemId)}
-                  onSelect={handleSelectItem}
-                />
-              </AnimateHeight>
-              <AnimatedSpacer visible={editMode} height={70} />
-            </>
-          )}
-        </Fragment>
-      </FadeInOnMount>
-    </PageScroll>
+    <Page>
+      <Page.Header>
+        <Header title={title} date={date} onChangeText={handleChangeTitle} />
+      </Page.Header>
+      <Page.Content>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            marginBottom: 20,
+            gap: 10,
+          }}
+        >
+          <Button disabled={isEditing} variant="primary" onPress={handleEdit}>
+            Edit
+          </Button>
+          <Button
+            disabled={!isEditing}
+            variant="secondary"
+            onPress={handleCancel}
+          >
+            Cancel
+          </Button>
+          <Button disabled={!isEditing} variant="primary" onPress={handleSave}>
+            Save
+          </Button>
+        </View>
+        <MultilineText onChangeText={handleChangeText}>{text}</MultilineText>
+        <Spacer
+          isVisible={isEditing || (!!text && !!tagIds.length)}
+          height={15}
+        />
+        <Tags parent={{ key: "posts", id: postId }} tagIds={tagIds} />
+        <Spacer
+          isVisible={isEditing || (!!tagIds.length && !!entryIds.length)}
+          height={20}
+        />
+        {entryIds.map((id) => (
+          <ItemEntryBubble key={`entry-${id}`} entryId={id} />
+        ))}
+      </Page.Content>
+    </Page>
   );
-}
+};

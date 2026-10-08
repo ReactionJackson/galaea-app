@@ -1,14 +1,19 @@
 import { Colors } from "@/constants/theme";
 import {
   CONDENSED_BUTTON_HEIGHT,
+  DISABLED_OPACITY,
   FADE_TRANSITION_DURATION,
 } from "@/constants/values";
-import { useSettings } from "@/context/SettingsContext";
-import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
 import { triggerHaptics } from "@/utils/haptics";
-import { Children, cloneElement, isValidElement } from "react";
+import { Children, cloneElement, isValidElement, useEffect } from "react";
 import { Pressable } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import styled from "styled-components/native";
 
 export const InteractCircle = styled.View`
@@ -16,7 +21,7 @@ export const InteractCircle = styled.View`
   border-radius: 13px;
   border-width: 2px;
   border-color: ${({ borderColor }) =>
-    borderColor ?? Colors.tags.default.primary};
+    borderColor ?? Colors.tags.default.border};
   justify-content: center;
   align-items: center;
   background-color: ${({ backgroundColor }) =>
@@ -33,19 +38,20 @@ export function InteractButton({
   style,
   children,
 }) {
-  const { interactButtonColors } = useSettings();
-  const { fill, border, icon } = interactButtonColors[variant];
+  const { fill, border, icon } = Colors.interactButton[variant];
+  const opacity = useSharedValue(disabled ? DISABLED_OPACITY : 1);
+  const dimmedStyle = useAnimatedStyle(() => ({ opacity: opacity.get() }));
+
+  useEffect(() => {
+    opacity.set(
+      withTiming(disabled ? DISABLED_OPACITY : 1, { duration: FADE_TRANSITION_DURATION }),
+    );
+  }, [disabled, opacity]);
 
   const coloredChildren = Children.map(children, (child) =>
     isValidElement(child)
       ? cloneElement(child, { color: child.props.color ?? icon })
       : child,
-  );
-
-  const dimmedStyle = useAnimatedTransition(
-    !disabled,
-    { opacity: [0.35, 1] },
-    { duration: FADE_TRANSITION_DURATION },
   );
 
   const handlePress = () => {

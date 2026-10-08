@@ -1,11 +1,14 @@
 import { Colors, Fonts } from "@/constants/theme";
-import { COLOR_TRANSITION_DURATION } from "@/constants/values";
-import { useAnimatedTransition } from "@/hooks/useAnimatedTransition";
-import { forwardRef } from "react";
-import { Platform, StyleSheet, TextInput } from "react-native";
+import {
+  COLOR_TRANSITION_DURATION,
+  PLACEHOLDER_OPACITY,
+  TEXT_LINE_HEIGHT,
+} from "@/constants/values";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { Platform, Pressable, StyleSheet, TextInput } from "react-native";
 import Animated from "react-native-reanimated";
 
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+// Constants:
 
 const TYPE_STYLES = {
   title: "title",
@@ -17,91 +20,77 @@ const TYPE_STYLES = {
   tag: "tag",
 };
 
-function resolveColor(color) {
-  return Colors.tags[color]?.primary ?? Colors[color] ?? color;
-}
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
+// Main Component:
 
 export const ThemedText = forwardRef(function ThemedText(
   {
-    style,
     type = "text",
     color,
-    colorSwitch,
     isInput = false,
-    multiline = false,
-    value,
-    editable,
+    isEditable,
+    onChangeText = () => {},
+    style,
+    onFocus,
+    onBlur,
+    children,
     ...rest
   },
   ref,
 ) {
-  const defaultColor =
-    type === "tag"
-      ? (Colors.tags[color ?? "default"]?.primary ?? Colors.black)
-      : color
-        ? resolveColor(color)
-        : (styles[TYPE_STYLES[type]]?.color ?? Colors.black);
-
-  const fromColor = resolveColor(colorSwitch?.colors[0] ?? defaultColor);
-  const toColor = resolveColor(colorSwitch?.colors[1] ?? defaultColor);
-
-  // Always applied — never conditional. Reanimated writes colour values directly
-  // to the native node, so conditionally removing this style leaves stale values
-  // behind. When no colorSwitch is present, from === to === defaultColor, making
-  // it a consistent no-op rather than fighting the native layer.
-  const animatedColorStyle = useAnimatedTransition(
-    colorSwitch?.active ?? false,
-    { color: [fromColor, toColor] },
-    { duration: colorSwitch?.duration ?? COLOR_TRANSITION_DURATION },
-  );
-
-  const baseStyle = [
-    styles[TYPE_STYLES[type]],
-    isInput ? styles.inputReset : null,
-    // Single-line inputs: drop explicit height so iOS lays out text and
-    // placeholder using the same metrics (misalignment occurs when height is
-    // set without a matching lineHeight). Keep lineHeight so both text and
-    // placeholder are governed by the same value — removing it causes iOS to
-    // calculate them slightly differently, which shifts the placeholder.
-    isInput && !multiline ? { height: undefined } : null,
-    // Multiline inputs must be at least one line tall even when empty,
-    // otherwise the parent AnimateHeight measures 0 and can't animate open.
-    isInput && multiline
-      ? { minHeight: styles[TYPE_STYLES[type]]?.lineHeight ?? 24 }
-      : null,
-    isInput ? { alignSelf: "stretch" } : null,
-    animatedColorStyle,
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef(null);
+  const typeStyle = styles[TYPE_STYLES[type]];
+  const textStyle = [
+    typeStyle,
+    styles.colorTransition,
+    color && { color: Colors[color] },
     style,
   ];
 
-  if (isInput) {
-    return (
+  useImperativeHandle(ref, () => inputRef.current);
+
+  return isInput ? (
+    <Pressable
+      disabled={!isEditable || isFocused}
+      onPress={() => inputRef.current?.focus()}
+    >
       <AnimatedTextInput
-        ref={ref}
-        style={baseStyle}
-        multiline={multiline}
-        // Single-line inputs don't need RN's own scroll-view-backed caret
-        // tracking — iOS already keeps a single-line field's caret in view
-        // natively. Leaving this true meant every controlled re-render (e.g.
-        // typing into the title, which round-trips through global state)
-        // raced against the native auto-scroll, producing a visible
-        // flash-then-correct jump. Multiline still relies on its own
-        // AnimateHeight-driven auto-grow rather than internal scrolling,
-        // so it stays disabled there too.
+        ref={inputRef}
+        style={[
+          textStyle,
+          styles.input,
+          { minHeight: typeStyle.lineHeight },
+          !children && { opacity: PLACEHOLDER_OPACITY },
+        ]}
+        value={children}
+        editable={isEditable}
+        onChangeText={onChangeText}
+        pointerEvents={isEditable && isFocused ? "auto" : "none"}
+        placeholderTextColor={StyleSheet.flatten(textStyle).color}
         scrollEnabled={false}
-        value={value}
-        editable={editable}
-        pointerEvents={editable ? "auto" : "none"}
-        placeholderTextColor={Colors.placeholder}
         spellCheck={false}
         autoCorrect={true}
+        onFocus={(e) => {
+          setIsFocused(true);
+          onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setIsFocused(false);
+          onBlur?.(e);
+        }}
         {...rest}
       />
-    );
-  }
-
-  return <Animated.Text ref={ref} style={baseStyle} {...rest} />;
+    </Pressable>
+  ) : (
+    <Animated.Text ref={ref} style={textStyle} {...rest}>
+      {children}
+    </Animated.Text>
+  );
 });
+
+// Typography Styles:
 
 const webTextStyles = Platform.select({
   web: {
@@ -117,7 +106,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 22,
     lineHeight: 28,
-    height: 28,
     ...webTextStyles,
   },
   titleSmall: {
@@ -141,7 +129,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontFamily: Fonts.regular,
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: TEXT_LINE_HEIGHT,
     ...webTextStyles,
   },
   caption: {
@@ -149,6 +137,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 14,
     lineHeight: 18,
+    textAlign: "center",
     ...webTextStyles,
   },
   dateNumber: {
@@ -160,12 +149,18 @@ const styles = StyleSheet.create({
     ...webTextStyles,
   },
   tag: {
+    color: Colors.tags.default.border,
     fontFamily: Fonts.bold,
     fontSize: 12,
     ...webTextStyles,
   },
-  inputReset: {
+  input: {
     padding: 0,
     textAlignVertical: "top",
+    alignSelf: "stretch",
+  },
+  colorTransition: {
+    transitionProperty: "color",
+    transitionDuration: COLOR_TRANSITION_DURATION,
   },
 });

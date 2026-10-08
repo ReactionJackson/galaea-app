@@ -13,6 +13,8 @@ const StyledImage = styled(ExpoImage).attrs({
   left: 0;
   right: 0;
   bottom: 0;
+  border-radius: ${({ $radius }) => $radius}px;
+  overflow: hidden;
 `;
 
 const Overlay = styled.View`
@@ -22,17 +24,15 @@ const Overlay = styled.View`
   right: 0;
   bottom: 0;
   background-color: ${Colors.imageOverlay};
+  border-radius: ${({ $radius }) => $radius}px;
+  overflow: hidden;
 `;
 
 export function CoverImage({
   uri,
-  focus,
-  addOverlay = false,
-  style,
-  rawWidth,
-  rawHeight,
-  aspectRatio,
-  ...rest
+  contentPosition,
+  radius = 0,
+  isDarkened = false,
 }) {
   const exists = useMemo(() => fileExists(uri), [uri]);
 
@@ -41,11 +41,10 @@ export function CoverImage({
     <>
       <StyledImage
         source={{ uri }}
-        contentPosition={focus ?? undefined}
-        style={style}
-        {...rest}
+        $radius={radius}
+        contentPosition={contentPosition}
       />
-      {addOverlay && <Overlay />}
+      {isDarkened && <Overlay $radius={radius} />}
     </>
   );
 }
